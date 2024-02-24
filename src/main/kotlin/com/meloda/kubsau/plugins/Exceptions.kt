@@ -1,6 +1,6 @@
 package com.meloda.kubsau.plugins
 
-import com.meloda.kubsau.ApiError
+import com.meloda.kubsau.model.api.ApiError
 import com.meloda.kubsau.base.respondError
 import com.meloda.kubsau.errors.*
 import com.meloda.kubsau.route.auth.WrongCredentialsException
