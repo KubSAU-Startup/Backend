@@ -2,15 +2,13 @@ package com.meloda.kubsau.model
 
 import org.jetbrains.exposed.sql.Table
 
-data class Group(
-    val id: Int,
-    val title: String
-)
+data class Major(val id: Int)
 
-object Groups : Table() {
+object Majors : Table() {
     val id = integer("id").autoIncrement()
+    val code = text("code")
     val title = text("title")
-    val majorId = integer("majorId").entityId()
+    val abbreviation = text("abbreviation")
 
     override val primaryKey = PrimaryKey(id)
 }

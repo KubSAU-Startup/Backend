@@ -2,14 +2,17 @@ package com.meloda.kubsau.model
 
 import org.jetbrains.exposed.sql.Table
 
-data class Teacher(val id: Int, val fullName: String)
+data class Student(
+    val id: Int
+)
 
-object Teachers : Table() {
+object Students : Table() {
     val id = integer("id").autoIncrement()
     val firstName = text("firstName")
     val lastName = text("lastName")
     val middleName = text("middleName")
-    val departmentId = integer("departmentId").entityId()
+    val groupId = integer("groupId").entityId()
+    val status = integer("status")
 
     override val primaryKey = PrimaryKey(id)
 }

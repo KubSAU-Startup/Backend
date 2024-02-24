@@ -10,5 +10,5 @@ data class Session(
 
 object Sessions : Table() {
     val userId = integer("userId")
-    val accessToken = varchar("accessToken", 1024)
+    val accessToken = text("accessToken")
 }
