@@ -1,8 +1,8 @@
 package com.meloda.kubsau.route.account
 
 import com.meloda.kubsau.base.respondSuccess
-import com.meloda.kubsau.database.sessionsDao
-import com.meloda.kubsau.database.usersDao
+import com.meloda.kubsau.database.sessions.sessionsDao
+import com.meloda.kubsau.database.users.usersDao
 import com.meloda.kubsau.errors.NoAccessTokenException
 import com.meloda.kubsau.errors.SessionExpiredException
 import com.meloda.kubsau.errors.UnknownException

@@ -1,18 +1,20 @@
 package com.meloda.kubsau.model
 
-import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.dao.id.IntIdTable
 
 data class Work(
     val id: Int,
+    val typeId: Int,
+    val disciplineId: Int,
+    val studentId: Int,
+    val registrationDate: Int,
+    val title: String
 )
 
-object Works : Table() {
-    val id = integer("id").autoIncrement()
-    val typeId = integer("typeId").entityId()
-    val disciplineId = integer("disciplineId").entityId()
-    val studentId = integer("studentId").entityId()
+object Works : IntIdTable() {
+    val typeId = integer("typeId").references(WorkTypes.id)
+    val disciplineId = integer("disciplineId").references(Disciplines.id)
+    val studentId = integer("studentId").references(Students.id)
     val registrationDate = integer("registrationDate")
     val title = text("title")
-
-    override val primaryKey = PrimaryKey(id)
 }

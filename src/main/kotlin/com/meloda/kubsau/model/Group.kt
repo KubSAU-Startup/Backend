@@ -1,16 +1,14 @@
 package com.meloda.kubsau.model
 
-import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.dao.id.IntIdTable
 
 data class Group(
     val id: Int,
-    val title: String
+    val title: String,
+    val majorId: Int
 )
 
-object Groups : Table() {
-    val id = integer("id").autoIncrement()
+object Groups : IntIdTable() {
     val title = text("title")
-    val majorId = integer("majorId").entityId()
-
-    override val primaryKey = PrimaryKey(id)
+    val majorId = integer("majorId").references(Majors.id)
 }

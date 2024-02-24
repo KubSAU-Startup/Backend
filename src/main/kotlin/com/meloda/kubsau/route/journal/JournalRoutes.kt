@@ -147,31 +147,44 @@ private val journal = List(10) { index ->
     )
 }
 
-fun Route.journal() {
-    get("/journals/worktypes") {
-        respondSuccess { workTypes }
-    }
-
-    get("/journals") {
-        val params = call.request.queryParameters
-        val workTypeId = params["workTypeId"]?.toInt()
-        val disciplineId = params["disciplineId"]?.toInt()
-        val teacherId = params["teacherId"]?.toInt()
-        val departmentId = params["departmentId"]?.toInt()
-        val groupId = params["groupId"]?.toInt()
-
-        val filteredJournal = journal.filter { item ->
-            (item.work.id == workTypeId || workTypeId == null) &&
-                    (item.discipline.id == disciplineId || disciplineId == null) &&
-                    (item.teacher.id == teacherId || teacherId == null) &&
-                    (item.group.id == groupId || groupId == null)
+fun Route.journals() {
+    route("/journals") {
+        get("worktypes") {
+            respondSuccess { workTypes }
         }
+        get {
+            val params = call.request.queryParameters
+            val workTypeId = params["workTypeId"]?.toInt()
+            val disciplineId = params["disciplineId"]?.toInt()
+            val teacherId = params["teacherId"]?.toInt()
+            val departmentId = params["departmentId"]?.toInt()
+            val groupId = params["groupId"]?.toInt()
 
-        respondSuccess { filteredJournal }
+            val filteredJournal = journal.filter { item ->
+                (item.work.id == workTypeId || workTypeId == null) &&
+                        (item.discipline.id == disciplineId || disciplineId == null) &&
+                        (item.teacher.id == teacherId || teacherId == null) &&
+                        (item.group.id == groupId || groupId == null)
+            }
+
+            respondSuccess {
+                GetJournalResponse(
+                    count = filteredJournal.size,
+                    offset = 0,
+                    journal = filteredJournal
+                )
+            }
+        }
     }
 
     filters()
 }
+
+private data class GetJournalResponse(
+    val count: Int,
+    val offset: Int,
+    val journal: List<JournalItem>
+)
 
 private fun Route.filters() {
     get("/journals/filters") {

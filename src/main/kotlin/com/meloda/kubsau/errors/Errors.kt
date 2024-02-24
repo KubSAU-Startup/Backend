@@ -9,9 +9,12 @@ object Errors {
     const val WRONG_CREDENTIALS = 101
     const val ACCESS_TOKEN_REQUIRED = 102
     const val SESSION_EXPIRED = 103
+
+    const val CONTENT_NOT_FOUND = 1001
 }
 
 data object UnknownException : Throwable()
 data object NoAccessTokenException : Throwable()
 data object SessionExpiredException : Throwable()
 data class ValidationException(override val message: String) : Throwable()
+data object ContentNotFoundException : Throwable()

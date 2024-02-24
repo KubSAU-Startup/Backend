@@ -3,7 +3,8 @@ package com.meloda.kubsau.plugins
 import com.meloda.kubsau.base.Constants
 import com.meloda.kubsau.route.account.account
 import com.meloda.kubsau.route.auth.auth
-import com.meloda.kubsau.route.journal.journal
+import com.meloda.kubsau.route.department.departments
+import com.meloda.kubsau.route.journal.journals
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -51,6 +52,7 @@ private fun Application.routing() {
 
         auth()
         account()
-        journal()
+        journals()
+        departments()
     }
 }

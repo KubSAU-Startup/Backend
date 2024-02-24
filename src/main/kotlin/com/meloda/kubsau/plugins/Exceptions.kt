@@ -41,6 +41,12 @@ fun Application.configureExceptions() {
                         ApiError(Errors.WRONG_CREDENTIALS, "Wrong credentials")
                     }
                 }
+
+                is ContentNotFoundException -> {
+                    respondError(call) {
+                        ApiError(Errors.CONTENT_NOT_FOUND, "Content not found")
+                    }
+                }
             }
         }
 

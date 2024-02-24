@@ -1,8 +1,9 @@
-package com.meloda.kubsau.database
+package com.meloda.kubsau.database.sessions
 
+import com.meloda.kubsau.base.Dao
 import com.meloda.kubsau.model.Session
 
-interface SessionsDao {
+interface SessionsDao : Dao<Session> {
 
     suspend fun allSessions(): List<Session>
     suspend fun singleSession(userId: Int): Session?

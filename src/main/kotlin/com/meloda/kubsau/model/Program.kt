@@ -1,15 +1,14 @@
 package com.meloda.kubsau.model
 
-import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.dao.id.IntIdTable
 
 data class Program(
-    val id: Int
+    val id: Int,
+    val title: String,
+    val semester: Int
 )
 
-object Programs : Table() {
-    val id = integer("id").autoIncrement()
+object Programs : IntIdTable() {
     val title = text("title")
     val semester = integer("semester")
-
-    override val primaryKey = PrimaryKey(id)
 }

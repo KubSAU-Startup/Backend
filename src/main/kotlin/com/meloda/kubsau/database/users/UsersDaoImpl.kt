@@ -1,6 +1,6 @@
-package com.meloda.kubsau.database
+package com.meloda.kubsau.database.users
 
-import com.meloda.kubsau.database.DatabaseSingleton.dbQuery
+import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.model.User
 import com.meloda.kubsau.model.Users
 import org.jetbrains.exposed.sql.*
@@ -8,21 +8,21 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 class UsersDaoImpl : UsersDao {
 
-    private fun resultRowToArticle(row: ResultRow) = User(
-        id = row[Users.id],
+    override fun mapResultRow(row: ResultRow) = User(
+        id = row[Users.id].value,
         email = row[Users.email],
         password = row[Users.password]
     )
 
     override suspend fun allUsers(): List<User> = dbQuery {
-        Users.selectAll().map(::resultRowToArticle)
+        Users.selectAll().map(::mapResultRow)
     }
 
     override suspend fun singleUser(id: Int): User? = dbQuery {
         Users
             .selectAll()
             .where { Users.id eq id }
-            .map(::resultRowToArticle)
+            .map(::mapResultRow)
             .singleOrNull()
     }
 
@@ -30,15 +30,22 @@ class UsersDaoImpl : UsersDao {
         Users
             .selectAll()
             .where { Users.email eq email }
-            .map(::resultRowToArticle)
+            .map(::mapResultRow)
             .singleOrNull()
     }
 
-    override suspend fun addNewUser(email: String, password: String): User? = dbQuery {
+    override suspend fun addNewUser(
+        email: String,
+        password: String,
+        type: Int,
+        departmentId: Int
+    ): User? = dbQuery {
         Users.insert {
             it[Users.email] = email
             it[Users.password] = password
-        }.resultedValues?.singleOrNull()?.let(::resultRowToArticle)
+            it[Users.type] = type
+            it[Users.departmentId] = departmentId
+        }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 
     override suspend fun editUser(id: Int, email: String, password: String): Boolean = dbQuery {
