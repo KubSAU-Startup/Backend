@@ -11,7 +11,9 @@ class UsersDaoImpl : UsersDao {
     override fun mapResultRow(row: ResultRow) = User(
         id = row[Users.id].value,
         email = row[Users.email],
-        password = row[Users.password]
+        password = row[Users.password],
+        type = row[Users.type],
+        departmentId = row[Users.departmentId]
     )
 
     override suspend fun allUsers(): List<User> = dbQuery {

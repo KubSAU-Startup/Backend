@@ -57,7 +57,11 @@ private val workTypesString = listOf(
 )
 
 private val workTypes = List(workTypesString.size) { index ->
-    WorkType(id = index, title = workTypesString[index])
+    WorkType(
+        id = index,
+        title = workTypesString[index],
+        editable = true
+    )
 }
 
 private val disciplinesString = listOf(
@@ -110,9 +114,13 @@ private val disciplines = List(10) { index ->
 }
 
 private val teachers = List(10) { index ->
+    val nameParts = names.random().split(" ")
     Teacher(
         id = index,
-        fullName = names.random()
+        firstName = nameParts[1],
+        lastName = nameParts[0],
+        middleName = nameParts[2],
+        departmentId = 1
     )
 }
 
@@ -121,7 +129,8 @@ private val groupsString = listOf("ИТ", "ПИ", "БИ")
 private val groups = List(10) { index ->
     Group(
         id = index,
-        title = "${groupsString.random()}${Random.nextInt(from = 2001, until = 2006)}"
+        title = "${groupsString.random()}${Random.nextInt(from = 2001, until = 2006)}",
+        majorId = 1
     )
 }
 
@@ -164,7 +173,8 @@ fun Route.journals() {
                 (item.work.id == workTypeId || workTypeId == null) &&
                         (item.discipline.id == disciplineId || disciplineId == null) &&
                         (item.teacher.id == teacherId || teacherId == null) &&
-                        (item.group.id == groupId || groupId == null)
+                        (item.group.id == groupId || groupId == null) &&
+                        (item.teacher.departmentId == departmentId || departmentId == null)
             }
 
             respondSuccess {
