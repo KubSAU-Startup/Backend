@@ -1,4 +1,4 @@
-FROM openjdk:11.0.16
+FROM openjdk:17.0.2
 EXPOSE 8080:8080
 RUN mkdir /app
 COPY /build/libs/KubSAU_TestBackend-all.jar /app/ktor-docker-sample.jar
