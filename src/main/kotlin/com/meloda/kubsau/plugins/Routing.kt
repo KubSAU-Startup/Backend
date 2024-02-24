@@ -1,6 +1,7 @@
 package com.meloda.kubsau.plugins
 
 import com.meloda.kubsau.common.Constants
+import com.meloda.kubsau.common.isInDocker
 import com.meloda.kubsau.route.account.account
 import com.meloda.kubsau.route.auth.auth
 import com.meloda.kubsau.route.department.departments
@@ -37,6 +38,8 @@ fun configureServer() {
         routing()
     }
 
+    println("Server's version: ${Constants.BACKEND_VERSION}")
+    println("Is docker: $isInDocker")
     println("Server is working on port: $PORT")
 
     server.start(wait = true)

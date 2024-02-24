@@ -18,7 +18,7 @@ object DatabaseController {
         val driverClassName = "org.h2.Driver"
 
         val filePath = if (isInDocker) {
-            "/app/db/database.sql"
+            "/config/db/database.sql"
         } else {
             "${System.getProperty("user.dir")}/database.sql"
         }
