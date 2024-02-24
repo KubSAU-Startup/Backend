@@ -2,7 +2,6 @@ package com.meloda.kubsau.database.departments
 
 import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.model.Department
-import com.meloda.kubsau.model.Departments
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere

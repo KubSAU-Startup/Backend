@@ -1,9 +1,9 @@
 package com.meloda.kubsau.database
 
 import com.meloda.kubsau.base.isInDocker
-import com.meloda.kubsau.model.Departments
-import com.meloda.kubsau.model.Sessions
-import com.meloda.kubsau.model.Users
+import com.meloda.kubsau.database.departments.Departments
+import com.meloda.kubsau.database.sessions.Sessions
+import com.meloda.kubsau.database.users.Users
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils

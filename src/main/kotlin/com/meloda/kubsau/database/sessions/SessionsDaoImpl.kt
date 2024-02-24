@@ -2,7 +2,6 @@ package com.meloda.kubsau.database.sessions
 
 import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.model.Session
-import com.meloda.kubsau.model.Sessions
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 

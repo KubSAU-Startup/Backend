@@ -2,7 +2,6 @@ package com.meloda.kubsau.database.users
 
 import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.model.User
-import com.meloda.kubsau.model.Users
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
