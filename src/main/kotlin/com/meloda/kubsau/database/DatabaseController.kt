@@ -1,6 +1,6 @@
 package com.meloda.kubsau.database
 
-import com.meloda.kubsau.base.isInDocker
+import com.meloda.kubsau.common.isInDocker
 import com.meloda.kubsau.database.departments.Departments
 import com.meloda.kubsau.database.sessions.Sessions
 import com.meloda.kubsau.database.users.Users
@@ -18,7 +18,7 @@ object DatabaseController {
         val driverClassName = "org.h2.Driver"
 
         val filePath = if (isInDocker) {
-            "/config/db/database.sql"
+            "/app/db/database.sql"
         } else {
             "${System.getProperty("user.dir")}/database.sql"
         }

@@ -1,6 +1,6 @@
 package com.meloda.kubsau.database.departments
 
-import com.meloda.kubsau.base.Dao
+import com.meloda.kubsau.database.Dao
 import com.meloda.kubsau.model.Department
 
 interface DepartmentsDao : Dao<Department> {

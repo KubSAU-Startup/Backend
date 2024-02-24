@@ -1,6 +1,6 @@
 package com.meloda.kubsau.route.department
 
-import com.meloda.kubsau.base.respondSuccess
+import com.meloda.kubsau.api.respondSuccess
 import com.meloda.kubsau.database.departments.departmentsDao
 import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.UnknownException

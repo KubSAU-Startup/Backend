@@ -1,6 +1,6 @@
 package com.meloda.kubsau.plugins
 
-import com.meloda.kubsau.base.Constants
+import com.meloda.kubsau.common.Constants
 import com.meloda.kubsau.route.account.account
 import com.meloda.kubsau.route.auth.auth
 import com.meloda.kubsau.route.department.departments

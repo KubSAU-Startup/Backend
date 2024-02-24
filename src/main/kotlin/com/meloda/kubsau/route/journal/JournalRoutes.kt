@@ -1,6 +1,6 @@
 package com.meloda.kubsau.route.journal
 
-import com.meloda.kubsau.base.respondSuccess
+import com.meloda.kubsau.api.respondSuccess
 import com.meloda.kubsau.model.Discipline
 import com.meloda.kubsau.model.Group
 import com.meloda.kubsau.model.Teacher

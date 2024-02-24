@@ -1,4 +1,4 @@
-package com.meloda.kubsau.base
+package com.meloda.kubsau.common
 
 object Constants {
 

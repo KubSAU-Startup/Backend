@@ -1,4 +1,4 @@
-package com.meloda.kubsau.model.api
+package com.meloda.kubsau.api.model
 
 data class ApiResponse<T>(
     val response: T?,

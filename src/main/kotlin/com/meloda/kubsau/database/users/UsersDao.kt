@@ -1,7 +1,6 @@
 package com.meloda.kubsau.database.users
 
-import com.meloda.kubsau.base.Dao
-import com.meloda.kubsau.model.Department
+import com.meloda.kubsau.database.Dao
 import com.meloda.kubsau.model.User
 
 interface UsersDao : Dao<User> {

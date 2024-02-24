@@ -1,7 +1,7 @@
-package com.meloda.kubsau.base
+package com.meloda.kubsau.api
 
-import com.meloda.kubsau.model.api.ApiError
-import com.meloda.kubsau.model.api.ApiResponse
+import com.meloda.kubsau.api.model.ApiError
+import com.meloda.kubsau.api.model.ApiResponse
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*

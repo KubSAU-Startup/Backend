@@ -1,6 +1,6 @@
 package com.meloda.kubsau.database.sessions
 
-import com.meloda.kubsau.base.Dao
+import com.meloda.kubsau.database.Dao
 import com.meloda.kubsau.model.Session
 
 interface SessionsDao : Dao<Session> {

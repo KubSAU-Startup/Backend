@@ -1,6 +1,6 @@
 package com.meloda.kubsau.route.auth
 
-import com.meloda.kubsau.base.respondSuccess
+import com.meloda.kubsau.api.respondSuccess
 import com.meloda.kubsau.database.sessions.sessionsDao
 import com.meloda.kubsau.database.users.usersDao
 import com.meloda.kubsau.errors.UnknownException
