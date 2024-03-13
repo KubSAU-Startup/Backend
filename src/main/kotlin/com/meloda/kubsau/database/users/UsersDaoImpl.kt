@@ -9,7 +9,7 @@ class UsersDaoImpl : UsersDao {
 
     override fun mapResultRow(row: ResultRow) = User(
         id = row[Users.id].value,
-        email = row[Users.email],
+        login = row[Users.login],
         password = row[Users.password],
         type = row[Users.type],
         departmentId = row[Users.departmentId]
@@ -27,31 +27,31 @@ class UsersDaoImpl : UsersDao {
             .singleOrNull()
     }
 
-    override suspend fun singleUser(email: String): User? = dbQuery {
+    override suspend fun singleUser(login: String): User? = dbQuery {
         Users
             .selectAll()
-            .where { Users.email eq email }
+            .where { Users.login eq login }
             .map(::mapResultRow)
             .singleOrNull()
     }
 
     override suspend fun addNewUser(
-        email: String,
+        login: String,
         password: String,
         type: Int,
         departmentId: Int
     ): User? = dbQuery {
         Users.insert {
-            it[Users.email] = email
+            it[Users.login] = login
             it[Users.password] = password
             it[Users.type] = type
             it[Users.departmentId] = departmentId
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 
-    override suspend fun editUser(id: Int, email: String, password: String): Boolean = dbQuery {
+    override suspend fun editUser(id: Int, login: String, password: String): Boolean = dbQuery {
         Users.update({ Users.id eq id }) {
-            it[Users.email] = email
+            it[Users.login] = login
             it[Users.password] = password
         } > 0
     }

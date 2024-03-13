@@ -1,11 +1,9 @@
 package com.meloda.kubsau.route.journal
 
 import com.meloda.kubsau.api.respondSuccess
-import com.meloda.kubsau.model.Discipline
-import com.meloda.kubsau.model.Group
-import com.meloda.kubsau.model.Teacher
-import com.meloda.kubsau.model.WorkType
+import com.meloda.kubsau.model.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.routing.*
 import kotlin.random.Random
 
@@ -141,6 +139,14 @@ private val students = List(10) {
     )
 }
 
+val departments = List(10) { index ->
+    Department(
+        id = index,
+        title = "Department #${index + 1}",
+        phone = "+7 (800) 555-35-35"
+    )
+}
+
 private val journal = List(10) { index ->
     JournalItem(
         student = students.random(),
@@ -157,37 +163,39 @@ private val journal = List(10) { index ->
 }
 
 fun Route.journals() {
-    route("/journals") {
-        get("worktypes") {
-            respondSuccess { workTypes }
-        }
-        get {
-            val params = call.request.queryParameters
-            val workTypeId = params["workTypeId"]?.toInt()
-            val disciplineId = params["disciplineId"]?.toInt()
-            val teacherId = params["teacherId"]?.toInt()
-            val departmentId = params["departmentId"]?.toInt()
-            val groupId = params["groupId"]?.toInt()
-
-            val filteredJournal = journal.filter { item ->
-                (item.work.id == workTypeId || workTypeId == null) &&
-                        (item.discipline.id == disciplineId || disciplineId == null) &&
-                        (item.teacher.id == teacherId || teacherId == null) &&
-                        (item.group.id == groupId || groupId == null) &&
-                        (item.teacher.departmentId == departmentId || departmentId == null)
+    authenticate {
+        route("/journals") {
+            get("worktypes") {
+                respondSuccess { workTypes }
             }
+            get {
+                val params = call.request.queryParameters
+                val workTypeId = params["workTypeId"]?.toInt()
+                val disciplineId = params["disciplineId"]?.toInt()
+                val teacherId = params["teacherId"]?.toInt()
+                val departmentId = params["departmentId"]?.toInt()
+                val groupId = params["groupId"]?.toInt()
 
-            respondSuccess {
-                GetJournalResponse(
-                    count = filteredJournal.size,
-                    offset = 0,
-                    journal = filteredJournal
-                )
+                val filteredJournal = journal.filter { item ->
+                    (item.work.type.id == workTypeId || workTypeId == null) &&
+                            (item.discipline.id == disciplineId || disciplineId == null) &&
+                            (item.teacher.id == teacherId || teacherId == null) &&
+                            (item.group.id == groupId || groupId == null) &&
+                            (item.teacher.departmentId == departmentId || departmentId == null)
+                }
+
+                respondSuccess {
+                    GetJournalResponse(
+                        count = filteredJournal.size,
+                        offset = 0,
+                        journal = filteredJournal
+                    )
+                }
             }
         }
+
+        filters()
     }
-
-    filters()
 }
 
 private data class GetJournalResponse(
@@ -200,20 +208,33 @@ private fun Route.filters() {
     get("/journals/filters") {
         respondSuccess {
             JournalFilters(
-                workTypes = workTypes,
-                disciplines = disciplines,
-                teachers = teachers,
-                groups = groups
+                workTypes = workTypes.map(WorkType::mapToFilter),
+                disciplines = disciplines.map(Discipline::mapToFilter),
+                teachers = teachers.map(Teacher::mapToFilter),
+                groups = groups.map(Group::mapToFilter),
+                departments = departments.map(Department::mapToFilter)
             )
         }
     }
 }
 
+private fun Filterable.mapToFilter(): JournalFilter =
+    JournalFilter(
+        id = this.id,
+        title = this.title
+    )
+
 private data class JournalFilters(
-    val workTypes: List<WorkType>,
-    val disciplines: List<Discipline>,
-    val teachers: List<Teacher>,
-    val groups: List<Group>
+    val workTypes: List<JournalFilter>,
+    val disciplines: List<JournalFilter>,
+    val teachers: List<JournalFilter>,
+    val groups: List<JournalFilter>,
+    val departments: List<JournalFilter>
+)
+
+private data class JournalFilter(
+    val id: Int,
+    val title: String
 )
 
 private data class JournalItem(
