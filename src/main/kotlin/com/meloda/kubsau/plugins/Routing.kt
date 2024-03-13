@@ -32,6 +32,7 @@ fun configureServer() {
             allowHeader(HttpHeaders.Authorization)
         }
 
+        configureAuthentication()
         configureExceptions()
         configureContentNegotiation()
 

@@ -1,7 +1,7 @@
 package com.meloda.kubsau.model
 
 data class Department(
-    val id: Int,
-    val title: String,
+    override val id: Int,
+    override val title: String,
     val phone: String
-)
+) : Filterable

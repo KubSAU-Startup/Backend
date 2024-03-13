@@ -1,11 +1,15 @@
 package com.meloda.kubsau.route.auth
 
+import com.auth0.jwt.JWT
+import com.auth0.jwt.algorithms.Algorithm
 import com.meloda.kubsau.api.respondSuccess
 import com.meloda.kubsau.database.sessions.sessionsDao
 import com.meloda.kubsau.database.users.usersDao
 import com.meloda.kubsau.errors.UnknownException
 import com.meloda.kubsau.errors.ValidationException
-import com.meloda.kubsau.model.User
+import com.meloda.kubsau.plugins.AUDIENCE
+import com.meloda.kubsau.plugins.ISSUER
+import com.meloda.kubsau.plugins.SECRET
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 
@@ -21,19 +25,21 @@ private fun Route.getToken() {
     get {
         try {
             val params = call.request.queryParameters
-            val email = params["email"]
+            val login = params["login"]
             val password = params["password"]
 
             val users = usersDao.allUsers()
 
-            val logins = users.map(User::email)
-            val passwords = users.map(User::password)
+            val loginsPasswords = users.map { user -> Pair(user.login, user.password) }
 
-            if (!logins.contains(email)) {
+            val logins = loginsPasswords.map { it.first }
+            val passwords = loginsPasswords.map { it.second }
+
+            if (!logins.contains(login)) {
                 throw WrongCredentialsException
             }
 
-            val loginIndex = logins.indexOf(email)
+            val loginIndex = logins.indexOf(login)
 
             if (passwords[loginIndex] != password) {
                 throw WrongCredentialsException
@@ -41,21 +47,24 @@ private fun Route.getToken() {
 
             val user = users[loginIndex]
 
-            val session = sessionsDao.singleSession(user.id) ?: throw UnknownException
+            val accessToken = JWT.create()
+                .withAudience(AUDIENCE)
+                .withIssuer(ISSUER)
+                .withClaim("login", login)
+                .sign(Algorithm.HMAC256(SECRET))
 
-            val userToken = session.accessToken
+            sessionsDao.addNewSession(user.id, accessToken)
 
             respondSuccess {
                 AuthResponse(
                     userId = user.id,
-                    accessToken = userToken
+                    accessToken = accessToken
                 )
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
-
 }
 
 private fun Route.getAll() {
