@@ -98,3 +98,4 @@ kotlin-ide/
 /.idea/kotlinc.xml
 /.idea/uiDesigner.xml
 /.idea/vcs.xml
+database.sql.mv.db
