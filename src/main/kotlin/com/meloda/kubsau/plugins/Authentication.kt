@@ -2,6 +2,7 @@ package com.meloda.kubsau.plugins
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import com.meloda.kubsau.PORT
 import com.meloda.kubsau.errors.SessionExpiredException
 import io.ktor.server.application.*
 import io.ktor.server.auth.*

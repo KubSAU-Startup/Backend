@@ -1,171 +1,21 @@
 package com.meloda.kubsau.route.journal
 
 import com.meloda.kubsau.api.respondSuccess
+import com.meloda.kubsau.database.departments.DepartmentsDao
+import com.meloda.kubsau.database.worktypes.WorkTypesDao
 import com.meloda.kubsau.model.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.routing.*
-import kotlin.random.Random
-
-private val names = listOf(
-    "Иванов Иван Иванович",
-    "Смирнова Мария Александровна",
-    "Кузнецов Александр Сергеевич",
-    "Попова Екатерина Дмитриевна",
-    "Васильев Дмитрий Петрович",
-    "Петрова Анна Алексеевна",
-    "Соколов Алексей Владимирович",
-    "Михайлова София Николаевна",
-    "Новиков Андрей Игоревич",
-    "Фёдорова Алиса Анатольевна",
-    "Морозов Сергей Александрович",
-    "Волкова Анастасия Денисовна",
-    "Алексеев Михаил Владимирович",
-    "Лебедева Елена Аркадьевна",
-    "Семёнов Артём Максимович",
-    "Егорова Виктория Васильевна",
-    "Павлов Илья Викторович",
-    "Козлова Дарья Владимировна",
-    "Степанов Максим Александрович",
-    "Иванова Полина Владимировна",
-    "Федоров Тимофей Алексеевич",
-    "Александрова Вероника Ивановна",
-    "Морозов Кирилл Алексеевич",
-    "Васильева Елизавета Алексеевна",
-    "Петров Антон Викторович",
-    "Степанова Валерия Сергеевна",
-    "Николаев Григорий Петрович",
-    "Максимова Юлия Владимировна",
-    "Ильин Даниил Александрович",
-    "Зайцева Анастасия Сергеевна",
-    "Соловьёв Павел Дмитриевич",
-    "Смирнова Влада Игоревна",
-    "Кузнецов Роман Павлович",
-    "Попова Арина Михайловна",
-    "Фёдоров Егор Дмитриевич",
-    "Михайлова Алёна Владимировна",
-    "Новиков Игорь Анатольевич",
-    "Фёдорова Варвара Андреевна",
-    "Александров Фёдор Алексеевич",
-    "Петрова Светлана Андреевна"
-)
-
-private val workTypesString = listOf(
-    "Курсовая", "Практика"
-)
-
-private val workTypes = List(workTypesString.size) { index ->
-    WorkType(
-        id = index,
-        title = workTypesString[index],
-        editable = true
-    )
-}
-
-private val disciplinesString = listOf(
-    "Математический анализ",
-    "Физика",
-    "Программирование",
-    "Экономика",
-    "История",
-    "Философия",
-    "Иностранный язык",
-    "Химия",
-    "Биология",
-    "Механика",
-    "Политология",
-    "Лингвистика",
-    "География",
-    "Социология",
-    "Психология",
-    "Финансы",
-    "Маркетинг",
-    "Архитектура",
-    "Медицина",
-    "Литература",
-    "Культурология",
-    "Религиоведение",
-    "Право",
-    "Театральное искусство",
-    "Информационные технологии",
-    "Экология",
-    "Искусство",
-    "Физическая культура",
-    "Графический дизайн",
-    "Музыка",
-    "Журналистика",
-    "Педагогика",
-    "Астрономия",
-    "Антропология",
-    "Кибербезопасность",
-    "Анатомия",
-    "Логика",
-    "Агрономия",
-    "Генетика"
-)
-
-private val disciplines = List(10) { index ->
-    Discipline(
-        id = index,
-        title = disciplinesString.random()
-    )
-}
-
-private val teachers = List(10) { index ->
-    val nameParts = names.random().split(" ")
-    Teacher(
-        id = index,
-        firstName = nameParts[1],
-        lastName = nameParts[0],
-        middleName = nameParts[2],
-        departmentId = 1
-    )
-}
-
-private val groupsString = listOf("ИТ", "ПИ", "БИ")
-
-private val groups = List(10) { index ->
-    Group(
-        id = index,
-        title = "${groupsString.random()}${Random.nextInt(from = 2001, until = 2006)}",
-        majorId = 1
-    )
-}
-
-private val students = List(10) {
-    JournalStudent(
-        fullName = names.random(),
-        status = if (Random.nextBoolean()) 1 else 0
-    )
-}
-
-val departments = List(10) { index ->
-    Department(
-        id = index,
-        title = "Department #${index + 1}",
-        phone = "+7 (800) 555-35-35"
-    )
-}
-
-private val journal = List(10) { index ->
-    JournalItem(
-        student = students.random(),
-        group = groups.random(),
-        discipline = disciplines.random(),
-        teacher = teachers.random(),
-        work = JournalWork(
-            id = Random.nextInt(from = 0, until = 101),
-            type = workTypes.random(),
-            registrationDate = getRandomUnixTime(1609459200L, 1708775961L),
-            title = if (Random.nextBoolean()) null else "Work title #${index + 1}"
-        )
-    )
-}
+import org.koin.ktor.ext.inject
 
 fun Route.journals() {
+    val workTypesDao by inject<WorkTypesDao>()
+
     authenticate {
         route("/journals") {
             get("worktypes") {
+                val workTypes = workTypesDao.allWorkTypes()
                 respondSuccess { workTypes }
             }
             get {
@@ -176,7 +26,7 @@ fun Route.journals() {
                 val departmentId = params["departmentId"]?.toInt()
                 val groupId = params["groupId"]?.toInt()
 
-                val filteredJournal = journal.filter { item ->
+                val filteredJournal = emptyList<JournalItem>()/*journal*/.filter { item ->
                     (item.work.type.id == workTypeId || workTypeId == null) &&
                             (item.discipline.id == disciplineId || disciplineId == null) &&
                             (item.teacher.id == teacherId || teacherId == null) &&
@@ -205,13 +55,19 @@ private data class GetJournalResponse(
 )
 
 private fun Route.filters() {
+    val departmentsDao by inject<DepartmentsDao>()
+    val workTypesDao by inject<WorkTypesDao>()
+
     get("/journals/filters") {
+        val workTypes = workTypesDao.allWorkTypes()
+        val departments = departmentsDao.allDepartments()
+
         respondSuccess {
             JournalFilters(
                 workTypes = workTypes.map(WorkType::mapToFilter),
-                disciplines = disciplines.map(Discipline::mapToFilter),
-                teachers = teachers.map(Teacher::mapToFilter),
-                groups = groups.map(Group::mapToFilter),
+                disciplines = emptyList(),//disciplines.map(Discipline::mapToFilter),
+                teachers = emptyList(),// teachers.map(Teacher::mapToFilter),
+                groups = emptyList(),// groups.map(Group::mapToFilter),
                 departments = departments.map(Department::mapToFilter)
             )
         }
@@ -256,12 +112,3 @@ private data class JournalWork(
     val registrationDate: Long,
     val title: String?
 )
-
-
-fun getRandomUnixTime(startTime: Long, endTime: Long): Long {
-    require(startTime < endTime) { "Start time must be before end time" }
-    val randomUnixTime = Random.nextLong(startTime, endTime)
-    return randomUnixTime
-}
-
-
