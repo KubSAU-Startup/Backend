@@ -45,5 +45,3 @@ class SessionsDaoImpl : SessionsDao {
         } > 0
     }
 }
-
-val sessionsDao: SessionsDao = SessionsDaoImpl()

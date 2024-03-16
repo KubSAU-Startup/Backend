@@ -3,8 +3,8 @@ package com.meloda.kubsau.route.auth
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.meloda.kubsau.api.respondSuccess
-import com.meloda.kubsau.database.sessions.sessionsDao
-import com.meloda.kubsau.database.users.usersDao
+import com.meloda.kubsau.database.sessions.SessionsDao
+import com.meloda.kubsau.database.users.UsersDao
 import com.meloda.kubsau.errors.UnknownException
 import com.meloda.kubsau.errors.ValidationException
 import com.meloda.kubsau.plugins.AUDIENCE
@@ -12,6 +12,7 @@ import com.meloda.kubsau.plugins.ISSUER
 import com.meloda.kubsau.plugins.SECRET
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
 
 fun Route.auth() {
     route("/auth") {
@@ -22,6 +23,9 @@ fun Route.auth() {
 }
 
 private fun Route.getToken() {
+    val usersDao by inject<UsersDao>()
+    val sessionsDao by inject<SessionsDao>()
+
     get {
         try {
             val params = call.request.queryParameters
@@ -68,6 +72,8 @@ private fun Route.getToken() {
 }
 
 private fun Route.getAll() {
+    val usersDao by inject<UsersDao>()
+
     get("all") {
         val users = usersDao.allUsers()
         respondSuccess { users }
@@ -76,6 +82,8 @@ private fun Route.getAll() {
 
 // TODO: 24/02/2024, Danil Nikolaev: remove or move out
 private fun Route.deleteUser() {
+    val usersDao by inject<UsersDao>()
+
     delete("{id}") {
         val userId = call.parameters["id"]?.toInt() ?: throw ValidationException("id is empty")
 

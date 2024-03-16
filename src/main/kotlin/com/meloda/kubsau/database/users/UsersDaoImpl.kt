@@ -60,5 +60,3 @@ class UsersDaoImpl : UsersDao {
         Users.deleteWhere { Users.id eq id } > 0
     }
 }
-
-val usersDao: UsersDao = UsersDaoImpl()

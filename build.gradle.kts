@@ -39,6 +39,12 @@ dependencies {
     val h2Version = "2.2.224"
 
     implementation("com.h2database:h2:$h2Version")
+
+    val koinVersion = "3.5.3"
+    implementation(platform("io.insert-koin:koin-bom:$koinVersion"))
+    implementation("io.insert-koin:koin-core")
+    implementation("io.insert-koin:koin-ktor")
+    implementation("io.insert-koin:koin-logger-slf4j")
 }
 
 kotlin {

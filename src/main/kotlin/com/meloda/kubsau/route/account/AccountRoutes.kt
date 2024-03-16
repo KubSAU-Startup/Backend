@@ -1,48 +1,54 @@
 package com.meloda.kubsau.route.account
 
 import com.meloda.kubsau.api.respondSuccess
-import com.meloda.kubsau.database.sessions.sessionsDao
-import com.meloda.kubsau.database.users.usersDao
+import com.meloda.kubsau.database.sessions.SessionsDao
+import com.meloda.kubsau.database.users.UsersDao
 import com.meloda.kubsau.errors.SessionExpiredException
 import com.meloda.kubsau.errors.UnknownException
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
 import kotlin.random.Random
 
 fun Route.account() {
-    route("/account") {
-        getAccountInfoRoute()
-        getAllTokensRoute()
+    authenticate {
+        route("/account") {
+            getAccountInfoRoute()
+            getAllTokensRoute()
+        }
     }
 }
 
 private fun Route.getAccountInfoRoute() {
-    authenticate {
-        get {
-            val principal = call.principal<JWTPrincipal>()
+    val usersDao by inject<UsersDao>()
+    val sessionsDao by inject<SessionsDao>()
 
-            val login = principal?.payload?.getClaim("login")?.asString() ?: throw UnknownException
+    get {
+        val principal = call.principal<JWTPrincipal>()
 
-            val userId = usersDao.singleUser(login = login)?.id ?: throw UnknownException
+        val login = principal?.payload?.getClaim("login")?.asString() ?: throw UnknownException
 
-            val session = sessionsDao.singleSession(userId = userId) ?: throw SessionExpiredException
-            val user = usersDao.singleUser(id = session.userId) ?: throw UnknownException
+        val userId = usersDao.singleUser(login = login)?.id ?: throw UnknownException
 
-            respondSuccess {
-                AccountInfo(
-                    id = user.id,
-                    type = Random.nextInt(),
-                    login = user.login,
-                    departmentId = Random.nextInt()
-                )
-            }
+        val session = sessionsDao.singleSession(userId = userId) ?: throw SessionExpiredException
+        val user = usersDao.singleUser(id = session.userId) ?: throw UnknownException
+
+        respondSuccess {
+            AccountInfo(
+                id = user.id,
+                type = Random.nextInt(),
+                login = user.login,
+                departmentId = Random.nextInt()
+            )
         }
     }
 }
 
 private fun Route.getAllTokensRoute() {
+    val sessionsDao by inject<SessionsDao>()
+
     get("all") {
         val sessions = sessionsDao.allSessions()
         respondSuccess { sessions }

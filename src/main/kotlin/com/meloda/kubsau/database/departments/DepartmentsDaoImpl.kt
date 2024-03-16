@@ -38,5 +38,3 @@ class DepartmentsDaoImpl : DepartmentsDao {
         Departments.deleteWhere { Departments.id eq id } > 0
     }
 }
-
-val departmentsDao: DepartmentsDao = DepartmentsDaoImpl()
