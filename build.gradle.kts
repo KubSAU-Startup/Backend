@@ -9,7 +9,7 @@ application {
 }
 
 group = "com.meloda.test.kubsautestbackend"
-version = "0.0.1"
+version = "0.0.6"
 
 repositories {
     mavenCentral()

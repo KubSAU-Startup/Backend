@@ -5,8 +5,8 @@ import com.meloda.kubsau.model.Group
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.upsert
 
 class GroupsDaoImpl : GroupsDao {
     override suspend fun allGroups(): List<Group> = dbQuery {
@@ -22,7 +22,7 @@ class GroupsDaoImpl : GroupsDao {
     }
 
     override suspend fun addNewGroup(title: String, majorId: Int): Group? = dbQuery {
-        Groups.upsert {
+        Groups.insert {
             it[Groups.title] = title
             it[Groups.majorId] = majorId
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
@@ -32,9 +32,5 @@ class GroupsDaoImpl : GroupsDao {
         Groups.deleteWhere { Groups.id eq groupId } > 0
     }
 
-    override fun mapResultRow(row: ResultRow): Group = Group(
-        id = row[Groups.id].value,
-        title = row[Groups.title],
-        majorId = row[Groups.majorId]
-    )
+    override fun mapResultRow(row: ResultRow): Group = Group.mapResultRow(row)
 }

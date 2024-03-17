@@ -9,6 +9,6 @@ object Works : IntIdTable() {
     val typeId = integer("typeId").references(WorkTypes.id)
     val disciplineId = integer("disciplineId").references(Disciplines.id)
     val studentId = integer("studentId").references(Students.id)
-    val registrationDate = integer("registrationDate")
+    val registrationDate = long("registrationDate")
     val title = text("title")
 }
