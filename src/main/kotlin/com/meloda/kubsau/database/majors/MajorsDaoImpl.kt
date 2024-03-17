@@ -5,8 +5,8 @@ import com.meloda.kubsau.model.Major
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.upsert
 
 class MajorsDaoImpl : MajorsDao {
     override suspend fun allMajors(): List<Major> = dbQuery {
@@ -26,7 +26,7 @@ class MajorsDaoImpl : MajorsDao {
         title: String,
         abbreviation: String
     ): Major? = dbQuery {
-        Majors.upsert {
+        Majors.insert {
             it[Majors.code] = code
             it[Majors.title] = title
             it[Majors.abbreviation] = abbreviation

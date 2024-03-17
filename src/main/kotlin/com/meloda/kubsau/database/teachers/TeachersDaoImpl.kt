@@ -5,8 +5,8 @@ import com.meloda.kubsau.model.Teacher
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.upsert
 
 class TeachersDaoImpl : TeachersDao {
     override suspend fun allTeachers(): List<Teacher> = dbQuery {
@@ -27,7 +27,7 @@ class TeachersDaoImpl : TeachersDao {
         middleName: String,
         departmentId: Int
     ): Teacher? = dbQuery {
-        Teachers.upsert {
+        Teachers.insert {
             it[Teachers.firstName] = firstName
             it[Teachers.lastName] = lastName
             it[Teachers.middleName] = middleName
@@ -39,11 +39,5 @@ class TeachersDaoImpl : TeachersDao {
         Teachers.deleteWhere { Teachers.id eq teacherId } > 0
     }
 
-    override fun mapResultRow(row: ResultRow): Teacher = Teacher(
-        id = row[Teachers.id].value,
-        firstName = row[Teachers.firstName],
-        lastName = row[Teachers.lastName],
-        middleName = row[Teachers.middleName],
-        departmentId = row[Teachers.departmentId]
-    )
+    override fun mapResultRow(row: ResultRow): Teacher = Teacher.mapResultRow(row)
 }

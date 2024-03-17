@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.meloda.kubsau.PORT
 import com.meloda.kubsau.errors.SessionExpiredException
+import com.meloda.kubsau.startTime
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -15,7 +16,7 @@ const val AUDIENCE = "http://0.0.0.0:$PORT/auth"
 const val REALM = "Access to data"
 
 fun Application.configureAuthentication() {
-    print("SECRET: $SECRET")
+    println("SECRET: $SECRET")
     install(Authentication) {
         jwt {
             realm = REALM
@@ -39,4 +40,10 @@ fun Application.configureAuthentication() {
             challenge { _, _ -> throw SessionExpiredException }
         }
     }
+
+    val endTime = System.currentTimeMillis()
+    val difference = endTime - startTime
+
+
+    println("Server is ready in ${difference}ms")
 }

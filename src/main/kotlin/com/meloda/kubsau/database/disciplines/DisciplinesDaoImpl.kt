@@ -31,8 +31,5 @@ class DisciplinesDaoImpl : DisciplinesDao {
         Disciplines.deleteWhere { Disciplines.id eq disciplineId } > 0
     }
 
-    override fun mapResultRow(row: ResultRow): Discipline = Discipline(
-        id = row[Disciplines.id].value,
-        title = row[Disciplines.title]
-    )
+    override fun mapResultRow(row: ResultRow): Discipline = Discipline.mapResultRow(row)
 }
