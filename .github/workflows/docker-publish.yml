@@ -7,11 +7,11 @@ name: Docker
 
 on:
   push:
-    branches: [ "ci-cd-docker-publish-test" ]
+    branches: [ "dev" ]
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
   pull_request:
-    branches: [ "ci-cd-docker-publish-test" ]
+    branches: [ "dev" ]
 
 env:
   # Use docker.io for Docker Hub if empty
