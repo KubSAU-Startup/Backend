@@ -27,6 +27,7 @@ dependencies {
     implementation("io.ktor:ktor-server-auto-head-response:$ktorVersion")
     implementation("io.ktor:ktor-server-auth:$ktorVersion")
     implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion")
+    implementation("io.ktor:ktor-server-call-logging:$ktorVersion")
 
     implementation("com.google.code.gson:gson:2.10.1")
 
@@ -41,6 +42,7 @@ dependencies {
     implementation("com.h2database:h2:$h2Version")
 
     val koinVersion = "3.5.3"
+
     implementation(platform("io.insert-koin:koin-bom:$koinVersion"))
     implementation("io.insert-koin:koin-core")
     implementation("io.insert-koin:koin-ktor")
@@ -50,5 +52,5 @@ dependencies {
 }
 
 kotlin {
-    jvmToolchain(8)
+    jvmToolchain(17)
 }

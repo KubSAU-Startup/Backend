@@ -23,9 +23,11 @@ import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.autohead.*
+import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.cors.routing.*
 import kotlinx.coroutines.runBlocking
 import org.koin.ktor.ext.inject
+import org.slf4j.event.Level
 import kotlin.random.Random
 import kotlin.system.measureTimeMillis
 
@@ -44,6 +46,10 @@ private fun configureServer() {
     val server = embeddedServer(Netty, PORT) {
         configureKoin()
         prepopulateDB()
+
+        install(CallLogging) {
+            level = Level.DEBUG
+        }
 
         install(AutoHeadResponse)
         install(CORS) {
