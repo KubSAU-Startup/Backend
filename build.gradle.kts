@@ -45,8 +45,10 @@ dependencies {
     implementation("io.insert-koin:koin-core")
     implementation("io.insert-koin:koin-ktor")
     implementation("io.insert-koin:koin-logger-slf4j")
+
+    implementation("org.xerial:sqlite-jdbc:3.45.0.0")
 }
 
 kotlin {
-    jvmToolchain(8)
+    jvmToolchain(19)
 }

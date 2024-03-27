@@ -26,15 +26,15 @@ import org.jetbrains.exposed.sql.transactions.transaction
 object DatabaseController {
 
     fun init() {
-        val driverClassName = "org.h2.Driver"
+        val driverClassName = "org.sqlite.JDBC"
 
         val filePath = if (isInDocker) {
-            "/config/db/database.sql"
+            "/config/db/database.db"
         } else {
-            "${System.getProperty("user.dir")}/database.sql"
+            "${System.getProperty("user.dir")}/database.db"
         }
 
-        val jdbcURL = "jdbc:h2:file:$filePath"
+        val jdbcURL = "jdbc:sqlite:$filePath"
 
         val database = Database.connect(jdbcURL, driverClassName)
         transaction(database) {

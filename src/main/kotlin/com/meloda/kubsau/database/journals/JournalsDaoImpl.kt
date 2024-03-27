@@ -7,31 +7,28 @@ import com.meloda.kubsau.database.students.Students
 import com.meloda.kubsau.database.teachers.Teachers
 import com.meloda.kubsau.database.works.Works
 import com.meloda.kubsau.model.Journal
-import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.selectAll
 
 class JournalsDaoImpl : JournalsDao {
     override suspend fun allJournals(): List<Journal> = dbQuery {
         Journals
-            .innerJoin(Groups)
-            .crossJoin(Students)
-            .innerJoin(Disciplines)
-            .innerJoin(Teachers)
-            .innerJoin(Works)
+            .innerJoin(Students, { studentId }, { Students.id })
+            .innerJoin(Groups, { Journals.groupId }, { Groups.id })
+            .innerJoin(Disciplines, { Journals.disciplineId }, { Disciplines.id })
+            .innerJoin(Teachers, { Journals.teacherId }, { Teachers.id })
+            .innerJoin(Works, { Journals.workId }, { Works.id })
             .selectAll()
             .map(::mapResultRow)
     }
 
     override suspend fun singleJournal(journalId: Int): Journal? = dbQuery {
         Journals
-            .innerJoin(Groups)
-            .innerJoin(Students)
-            .innerJoin(Disciplines)
-            .innerJoin(Teachers)
-            .innerJoin(Works)
+            .innerJoin(Students, { studentId }, { Students.id })
+            .innerJoin(Groups, { Journals.groupId }, { Groups.id })
+            .innerJoin(Disciplines, { Journals.disciplineId }, { Disciplines.id })
+            .innerJoin(Teachers, { Journals.teacherId }, { Teachers.id })
+            .innerJoin(Works, { Journals.workId }, { Works.id })
             .selectAll()
             .where { Journals.id eq journalId }
             .map(::mapResultRow)
@@ -48,11 +45,11 @@ class JournalsDaoImpl : JournalsDao {
     ): List<Journal> = dbQuery {
         // TODO: 17/03/2024, Danil Nikolaev: filter in db, not in code
         Journals
-            .innerJoin(Groups)
-            .innerJoin(Students)
-            .innerJoin(Disciplines)
-            .innerJoin(Teachers)
-            .innerJoin(Works)
+            .innerJoin(Students, { Journals.studentId }, { Students.id })
+            .innerJoin(Groups, { Journals.groupId }, { Groups.id })
+            .innerJoin(Disciplines, { Journals.disciplineId }, { Disciplines.id })
+            .innerJoin(Teachers, { Journals.teacherId }, { Teachers.id })
+            .innerJoin(Works, { Journals.workId }, { Works.id })
             .selectAll()
             .map(::mapResultRow)
             .filter { item ->

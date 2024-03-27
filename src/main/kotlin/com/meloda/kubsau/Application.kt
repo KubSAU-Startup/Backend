@@ -482,7 +482,9 @@ private fun Application.createDummyJournalEntries() {
 
     journalsDao.apply {
         runBlocking {
-            if (allJournals().size < 10) {
+            val journals = journalsDao.allJournals()
+
+            if (journals.size < 10) {
                 println("Creating dummy journal entries...")
 
                 val time = measureTimeMillis {
