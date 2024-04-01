@@ -5,6 +5,7 @@ import com.meloda.kubsau.route.account.account
 import com.meloda.kubsau.route.auth.auth
 import com.meloda.kubsau.route.department.departments
 import com.meloda.kubsau.route.journal.journals
+import com.meloda.kubsau.route.qr.qr
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -21,5 +22,6 @@ fun Application.routing() {
         account()
         journals()
         departments()
+        qr()
     }
 }
