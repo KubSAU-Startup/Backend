@@ -26,5 +26,6 @@ fun Application.routing() {
         journals()
         departments()
         qr()
+
     }
 }
