@@ -10,7 +10,7 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   version: 0.0.7
 servers:
-  - url: https://testbackend.melod1n.dedyn.io/openapi
+  - url: https://testbackend.melod1n.dedyn.io/
 tags:
   - name: authorization
     description: Всё, связанное с авторизацией
@@ -36,6 +36,12 @@ paths:
       responses:
         '200':
           description: успешная выдача
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Auth'
+        '401':
+          description: неверные данные
           content:
             application/json:
               schema:
