@@ -6,6 +6,7 @@ plugins {
 
 application {
     mainClass.set("com.meloda.kubsau.ApplicationKt")
+    applicationDefaultJvmArgs = listOf("-Dio.ktor.development=true")
 }
 
 group = "com.meloda.test.kubsautestbackend"

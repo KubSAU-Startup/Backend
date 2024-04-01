@@ -43,7 +43,11 @@ fun main() {
 }
 
 private fun configureServer() {
-    val server = embeddedServer(Netty, PORT) {
+    val server = embeddedServer(
+        factory = Netty,
+        port = PORT,
+        watchPaths = listOf("classes")
+    ) {
         configureKoin()
         prepopulateDB()
 
