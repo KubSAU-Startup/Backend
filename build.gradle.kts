@@ -9,7 +9,7 @@ application {
 }
 
 group = "com.meloda.test.kubsautestbackend"
-version = "0.0.6"
+version = "0.0.7"
 
 repositories {
     mavenCentral()
@@ -28,10 +28,11 @@ dependencies {
     implementation("io.ktor:ktor-server-auth:$ktorVersion")
     implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion")
     implementation("io.ktor:ktor-server-call-logging:$ktorVersion")
+    implementation("io.ktor:ktor-server-openapi:$ktorVersion")
 
     implementation("com.google.code.gson:gson:2.10.1")
 
-    val exposedVersion = "0.46.0"
+    val exposedVersion = "0.49.0"
 
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")

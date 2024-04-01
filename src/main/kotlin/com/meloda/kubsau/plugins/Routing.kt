@@ -7,11 +7,14 @@ import com.meloda.kubsau.route.department.departments
 import com.meloda.kubsau.route.journal.journals
 import com.meloda.kubsau.route.qr.qr
 import io.ktor.server.application.*
+import io.ktor.server.plugins.openapi.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Application.routing() {
     routing {
+        openAPI(path = "openapi", swaggerFile = "openapi/openapi.yaml")
+
         get("/") {
             call.respondText {
                 "Server is working.\nVersion: ${Constants.BACKEND_VERSION}"
