@@ -13,6 +13,13 @@ class StudentsDaoImpl : StudentsDao {
         Students.selectAll().map(::mapResultRow)
     }
 
+    override suspend fun allStudentsByGroupId(groupId: Int): List<Student> = dbQuery {
+        Students
+            .selectAll()
+            .where { Students.groupId eq groupId }
+            .map(::mapResultRow)
+    }
+
     override suspend fun singleStudent(studentId: Int): Student? = dbQuery {
         Students
             .selectAll()
