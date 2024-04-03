@@ -7,8 +7,10 @@ import com.meloda.kubsau.database.groups.Groups
 import com.meloda.kubsau.database.journals.Journals
 import com.meloda.kubsau.database.majors.Majors
 import com.meloda.kubsau.database.programs.Programs
+import com.meloda.kubsau.database.programsdisciplines.ProgramsDisciplines
 import com.meloda.kubsau.database.sessions.Sessions
 import com.meloda.kubsau.database.specializations.Specializations
+import com.meloda.kubsau.database.specializationsdisciplines.SpecializationsDisciplines
 import com.meloda.kubsau.database.students.Students
 import com.meloda.kubsau.database.teachers.Teachers
 import com.meloda.kubsau.database.teachersdisciplines.TeachersDisciplines
@@ -42,8 +44,8 @@ object DatabaseController {
             SchemaUtils.create(
                 Departments, Disciplines, Groups,
                 Journals, Majors, Programs,
-                Sessions, Specializations,
-                Students, Teachers,
+                ProgramsDisciplines, Sessions, Specializations,
+                SpecializationsDisciplines, Students, Teachers,
                 TeachersDisciplines, Users, Works,
                 WorkTypes
             )

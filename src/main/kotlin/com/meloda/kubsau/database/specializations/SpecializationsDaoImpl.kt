@@ -32,8 +32,5 @@ class SpecializationsDaoImpl : SpecializationsDao {
         Specializations.deleteWhere { Specializations.id eq specializationId } > 0
     }
 
-    override fun mapResultRow(row: ResultRow): Specialization = Specialization(
-        id = row[Specializations.id].value,
-        title = row[Specializations.title]
-    )
+    override fun mapResultRow(row: ResultRow): Specialization = Specialization.mapResultRow(row)
 }

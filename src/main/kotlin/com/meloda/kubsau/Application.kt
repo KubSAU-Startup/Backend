@@ -9,7 +9,9 @@ import com.meloda.kubsau.database.groups.GroupsDao
 import com.meloda.kubsau.database.journals.JournalsDao
 import com.meloda.kubsau.database.majors.MajorsDao
 import com.meloda.kubsau.database.programs.ProgramsDao
+import com.meloda.kubsau.database.programsdisciplines.ProgramsDisciplinesDao
 import com.meloda.kubsau.database.specializations.SpecializationsDao
+import com.meloda.kubsau.database.specializationsdisciplines.SpecializationsDisciplinesDao
 import com.meloda.kubsau.database.students.StudentsDao
 import com.meloda.kubsau.database.teachers.TeachersDao
 import com.meloda.kubsau.database.teachersdisciplines.TeachersDisciplinesDao
@@ -93,6 +95,8 @@ private fun Application.prepopulateDB() {
     createDummyStudents()
     createDummyTeachers()
     createDummyDisciplines()
+    createDummyProgramsDisciplines()
+    createDummySpecializationsDisciplines()
     createDummyTeachersDisciplines()
     createDummyJournalWorks()
     createDummyJournalEntries()
@@ -322,20 +326,72 @@ private fun Application.createDummyDisciplines() {
     }
 }
 
+private fun Application.createDummyProgramsDisciplines() {
+    val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
+    val programsDao by inject<ProgramsDao>()
+    val disciplinesDao by inject<DisciplinesDao>()
+
+    runBlocking {
+        if (programsDisciplinesDao.allItems().size < 100) {
+            println("Creating dummy programs-disciplines references...")
+
+            val time = measureTimeMillis {
+                val programIds = programsDao.allPrograms().map(Program::id)
+                val disciplineIds = disciplinesDao.allDisciplines().map(Discipline::id)
+
+                repeat(100) {
+                    programsDisciplinesDao.addNewReference(
+                        programId = programIds.random(),
+                        disciplineId = disciplineIds.random()
+                    )
+                }
+            }
+
+            println("Dummy programs-disciplines references created. Took ${time}ms")
+        }
+    }
+}
+
+private fun Application.createDummySpecializationsDisciplines() {
+    val specializationsDisciplinesDao by inject<SpecializationsDisciplinesDao>()
+    val specializationsDao by inject<SpecializationsDao>()
+    val disciplinesDao by inject<DisciplinesDao>()
+
+    runBlocking {
+        if (specializationsDisciplinesDao.allItems().size < 100) {
+            println("Creating dummy specializations-disciplines references...")
+
+            val time = measureTimeMillis {
+                val specializationIds = specializationsDao.allSpecializations().map(Specialization::id)
+                val disciplineIds = disciplinesDao.allDisciplines().map(Discipline::id)
+
+                repeat(100) {
+                    specializationsDisciplinesDao.addNewReference(
+                        specializationId = specializationIds.random(),
+                        disciplineId = disciplineIds.random()
+                    )
+                }
+            }
+
+            println("Dummy specializations-disciplines references created. Took ${time}ms")
+        }
+    }
+}
+
 private fun Application.createDummyTeachersDisciplines() {
     val teachersDisciplinesDao by inject<TeachersDisciplinesDao>()
     val teachersDao by inject<TeachersDao>()
     val disciplinesDao by inject<DisciplinesDao>()
 
     runBlocking {
-        if (teachersDisciplinesDao.allItems().size < 10) {
+        if (teachersDisciplinesDao.allItems().size < 100) {
             println("Creating dummy teachers-disciplines references...")
 
             val time = measureTimeMillis {
                 val teacherIds = teachersDao.allTeachers().map(Teacher::id)
                 val disciplineIds = disciplinesDao.allDisciplines().map(Discipline::id)
 
-                repeat(10) {
+                repeat(100) {
                     teachersDisciplinesDao.addNewReference(
                         teacherId = teacherIds.random(),
                         disciplineId = disciplineIds.random()

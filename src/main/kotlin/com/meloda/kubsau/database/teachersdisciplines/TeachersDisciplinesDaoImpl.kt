@@ -43,16 +43,7 @@ class TeachersDisciplinesDaoImpl : TeachersDisciplinesDao {
     }
 
 
-    override fun mapFirstResultRow(row: ResultRow): Teacher = Teacher(
-        id = row[Teachers.id].value,
-        firstName = row[Teachers.firstName],
-        lastName = row[Teachers.lastName],
-        middleName = row[Teachers.middleName],
-        departmentId = row[Teachers.departmentId]
-    )
+    override fun mapFirstResultRow(row: ResultRow): Teacher = Teacher.mapResultRow(row)
 
-    override fun mapSecondResultRow(row: ResultRow): Discipline = Discipline(
-        id = row[Disciplines.id].value,
-        title = row[Disciplines.title]
-    )
+    override fun mapSecondResultRow(row: ResultRow): Discipline = Discipline.mapResultRow(row)
 }

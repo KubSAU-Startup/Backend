@@ -12,10 +12,14 @@ import com.meloda.kubsau.database.majors.MajorsDao
 import com.meloda.kubsau.database.majors.MajorsDaoImpl
 import com.meloda.kubsau.database.programs.ProgramsDao
 import com.meloda.kubsau.database.programs.ProgramsDaoImpl
+import com.meloda.kubsau.database.programsdisciplines.ProgramsDisciplinesDao
+import com.meloda.kubsau.database.programsdisciplines.ProgramsDisciplinesDaoImpl
 import com.meloda.kubsau.database.sessions.SessionsDao
 import com.meloda.kubsau.database.sessions.SessionsDaoImpl
 import com.meloda.kubsau.database.specializations.SpecializationsDao
 import com.meloda.kubsau.database.specializations.SpecializationsDaoImpl
+import com.meloda.kubsau.database.specializationsdisciplines.SpecializationsDisciplinesDao
+import com.meloda.kubsau.database.specializationsdisciplines.SpecializationsDisciplinesDaoImpl
 import com.meloda.kubsau.database.students.StudentsDao
 import com.meloda.kubsau.database.students.StudentsDaoImpl
 import com.meloda.kubsau.database.teachers.TeachersDao
@@ -39,8 +43,10 @@ val databaseModule = module {
     singleOf(::JournalsDaoImpl) bind JournalsDao::class
     singleOf(::MajorsDaoImpl) bind MajorsDao::class
     singleOf(::ProgramsDaoImpl) bind ProgramsDao::class
+    singleOf(::ProgramsDisciplinesDaoImpl) bind ProgramsDisciplinesDao::class
     singleOf(::SessionsDaoImpl) bind SessionsDao::class
     singleOf(::SpecializationsDaoImpl) bind SpecializationsDao::class
+    singleOf(::SpecializationsDisciplinesDaoImpl) bind SpecializationsDisciplinesDao::class
     singleOf(::StudentsDaoImpl) bind StudentsDao::class
     singleOf(::TeachersDaoImpl) bind TeachersDao::class
     singleOf(::TeachersDisciplinesDaoImpl) bind TeachersDisciplinesDao::class
