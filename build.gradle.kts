@@ -11,7 +11,7 @@ application {
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=true")
 }
 
-group = "com.meloda.test.kubsautestbackend"
+group = "com.meloda.test.kubsaubackend"
 version = "0.0.8"
 
 repositories {
@@ -19,7 +19,7 @@ repositories {
 }
 
 dependencies {
-    val ktorVersion = "2.3.7"
+    val ktorVersion = "2.3.10"
 
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
