@@ -1,51 +1,26 @@
 package com.meloda.kubsau.plugins
 
 import com.meloda.kubsau.common.Constants
-import com.meloda.kubsau.common.isInDocker
 import com.meloda.kubsau.route.account.account
 import com.meloda.kubsau.route.auth.auth
 import com.meloda.kubsau.route.department.departments
+import com.meloda.kubsau.route.disciplines.disciplines
+import com.meloda.kubsau.route.groups.groups
 import com.meloda.kubsau.route.journal.journals
-import io.ktor.http.*
+import com.meloda.kubsau.route.majors.majors
+import com.meloda.kubsau.route.programs.programs
+import com.meloda.kubsau.route.qr.qr
+import com.meloda.kubsau.route.specializations.specializations
+import com.meloda.kubsau.route.students.students
+import com.meloda.kubsau.route.teachers.teachers
+import com.meloda.kubsau.route.users.users
+import com.meloda.kubsau.route.works.works
+import com.meloda.kubsau.route.worktypes.workTypes
 import io.ktor.server.application.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
-import io.ktor.server.plugins.autohead.*
-import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-const val PORT = 8080
-
-fun configureServer() {
-    val server = embeddedServer(Netty, PORT) {
-        install(AutoHeadResponse)
-        install(CORS) {
-            anyHost()
-
-            allowMethod(HttpMethod.Get)
-            allowMethod(HttpMethod.Post)
-            allowMethod(HttpMethod.Delete)
-
-            allowHeader(HttpHeaders.ContentType)
-            allowHeader(HttpHeaders.Accept)
-            allowHeader(HttpHeaders.Authorization)
-        }
-
-        configureExceptions()
-        configureContentNegotiation()
-
-        routing()
-    }
-
-    println("Server's version: ${Constants.BACKEND_VERSION}")
-    println("Is docker: $isInDocker")
-    println("Server is working on port: $PORT")
-
-    server.start(wait = true)
-}
-
-private fun Application.routing() {
+fun Application.routing() {
     routing {
         get("/") {
             call.respondText {
@@ -57,5 +32,16 @@ private fun Application.routing() {
         account()
         journals()
         departments()
+        qr()
+        disciplines()
+        students()
+        workTypes()
+        programs()
+        groups()
+        works()
+        users()
+        teachers()
+        specializations()
+        majors()
     }
 }

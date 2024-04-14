@@ -33,7 +33,7 @@ class SessionsDaoImpl : SessionsDao {
     }
 
     override suspend fun addNewSession(userId: Int, accessToken: String): Session? = dbQuery {
-        Sessions.insert {
+        Sessions.upsert {
             it[Sessions.userId] = userId
             it[Sessions.accessToken] = accessToken
         }.resultedValues?.singleOrNull()?.let(this::mapResultRow)
@@ -45,5 +45,3 @@ class SessionsDaoImpl : SessionsDao {
         } > 0
     }
 }
-
-val sessionsDao: SessionsDao = SessionsDaoImpl()
