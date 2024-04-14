@@ -31,10 +31,9 @@ object DatabaseController {
     fun init() {
         val driverClassName = "org.sqlite.JDBC"
 
-        val userDir = System.getProperty("user.dir")
-        println("USER_DIR: $userDir")
+        val userDir = if (isInDocker) "" else System.getProperty("user.dir")
 
-        val folderPath = "${if (!isInDocker) System.getProperty("user.dir") else ""}/config/db"
+        val folderPath = "$userDir/config/db"
         val filePath = "$folderPath/database.db"
 
         File(folderPath).apply {
