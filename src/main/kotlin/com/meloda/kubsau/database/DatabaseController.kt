@@ -24,16 +24,21 @@ import org.jetbrains.exposed.sql.StdOutSqlLogger
 import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.io.File
 
 object DatabaseController {
 
     fun init() {
         val driverClassName = "org.sqlite.JDBC"
 
-        val filePath = if (isInDocker) {
-            "/config/db/database.db"
-        } else {
-            "${System.getProperty("user.dir")}/database.db"
+        val userDir = System.getProperty("user.dir")
+        println("USER_DIR: $userDir")
+
+        val folderPath = "${if (!isInDocker) System.getProperty("user.dir") else ""}/config/db"
+        val filePath = "$folderPath/database.db"
+
+        File(folderPath).apply {
+            if (!exists()) mkdirs()
         }
 
         val jdbcURL = "jdbc:sqlite:$filePath"
