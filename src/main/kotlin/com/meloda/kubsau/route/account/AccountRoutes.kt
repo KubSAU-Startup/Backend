@@ -10,7 +10,6 @@ import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
-import kotlin.random.Random
 
 fun Route.account() {
     authenticate {
@@ -38,9 +37,9 @@ private fun Route.getAccountInfoRoute() {
         respondSuccess {
             AccountInfo(
                 id = user.id,
-                type = Random.nextInt(),
+                type = user.type,
                 login = user.login,
-                departmentId = Random.nextInt()
+                departmentId = user.departmentId
             )
         }
     }

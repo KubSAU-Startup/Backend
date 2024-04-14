@@ -27,8 +27,6 @@ private fun Route.getData() {
     val groupsDao by inject<GroupsDao>()
     val studentsDao by inject<StudentsDao>()
 
-    // TODO: 03/04/2024, Danil Nikolaev: возвращать студентов
-
     get {
         val programs = programsDao.allPrograms().map { program ->
             val disciplines = programsDisciplinesDao.allDisciplinesByProgramId(program.id)

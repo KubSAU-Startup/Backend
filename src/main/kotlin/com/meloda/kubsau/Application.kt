@@ -85,15 +85,20 @@ private fun configureServer() {
 }
 
 private fun Application.prepopulateDB() {
-    createDummyWorkTypes()
-    createDummyDepartments()
+    // TODO: 10/04/2024, Danil Nikolaev: import data from json
+
     createDummyUsers()
+
     createDummyMajors()
-    createDummyPrograms()
-    createDummySpecializations()
     createDummyGroups()
     createDummyStudents()
+    createDummyWorkTypes()
+    createDummySpecializations()
+    createDummyPrograms()
+    createDummyDepartments()
     createDummyTeachers()
+
+
     createDummyDisciplines()
     createDummyProgramsDisciplines()
     createDummySpecializationsDisciplines()
@@ -107,12 +112,13 @@ private fun Application.createDummyWorkTypes() {
 
     workTypesDao.apply {
         runBlocking {
-            if (allWorkTypes().size < 2) {
+            if (allWorkTypes().size < 3) {
                 println("Creating dummy work types...")
 
                 val time = measureTimeMillis {
-                    addNewWorkType("Курсовая", false)
-                    addNewWorkType("Практика", true)
+                    addNewWorkType("Курсовая", true)
+                    addNewWorkType("Лабораторная", false)
+                    addNewWorkType("Рассчётно-графическая", true)
                 }
 
                 println("Dummy work types created. Took ${time}ms")
@@ -125,15 +131,30 @@ private fun Application.createDummyWorkTypes() {
 private fun Application.createDummyDepartments() {
     val departmentsDao by inject<DepartmentsDao>()
 
+    val strings = listOf(
+        "АгрохимииsepАдминистративного и финансового праваsepАнатомии, ветеринарного акушерства и хирургииsepАрхитектурыsepАудитаsepБиотехнологии, биохимии и биофизикиsepБотаники и общей экологииsepБухгалтерского учетаsepВиноградарстваsepВысшей математикиsepГенетики, селекции и семеноводстваsepГеодезииsepГидравлики и с.х. водоснабженияsepГосударственного и международного праваsepГосударственного и муниципального управленияsepГражданского праваsepГражданского процессаsepДенежного обращения и кредитаsepЗемельного, трудового и экологического праваsepЗемлеустройства и земельного кадастра",
+        "Иностранных языковsepИнституциональной экономики и инвестиционного менеджментаsepИнформационных системsepИстории и политологииsepКомплексных систем водоснабженияsepКомпьютерных технологий и системsepКриминалистикиsepМеждународного частного и предпринимательского праваsepМенеджментаsepМеханизации животноводства и БЖДsepМикробиологии, эпизоотологии и вирусологииsepОбщего и орошаемого земледелияsepОвощеводстваsepОрганизации производства и инновационной деятельностиsepОснований и фундаментовsepПаразитологии, ветсанэкспертизы и зоогигиеныsepПедагогики и психологииsepПлодоводстваsepПочвоведенияsepПрикладной экологии",
+        "Процессы и машины в агробизнесеsepРазведения с.х. животных и зоотехнологийsepРастениеводстваsepРусского языка и речевой коммуникацииsepСистемного анализа и обработки информацииsepСопротивления материаловsepСоциологии и культурологииsepСтатистики и прикладной математикиsepСтроительного производстваsepСтроительных материалов и конструкцийsepСтроительства и эксплуатации ВХОsepТеории бухгалтерского учетаsepТеории и истории государства и праваsepТерапии и фармакологииsepТехнологии хранения и переработки животноводческой продукцииsepТехнологии хранения и переработки растениеводческой продукцииsepТракторов, автомобилей и технической механикиsepУголовного праваsepУголовного процессаsepУправления и маркетинга",
+        "ФизвоспитанияsepФизикиsepФизиологии и биохимии растенийsepФизиологии и кормления с.х. животныхsepФилософииsepФинансовsepФитопатологии, энтомологии и защиты растенийsepХимииsepЧастной зоотехнии и свиноводстваsepЭкономики и внешнеэкономической деятельностиsepЭкономического анализаsepЭкономической кибернетикиsepЭкономической теорииsepЭксплуатации и технического сервисаsepЭлектрических машин и электроприводаsepЭлектроснабженияsepЭлектротехники, теплотехники и возобновляемых источников энергии"
+    )
+
+    val titles = mutableListOf<String>()
+
+    strings.forEach { string ->
+        string.split("sep").forEach { title ->
+            titles += title
+        }
+    }
+
     departmentsDao.apply {
         runBlocking {
-            if (allDepartments().size < 3) {
+            if (allDepartments().size < titles.size) {
                 println("Creating dummy departments...")
 
                 val time = measureTimeMillis {
-                    addNewDepartment("Прикладная информатика", "+7 (800) 555-35-35")
-                    addNewDepartment("Бизнес-информатика", "+7 (800) 555-35-36")
-                    addNewDepartment("Иностранный язык", "+7 (800) 555-35-37")
+                    titles.forEach { title ->
+                        addNewDepartment(title = title, phone = "+7 (800) 555-35-35")
+                    }
                 }
 
                 println("Dummy departments created. Took ${time}ms")
@@ -154,6 +175,7 @@ private fun Application.createDummyUsers() {
                     addNewUser(login = "lischenkodev@gmail.com", password = "123456", type = 1, departmentId = 1)
                     addNewUser(login = "m.kozhukhar@gmail.com", password = "789012", type = 1, departmentId = 2)
                     addNewUser(login = "ya.abros@gmail.com", password = "345678", type = 1, departmentId = 3)
+                    addNewUser(login = "email@domain.com", password = "123456", type = 2, departmentId = 4)
                 }
 
                 println("Dummy users created. Took ${time}ms")
@@ -162,48 +184,32 @@ private fun Application.createDummyUsers() {
     }
 }
 
-private val names = listOf(
-    "Иванов Иван Иванович",
-    "Смирнова Мария Александровна",
-    "Кузнецов Александр Сергеевич",
-    "Попова Екатерина Дмитриевна",
-    "Васильев Дмитрий Петрович",
-    "Петрова Анна Алексеевна",
-    "Соколов Алексей Владимирович",
-    "Михайлова София Николаевна",
-    "Новиков Андрей Игоревич",
-    "Фёдорова Алиса Анатольевна",
-    "Морозов Сергей Александрович",
-    "Волкова Анастасия Денисовна",
-    "Алексеев Михаил Владимирович",
-    "Лебедева Елена Аркадьевна",
-    "Семёнов Артём Максимович",
-    "Егорова Виктория Васильевна",
-    "Павлов Илья Викторович",
-    "Козлова Дарья Владимировна",
-    "Степанов Максим Александрович",
-    "Иванова Полина Владимировна",
-    "Федоров Тимофей Алексеевич",
-    "Александрова Вероника Ивановна",
-    "Морозов Кирилл Алексеевич",
-    "Васильева Елизавета Алексеевна",
-    "Петров Антон Викторович",
-    "Степанова Валерия Сергеевна",
-    "Николаев Григорий Петрович",
-    "Максимова Юлия Владимировна",
-    "Ильин Даниил Александрович",
-    "Зайцева Анастасия Сергеевна",
-    "Соловьёв Павел Дмитриевич",
-    "Смирнова Влада Игоревна",
-    "Кузнецов Роман Павлович",
-    "Попова Арина Михайловна",
-    "Фёдоров Егор Дмитриевич",
-    "Михайлова Алёна Владимировна",
-    "Новиков Игорь Анатольевич",
-    "Фёдорова Варвара Андреевна",
-    "Александров Фёдор Алексеевич",
-    "Петрова Светлана Андреевна"
-)
+private val studentNames =
+    ("Абросимов Ярослав Валерьевич\n" +
+            "Абу Раид Хумам\n" +
+            "Берон Григорий Игорьевич\n" +
+            "Бесхлебный Владислав Алексеевич\n" +
+            "Бобылева Елизавета Евгеньевна\n" +
+            "Бордюжа Дмитрий Алексеевич\n" +
+            "Бутенко Виктория Руслановна\n" +
+            "Варавва Дмитрий Олегович\n" +
+            "Величко Артём Сергеевич\n" +
+            "Дьяченко Никита Юрьевич\n" +
+            "Кожухар Марина Константиновна\n" +
+            "Котовенко Александр Юрьевич\n" +
+            "Курдаев Олег Иванович\n" +
+            "Леонов Илья Евгеньевич\n" +
+            "Лобанов Николай Алексеевич\n" +
+            "Манохин Антон Юрьевич\n" +
+            "Мингазова Алина Илдусова\n" +
+            "Мурзин Вячеслав Михайлович\n" +
+            "Николаев Данил Станиславович\n" +
+            "Павелко Константин Алексеевич\n" +
+            "Пиданов Марк Витальевич\n" +
+            "Погуляйло Вадим Андреевич\n" +
+            "Рябов Алексей Алексеевич\n" +
+            "Шепетило Константин Валерьевич\n" +
+            "Яценко Никита Алексеевич").split("\n")
 
 private fun Application.createDummyStudents() {
     val groupsDao by inject<GroupsDao>()
@@ -211,22 +217,24 @@ private fun Application.createDummyStudents() {
 
     studentsDao.apply {
         runBlocking {
-            if (allStudents().size < 10) {
+            val groups = groupsDao.allGroups().map(Group::id)
+
+            if (allStudents().size < groups.size * 25) {
                 println("Creating dummy students...")
 
                 val time = measureTimeMillis {
-                    val groupIds = groupsDao.allGroups().map(Group::id)
+                    groups.forEach { groupId ->
+                        repeat(25) {
+                            val nameSplit = studentNames.random().split(" ")
 
-                    repeat(10) {
-                        val nameSplit = names.random().split(" ")
-
-                        addNewStudent(
-                            firstName = nameSplit[0],
-                            lastName = nameSplit[1],
-                            middleName = nameSplit[2],
-                            groupId = groupIds.random(),
-                            status = if (Random.nextBoolean()) 1 else 0
-                        )
+                            addNewStudent(
+                                firstName = nameSplit[1],
+                                lastName = nameSplit[0],
+                                middleName = nameSplit[2],
+                                groupId = groupId,
+                                status = 1
+                            )
+                        }
                     }
                 }
 
@@ -245,11 +253,13 @@ private fun Application.createDummyTeachers() {
             if (allTeachers().size < 10) {
                 println("Creating dummy teachers...")
 
+                // на каждую кафедру по 10 преподов
+
                 val time = measureTimeMillis {
                     val departmentIds = departmentsDao.allDepartments().map(Department::id)
 
                     repeat(10) {
-                        val nameSplit = names.random().split(" ")
+                        val nameSplit = studentNames.random().split(" ")
 
                         addNewTeacher(
                             firstName = nameSplit[0],
@@ -406,11 +416,26 @@ private fun Application.createDummyTeachersDisciplines() {
 
 private fun Application.createDummyMajors() {
     val majors = listOf(
-        Triple("01.03.04", "Прикладная математика", "ПМ"),
-        Triple("09.03.01", "Информатика и вычислительная техника", "ИИВТ"),
-        Triple("09.03.02", "Информационные системы и технологии", "ИСИТ"),
+        Triple("05.03.06", "Экология и природоведение", "ЭиП"),
+        Triple("08.03.01", "Строительство", "СТР"),
+        Triple("09.03.04", "Информационные системы и технологии", "ИСИТ"),
         Triple("09.03.03", "Прикладная информатика", "ПИ"),
-        Triple("09.03.04", "Программная инженерия", "ПИЖ"),
+        Triple("13.03.02", "Электроэнергетика и электротехника", "ЭЛЭЛ"),
+        Triple("19.03.02", "Продукты питания из растительного сырья", "ППРС"),
+        Triple("20.03.02", "Природоустройство и водопользование", "ПиВ"),
+        Triple("21.03.02", "Землеустройство и кадастры", "ЗиК"),
+        Triple("35.03.03", "Агрохимия и агропочвоведение", "АиА"),
+        Triple("35.03.04", "Агрономия", "АГР"),
+        Triple("35.03.05", "Садоводство", "САД"),
+        Triple("35.03.06", "Агроинженерия", "АГРИНЖ"),
+        Triple("35.03.07", "Технология производства и переработки сельскохозяйственной продукции", "ТПИС"),
+        Triple("36.03.01", "Ветеринарно-санитарная экспертиза", "ВСЭ"),
+        Triple("36.03.02", "Зоотехния", "ЗТ"),
+        Triple("38.03.01", "Экономика", "ЭК"),
+        Triple("38.03.02", "Менеджмент", "МЕН"),
+        Triple("38.03.04", "Государственное и муниципальное управление", "ГИМУ"),
+        Triple("38.03.05", "Бизнес-информатика", "БИ"),
+        Triple("40.03.01", "Юриспруденция", "ЮР"),
     )
 
     val majorsDao by inject<MajorsDao>()
@@ -436,26 +461,6 @@ private fun Application.createDummyMajors() {
     }
 }
 
-private fun Application.createDummyPrograms() {
-    val programsDao by inject<ProgramsDao>()
-
-    programsDao.apply {
-        runBlocking {
-            if (allPrograms().size < 40) {
-                println("Creating dummy programs...")
-
-                val time = measureTimeMillis {
-                    repeat(40) { index ->
-                        addNewProgram("Program #${index + 1}", Random.nextInt(from = 0, until = 13))
-                    }
-                }
-
-                println("Dummy programs created. Took ${time}ms")
-            }
-        }
-    }
-}
-
 private fun Application.createDummySpecializations() {
     val specializationsDao by inject<SpecializationsDao>()
 
@@ -465,9 +470,26 @@ private fun Application.createDummySpecializations() {
                 println("Creating dummy specializations...")
 
                 val time = measureTimeMillis {
-                    repeat(20) { index ->
-                        addNewSpecialization("Specialization #${index + 1}")
-                    }
+                    addNewSpecialization("Экология и природопользование")
+                    addNewSpecialization("Проектирование зданий")
+                    addNewSpecialization("Промышленное и гражданское строительство")
+                    addNewSpecialization("Создание, модификация и сопровождение информационных систем, администрирование баз данных")
+                    addNewSpecialization("Менеджмент проектов в области информационных технологий, создание и поддержка информационных систем")
+                    addNewSpecialization("Электроснабжение")
+                    addNewSpecialization("Производство продуктов питания из растительного сырья")
+                    addNewSpecialization("Инженерные системы сельскохозяйственного снабжения, обводнения и водоотделения")
+                    addNewSpecialization("Землеустройство и кадастры")
+                    addNewSpecialization("Почвенно-агрохимическое обеспечение АПК")
+                    addNewSpecialization("Защита растений")
+                    addNewSpecialization("Декоративное садоводство, плодоовощеводство, виноградство и виноделие")
+                    addNewSpecialization("Технические системы в агробизнесе")
+                    addNewSpecialization("Ветеринарно-санитарная экспертиза")
+                    addNewSpecialization("Технология производства продуктов животноводства")
+                    addNewSpecialization("Бизнес-аналитика")
+                    addNewSpecialization("Инновационный менеджмент")
+                    addNewSpecialization("Государственное и муниципальное управление")
+                    addNewSpecialization("Анализ, моделирование и формирование интегрального представления стратегий и целей, бизнес-процессов и информационно-логической инфраструктуры предприятий и организаций")
+                    addNewSpecialization("Гражданско-правовой")
                 }
 
                 println("Dummy specializations created. Took ${time}ms")
@@ -476,25 +498,58 @@ private fun Application.createDummySpecializations() {
     }
 }
 
-private fun Application.createDummyGroups() {
-    val groupsString = listOf("ИТ", "ПИ", "БИ")
+private fun Application.createDummyPrograms() {
+    val specializationsDao by inject<SpecializationsDao>()
+    val programsDao by inject<ProgramsDao>()
 
+    programsDao.apply {
+        runBlocking {
+            val specializations = specializationsDao.allSpecializations()
+
+            if (allPrograms().size < specializations.size * 12) {
+                println("Creating dummy programs...")
+
+                val time = measureTimeMillis {
+
+                    specializations.forEach { specialization ->
+                        val semester = Random.nextInt(from = 1, until = 13)
+
+                        repeat(12) {
+                            addNewProgram(
+                                title = "$semester ${specialization.title}",
+                                semester = semester
+                            )
+                        }
+                    }
+                }
+
+                println("Dummy programs created. Took ${time}ms")
+            }
+        }
+    }
+}
+
+private fun Application.createDummyGroups() {
     val groupsDao by inject<GroupsDao>()
     val majorsDao by inject<MajorsDao>()
 
     groupsDao.apply {
         runBlocking {
-            if (allGroups().size < 10) {
+            val majorTuples = majorsDao.allMajors().map {
+                it.id to it.abbreviation
+            }
+
+            if (allGroups().size < majorTuples.size * 3) {
                 println("Creating dummy groups...")
 
                 val time = measureTimeMillis {
-                    val majorIds = majorsDao.allMajors().map(Major::id)
-
-                    repeat(10) {
-                        addNewGroup(
-                            title = "${groupsString.random()}${Random.nextInt(from = 2001, until = 2006)}",
-                            majorId = majorIds.random()
-                        )
+                    majorTuples.forEach { tuple ->
+                        repeat(3) {
+                            addNewGroup(
+                                title = "${tuple.second}${Random.nextInt(from = 2001, until = 2004)}",
+                                majorId = tuple.first
+                            )
+                        }
                     }
                 }
 
