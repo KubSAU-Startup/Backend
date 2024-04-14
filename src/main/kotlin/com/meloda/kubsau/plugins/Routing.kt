@@ -6,6 +6,7 @@ import com.meloda.kubsau.route.auth.auth
 import com.meloda.kubsau.route.department.departments
 import com.meloda.kubsau.route.disciplines.disciplines
 import com.meloda.kubsau.route.journal.journals
+import com.meloda.kubsau.route.programs.programs
 import com.meloda.kubsau.route.qr.qr
 import com.meloda.kubsau.route.students.students
 import com.meloda.kubsau.route.worktypes.workTypes
@@ -29,5 +30,6 @@ fun Application.routing() {
         disciplines()
         students()
         workTypes()
+        programs()
     }
 }
