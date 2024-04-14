@@ -12,8 +12,19 @@ import org.koin.ktor.ext.inject
 fun Route.students() {
     authenticate {
         route("/students") {
+            getAllStudents()
             getStudentById()
         }
+    }
+}
+
+private fun Route.getAllStudents() {
+    val studentsDao by inject<StudentsDao>()
+
+    get {
+        val students = studentsDao.allStudents()
+
+        respondSuccess { students }
     }
 }
 

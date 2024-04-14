@@ -11,8 +11,8 @@ application {
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=true")
 }
 
-group = "com.meloda.test.kubsaubackend"
-version = "0.0.8"
+group = "com.meloda.kubsau.backend"
+version = "0.0.9"
 
 repositories {
     mavenCentral()
