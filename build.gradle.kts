@@ -33,8 +33,6 @@ dependencies {
     implementation("io.ktor:ktor-server-call-logging:$ktorVersion")
     implementation("io.ktor:ktor-server-swagger:$ktorVersion")
 
-    implementation("com.google.code.gson:gson:2.10.1")
-
     val exposedVersion = "0.49.0"
 
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
@@ -52,7 +50,9 @@ dependencies {
     implementation("io.insert-koin:koin-ktor")
     implementation("io.insert-koin:koin-logger-slf4j")
 
-    implementation("org.xerial:sqlite-jdbc:3.45.0.0")
+    val sqliteJdbcVersion = "3.45.0.0"
+
+    implementation("org.xerial:sqlite-jdbc:$sqliteJdbcVersion")
 }
 
 kotlin {

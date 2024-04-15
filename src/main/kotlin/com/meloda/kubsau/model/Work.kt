@@ -9,7 +9,7 @@ data class Work(
     val disciplineId: Int,
     val studentId: Int,
     val registrationDate: Long,
-    val title: String
+    val title: String?
 ) {
 
     companion object {

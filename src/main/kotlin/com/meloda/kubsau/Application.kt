@@ -320,6 +320,7 @@ private fun Application.createDummyDisciplines() {
     )
 
     val disciplinesDao by inject<DisciplinesDao>()
+    val workTypesDao by inject<WorkTypesDao>()
 
     disciplinesDao.apply {
         runBlocking {
@@ -327,7 +328,14 @@ private fun Application.createDummyDisciplines() {
                 println("Creating dummy disciplines...")
 
                 val time = measureTimeMillis {
-                    disciplinesString.forEach { title -> addNewDiscipline(title) }
+                    val workTypes = workTypesDao.allWorkTypes().map(WorkType::id)
+
+                    disciplinesString.forEach { title ->
+                        addNewDiscipline(
+                            title = title,
+                            workTypeId = workTypes.random()
+                        )
+                    }
                 }
 
                 println("Dummy disciplines created. Took ${time}ms")

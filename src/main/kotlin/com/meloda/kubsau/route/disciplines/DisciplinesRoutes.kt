@@ -12,8 +12,19 @@ import org.koin.ktor.ext.inject
 fun Route.disciplines() {
     authenticate {
         route("/disciplines") {
+            getAllDisciplines()
             getDisciplineById()
         }
+    }
+}
+
+private fun Route.getAllDisciplines() {
+    val disciplinesDao by inject<DisciplinesDao>()
+
+    get {
+        val disciplines = disciplinesDao.allDisciplines()
+
+        respondSuccess { disciplines }
     }
 }
 

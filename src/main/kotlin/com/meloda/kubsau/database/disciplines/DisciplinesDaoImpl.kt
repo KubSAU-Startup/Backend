@@ -21,9 +21,10 @@ class DisciplinesDaoImpl : DisciplinesDao {
             .singleOrNull()
     }
 
-    override suspend fun addNewDiscipline(title: String): Discipline? = dbQuery {
+    override suspend fun addNewDiscipline(title: String, workTypeId: Int): Discipline? = dbQuery {
         Disciplines.insert {
             it[Disciplines.title] = title
+            it[Disciplines.workTypeId] = workTypeId
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 

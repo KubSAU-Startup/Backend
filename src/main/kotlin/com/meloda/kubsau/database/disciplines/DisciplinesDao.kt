@@ -7,6 +7,6 @@ interface DisciplinesDao : Dao<Discipline> {
 
     suspend fun allDisciplines(): List<Discipline>
     suspend fun singleDiscipline(disciplineId: Int): Discipline?
-    suspend fun addNewDiscipline(title: String): Discipline?
+    suspend fun addNewDiscipline(title: String, workTypeId: Int): Discipline?
     suspend fun deleteDiscipline(disciplineId: Int): Boolean
 }
