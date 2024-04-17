@@ -9,6 +9,8 @@ interface StudentsDao : Dao<Student> {
 
     suspend fun allStudentsByGroupId(groupId: Int): List<Student>
 
+    suspend fun allStudentsByGroupIds(groupIds: List<Int>): List<Student>
+
     suspend fun singleStudent(studentId: Int): Student?
 
     suspend fun addNewStudent(

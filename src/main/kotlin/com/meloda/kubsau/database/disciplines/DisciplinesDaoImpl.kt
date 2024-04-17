@@ -9,6 +9,7 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 
 class DisciplinesDaoImpl : DisciplinesDao {
+
     override suspend fun allDisciplines(): List<Discipline> = dbQuery {
         Disciplines.selectAll().map(::mapResultRow)
     }

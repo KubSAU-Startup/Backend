@@ -253,8 +253,6 @@ private fun Application.createDummyTeachers() {
             if (allTeachers().size < 10) {
                 println("Creating dummy teachers...")
 
-                // на каждую кафедру по 10 преподов
-
                 val time = measureTimeMillis {
                     val departmentIds = departmentsDao.allDepartments().map(Department::id)
 

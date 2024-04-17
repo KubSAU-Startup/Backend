@@ -11,7 +11,7 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
-fun Route.account() {
+fun Route.accountRoutes() {
     authenticate {
         route("/account") {
             getAccountInfoRoute()

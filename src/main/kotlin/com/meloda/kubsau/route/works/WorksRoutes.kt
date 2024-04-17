@@ -6,7 +6,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
-fun Route.works() {
+fun Route.worksRoutes() {
     authenticate {
         route("/works") {
             getAllWorks()

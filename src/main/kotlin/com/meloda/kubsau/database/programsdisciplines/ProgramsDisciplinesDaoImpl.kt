@@ -22,6 +22,21 @@ class ProgramsDisciplinesDaoImpl : ProgramsDisciplinesDao {
             .map(::mapSecondResultRow)
     }
 
+    override suspend fun allDisciplinesByProgramIds(programIds: List<Int>): List<Discipline> = dbQuery {
+        ProgramsDisciplines.innerJoin(Disciplines)
+            .selectAll()
+            .where { ProgramsDisciplines.programId inList programIds }
+            .map(::mapSecondResultRow)
+    }
+
+    override suspend fun programByDisciplineId(disciplineId: Int): Program? = dbQuery {
+        ProgramsDisciplines.innerJoin(Programs)
+            .selectAll()
+            .where { ProgramsDisciplines.disciplineId eq disciplineId }
+            .map(::mapFirstResultRow)
+            .singleOrNull()
+    }
+
     override suspend fun addNewReference(programId: Int, disciplineId: Int): Boolean = dbQuery {
         ProgramsDisciplines.insert {
             it[ProgramsDisciplines.programId] = programId

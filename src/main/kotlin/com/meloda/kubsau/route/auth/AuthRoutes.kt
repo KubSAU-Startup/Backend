@@ -14,7 +14,7 @@ import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
-fun Route.auth() {
+fun Route.authRoutes() {
     route("/auth") {
         getToken()
         getAll()
@@ -29,12 +29,12 @@ private fun Route.getToken() {
     get {
         try {
             val params = call.request.queryParameters
-            val login = params["login"]
-            val password = params["password"]
+            val login = params["login"] ?: throw ValidationException("login is empty")
+            val password = params["password"] ?: throw ValidationException("password is empty")
 
             val users = usersDao.allUsers()
 
-            val loginsPasswords = users.map { user -> Pair(user.login, user.password) }
+            val loginsPasswords = users.map { user -> user.login to user.password }
 
             val logins = loginsPasswords.map { it.first }
             val passwords = loginsPasswords.map { it.second }

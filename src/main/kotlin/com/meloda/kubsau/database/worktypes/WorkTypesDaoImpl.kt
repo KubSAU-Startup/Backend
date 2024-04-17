@@ -20,6 +20,13 @@ class WorkTypesDaoImpl : WorkTypesDao {
         WorkTypes.selectAll().map(::mapResultRow)
     }
 
+    override suspend fun allWorkTypesByIds(workTypeIds: List<Int>): List<WorkType> = dbQuery {
+        WorkTypes
+            .selectAll()
+            .where { WorkTypes.id inList workTypeIds }
+            .map(::mapResultRow)
+    }
+
     override suspend fun singleWorkType(workTypeId: Int): WorkType? = dbQuery {
         WorkTypes
             .selectAll()

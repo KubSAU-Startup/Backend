@@ -9,7 +9,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
-fun Route.disciplines() {
+fun Route.disciplinesRoutes() {
     authenticate {
         route("/disciplines") {
             getAllDisciplines()

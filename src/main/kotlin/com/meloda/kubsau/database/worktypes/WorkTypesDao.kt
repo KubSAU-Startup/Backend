@@ -6,6 +6,7 @@ import com.meloda.kubsau.model.WorkType
 interface WorkTypesDao : Dao<WorkType> {
 
     suspend fun allWorkTypes(): List<WorkType>
+    suspend fun allWorkTypesByIds(workTypeIds: List<Int>): List<WorkType>
     suspend fun singleWorkType(workTypeId: Int): WorkType?
     suspend fun singleWorkType(title: String): WorkType?
     suspend fun addNewWorkType(title: String, isEditable: Boolean): WorkType?

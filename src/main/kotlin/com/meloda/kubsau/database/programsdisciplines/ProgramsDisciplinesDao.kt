@@ -10,6 +10,10 @@ interface ProgramsDisciplinesDao : RefDao<Program, Discipline> {
 
     suspend fun allDisciplinesByProgramId(programId: Int): List<Discipline>
 
+    suspend fun allDisciplinesByProgramIds(programIds: List<Int>): List<Discipline>
+
+    suspend fun programByDisciplineId(disciplineId: Int): Program?
+
     suspend fun addNewReference(programId: Int, disciplineId: Int): Boolean
 
     suspend fun deleteReference(programId: Int?, disciplineId: Int?): Boolean

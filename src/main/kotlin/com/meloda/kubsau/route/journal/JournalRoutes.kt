@@ -13,7 +13,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
-fun Route.journals() {
+fun Route.journalsRoutes() {
     val journalsDao by inject<JournalsDao>()
     val workTypesDao by inject<WorkTypesDao>()
 

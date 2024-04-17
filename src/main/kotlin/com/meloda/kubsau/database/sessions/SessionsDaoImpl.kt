@@ -20,7 +20,7 @@ class SessionsDaoImpl : SessionsDao {
         Sessions
             .selectAll()
             .where { Sessions.userId eq userId }
-            .map(this::mapResultRow)
+            .map(::mapResultRow)
             .singleOrNull()
     }
 
@@ -28,7 +28,7 @@ class SessionsDaoImpl : SessionsDao {
         Sessions
             .selectAll()
             .where { Sessions.accessToken eq accessToken }
-            .map(this::mapResultRow)
+            .map(::mapResultRow)
             .singleOrNull()
     }
 
@@ -36,7 +36,7 @@ class SessionsDaoImpl : SessionsDao {
         Sessions.upsert {
             it[Sessions.userId] = userId
             it[Sessions.accessToken] = accessToken
-        }.resultedValues?.singleOrNull()?.let(this::mapResultRow)
+        }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 
     override suspend fun deleteSession(userId: Int, accessToken: String): Boolean = dbQuery {
