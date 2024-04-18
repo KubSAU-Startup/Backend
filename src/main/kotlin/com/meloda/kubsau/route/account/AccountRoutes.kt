@@ -15,7 +15,6 @@ fun Route.accountRoutes() {
     authenticate {
         route("/account") {
             getAccountInfoRoute()
-            getAllTokensRoute()
         }
     }
 }
@@ -42,15 +41,6 @@ private fun Route.getAccountInfoRoute() {
                 departmentId = user.departmentId
             )
         }
-    }
-}
-
-private fun Route.getAllTokensRoute() {
-    val sessionsDao by inject<SessionsDao>()
-
-    get("all") {
-        val sessions = sessionsDao.allSessions()
-        respondSuccess { sessions }
     }
 }
 
