@@ -643,6 +643,5 @@ private fun Application.createDummyJournalEntries() {
 private fun getRandomUnixTime(): Long {
     val (startTime, endTime) = 1609459200L to 1708775961L
     require(startTime < endTime) { "Start time must be before end time" }
-    val randomUnixTime = Random.nextLong(startTime, endTime)
-    return randomUnixTime
+    return Random.nextLong(startTime, endTime)
 }

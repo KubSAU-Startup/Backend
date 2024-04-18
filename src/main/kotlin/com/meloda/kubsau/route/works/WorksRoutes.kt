@@ -17,6 +17,9 @@ fun Route.worksRoutes() {
             getWorks()
             getWorkById()
             addWork()
+            editWork()
+            deleteWorkById()
+            deleteWorksByIds()
         }
     }
 }
@@ -75,6 +78,77 @@ private fun Route.addWork() {
 
         if (created != null) {
             respondSuccess { created }
+        } else {
+            throw UnknownException
+        }
+    }
+}
+
+private fun Route.editWork() {
+    val worksDao by inject<WorksDao>()
+
+    patch("{id}") {
+        val workId = call.parameters["id"]?.toIntOrNull() ?: throw ValidationException("id is empty")
+        worksDao.singleWork(workId) ?: throw ContentNotFoundException
+
+        val parameters = call.receiveParameters()
+
+        val disciplineId =
+            parameters["disciplineId"]?.toIntOrNull() ?: throw ValidationException("disciplineId is empty")
+        val studentId =
+            parameters["studentId"]?.toIntOrNull() ?: throw ValidationException("studentId is empty")
+        val registrationDate =
+            parameters["registrationDate"]?.toIntOrNull() ?: throw ValidationException("registrationDate is empty")
+        val title = parameters["title"]?.trim()
+
+        worksDao.updateWork(
+            workId = workId,
+            disciplineId = disciplineId,
+            studentId = studentId,
+            registrationDate = registrationDate * 1000L,
+            title = title
+        ).let { changedCount ->
+            if (changedCount == 1) {
+                respondSuccess { 1 }
+            } else {
+                throw UnknownException
+            }
+        }
+    }
+}
+
+private fun Route.deleteWorkById() {
+    val worksDao by inject<WorksDao>()
+
+    delete("{id}") {
+        val workId = call.parameters["id"]?.toIntOrNull() ?: throw ValidationException("id is empty")
+        worksDao.singleWork(workId) ?: throw ContentNotFoundException
+
+        if (worksDao.deleteWork(workId)) {
+            respondSuccess { 1 }
+        } else {
+            throw UnknownException
+        }
+    }
+}
+
+private fun Route.deleteWorksByIds() {
+    val worksDao by inject<WorksDao>()
+
+    delete {
+        val workIds = call.request.queryParameters["workIds"]
+            ?.split(",")
+            ?.map(String::trim)
+            ?.mapNotNull(String::toIntOrNull)
+            ?: throw ValidationException("workIds is empty")
+
+        val currentWorks = worksDao.allWorksByIds(workIds)
+        if (currentWorks.isEmpty()) {
+            throw ContentNotFoundException
+        }
+
+        if (worksDao.deleteWorks(workIds)) {
+            respondSuccess { 1 }
         } else {
             throw UnknownException
         }

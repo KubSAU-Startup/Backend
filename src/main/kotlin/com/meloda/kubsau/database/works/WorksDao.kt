@@ -16,5 +16,14 @@ interface WorksDao : Dao<Work> {
         title: String?
     ): Work?
 
+    suspend fun updateWork(
+        workId: Int,
+        disciplineId: Int,
+        studentId: Int,
+        registrationDate: Long,
+        title: String?
+    ): Int
+
     suspend fun deleteWork(workId: Int): Boolean
+    suspend fun deleteWorks(workIds: List<Int>): Boolean
 }
