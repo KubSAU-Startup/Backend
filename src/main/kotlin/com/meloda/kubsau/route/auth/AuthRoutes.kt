@@ -31,9 +31,9 @@ private fun Route.addSession() {
     val sessionsDao by inject<SessionsDao>()
 
     post {
-        val params = call.receiveParameters()
-        val login = params["login"]?.trim() ?: throw ValidationException("login is empty")
-        val password = params["password"]?.trim() ?: throw ValidationException("password is empty")
+        val parameters = call.receiveParameters()
+        val login = parameters["login"]?.trim() ?: throw ValidationException("login is empty")
+        val password = parameters["password"]?.trim() ?: throw ValidationException("password is empty")
 
         val users = usersDao.allUsers()
 
