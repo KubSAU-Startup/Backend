@@ -19,10 +19,6 @@ fun Route.journalsRoutes() {
 
     authenticate {
         route("/journals") {
-            get("worktypes") {
-                val workTypes = workTypesDao.allWorkTypes()
-                respondSuccess { workTypes }
-            }
             get {
                 val workTypes = workTypesDao.allWorkTypes()
 
@@ -36,7 +32,7 @@ fun Route.journalsRoutes() {
                 val journals = journalsDao.allJournals()
 
                 val filteredJournal = journals.filter { item ->
-                    (item.work.typeId == workTypeId || workTypeId == null) &&
+                    (item.discipline.workTypeId == workTypeId || workTypeId == null) &&
                             (item.discipline.id == disciplineId || disciplineId == null) &&
                             (item.teacher.id == teacherId || teacherId == null) &&
                             (item.group.id == groupId || groupId == null) &&
@@ -48,7 +44,7 @@ fun Route.journalsRoutes() {
                         count = filteredJournal.size,
                         offset = 0,
                         journal = filteredJournal.mapNotNull { journal ->
-                            journal.mapToItem(workType = workTypes.find { it.id == journal.work.typeId })
+                            journal.mapToItem(workType = workTypes.find { it.id == journal.discipline.workTypeId })
                         }
                     )
                 }

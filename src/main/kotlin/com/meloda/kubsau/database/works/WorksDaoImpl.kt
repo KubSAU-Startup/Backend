@@ -14,6 +14,13 @@ class WorksDaoImpl : WorksDao {
         Works.selectAll().map(::mapResultRow)
     }
 
+    override suspend fun allWorksByIds(workIds: List<Int>): List<Work> = dbQuery {
+        Works
+            .selectAll()
+            .where { Works.id inList workIds }
+            .map(::mapResultRow)
+    }
+
     override suspend fun singleWork(workId: Int): Work? = dbQuery {
         Works
             .selectAll()
@@ -23,14 +30,12 @@ class WorksDaoImpl : WorksDao {
     }
 
     override suspend fun addNewWork(
-        typeId: Int,
         disciplineId: Int,
         studentId: Int,
         registrationDate: Long,
-        title: String
+        title: String?
     ): Work? = dbQuery {
         Works.insert {
-            it[Works.typeId] = typeId
             it[Works.disciplineId] = disciplineId
             it[Works.studentId] = studentId
             it[Works.registrationDate] = registrationDate

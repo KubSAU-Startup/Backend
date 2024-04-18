@@ -2,21 +2,21 @@ package com.meloda.kubsau.database.departments
 
 import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.model.Department
-import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 
 class DepartmentsDaoImpl : DepartmentsDao {
-    override fun mapResultRow(row: ResultRow) = Department(
-        id = row[Departments.id].value,
-        title = row[Departments.title],
-        phone = row[Departments.phone]
-    )
 
     override suspend fun allDepartments(): List<Department> = dbQuery {
         Departments.selectAll().map(::mapResultRow)
+    }
+
+    override suspend fun allDepartmentsByIds(departmentIds: List<Int>): List<Department> = dbQuery {
+        Departments
+            .selectAll()
+            .where { Departments.id inList departmentIds }
+            .map(::mapResultRow)
     }
 
     override suspend fun singleDepartment(id: Int): Department? = dbQuery {
@@ -34,7 +34,20 @@ class DepartmentsDaoImpl : DepartmentsDao {
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 
-    override suspend fun deleteDepartment(id: Int): Boolean = dbQuery {
-        Departments.deleteWhere { Departments.id eq id } > 0
+    override suspend fun updateDepartment(departmentId: Int, title: String, phone: String): Int = dbQuery {
+        Departments.update(where = { Departments.id eq departmentId }) {
+            it[Departments.title] = title
+            it[Departments.phone] = phone
+        }
     }
+
+    override suspend fun deleteDepartment(departmentId: Int): Boolean = dbQuery {
+        Departments.deleteWhere { Departments.id eq departmentId } > 0
+    }
+
+    override suspend fun deleteDepartments(departmentIds: List<Int>): Boolean = dbQuery {
+        Departments.deleteWhere { Departments.id inList departmentIds } > 0
+    }
+
+    override fun mapResultRow(row: ResultRow): Department = Department.mapResultRow(row)
 }

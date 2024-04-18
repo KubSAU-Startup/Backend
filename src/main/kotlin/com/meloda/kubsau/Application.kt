@@ -33,7 +33,11 @@ import org.slf4j.event.Level
 import kotlin.random.Random
 import kotlin.system.measureTimeMillis
 
-const val PORT = 8080
+val PORT = try {
+    System.getenv("PORT").toIntOrNull() ?: 8080
+} catch (e: Exception) {
+    8080
+}
 
 var startTime = 0L
 
@@ -566,7 +570,6 @@ private fun Application.createDummyGroups() {
 }
 
 private fun Application.createDummyJournalWorks() {
-    val workTypesDao by inject<WorkTypesDao>()
     val worksDao by inject<WorksDao>()
     val disciplinesDao by inject<DisciplinesDao>()
     val studentsDao by inject<StudentsDao>()
@@ -578,16 +581,14 @@ private fun Application.createDummyJournalWorks() {
             println("Creating dummy works...")
 
             val time = measureTimeMillis {
-                val workTypeIds = workTypesDao.allWorkTypes().map(WorkType::id)
                 val disciplineIds = disciplinesDao.allDisciplines().map(Discipline::id)
                 val studentIds = studentsDao.allStudents().map(Student::id)
 
                 repeat(10) { index ->
                     worksDao.addNewWork(
-                        typeId = workTypeIds.random(),
                         disciplineId = disciplineIds.random(),
                         studentId = studentIds.random(),
-                        registrationDate = getRandomUnixTime(1609459200L, 1708775961L),
+                        registrationDate = getRandomUnixTime(),
                         title = "Work #${index + 1}"
                     )
                 }
@@ -639,7 +640,8 @@ private fun Application.createDummyJournalEntries() {
 }
 
 
-private fun getRandomUnixTime(startTime: Long, endTime: Long): Long {
+private fun getRandomUnixTime(): Long {
+    val (startTime, endTime) = 1609459200L to 1708775961L
     require(startTime < endTime) { "Start time must be before end time" }
     val randomUnixTime = Random.nextLong(startTime, endTime)
     return randomUnixTime
