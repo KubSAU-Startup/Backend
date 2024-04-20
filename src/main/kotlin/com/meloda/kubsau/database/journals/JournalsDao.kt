@@ -6,14 +6,16 @@ import com.meloda.kubsau.model.Journal
 interface JournalsDao : Dao<Journal> {
 
     suspend fun allJournals(): List<Journal>
-    suspend fun singleJournal(journalId: Int): Journal?
-    suspend fun singleJournal(
+
+    suspend fun allJournals(
         journalId: Int?,
         studentId: Int?,
         groupId: Int?,
         disciplineId: Int?,
         teacherId: Int?,
-        workId: Int?
+        workId: Int?,
+        departmentId: Int?,
+        workTypeId: Int?
     ): List<Journal>
 
     suspend fun addNewJournal(

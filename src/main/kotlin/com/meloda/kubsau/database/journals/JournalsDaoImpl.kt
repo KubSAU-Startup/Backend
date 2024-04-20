@@ -1,6 +1,7 @@
 package com.meloda.kubsau.database.journals
 
 import com.meloda.kubsau.database.DatabaseController.dbQuery
+import com.meloda.kubsau.database.departments.Departments
 import com.meloda.kubsau.database.disciplines.Disciplines
 import com.meloda.kubsau.database.groups.Groups
 import com.meloda.kubsau.database.students.Students
@@ -11,6 +12,7 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 class JournalsDaoImpl : JournalsDao {
+
     override suspend fun allJournals(): List<Journal> = dbQuery {
         Journals
             .innerJoin(Students, { studentId }, { Students.id })
@@ -18,51 +20,42 @@ class JournalsDaoImpl : JournalsDao {
             .innerJoin(Disciplines, { Journals.disciplineId }, { Disciplines.id })
             .innerJoin(Teachers, { Journals.teacherId }, { Teachers.id })
             .innerJoin(Works, { Journals.workId }, { Works.id })
+            .innerJoin(Departments, { Teachers.departmentId }, { Departments.id })
             .selectAll()
             .map(::mapResultRow)
     }
 
-    override suspend fun singleJournal(journalId: Int): Journal? = dbQuery {
-        Journals
-            .innerJoin(Students, { studentId }, { Students.id })
-            .innerJoin(Groups, { Journals.groupId }, { Groups.id })
-            .innerJoin(Disciplines, { Journals.disciplineId }, { Disciplines.id })
-            .innerJoin(Teachers, { Journals.teacherId }, { Teachers.id })
-            .innerJoin(Works, { Journals.workId }, { Works.id })
-            .selectAll()
-            .where { Journals.id eq journalId }
-            .map(::mapResultRow)
-            .singleOrNull()
-    }
-
-    override suspend fun singleJournal(
+    override suspend fun allJournals(
         journalId: Int?,
         studentId: Int?,
         groupId: Int?,
         disciplineId: Int?,
         teacherId: Int?,
-        workId: Int?
-    ): List<Journal> = dbQuery {
-        // TODO: 17/03/2024, Danil Nikolaev: filter in db, not in code
+        workId: Int?,
+        departmentId: Int?,
+        workTypeId: Int?
+    ) = dbQuery {
+        val query = if (journalId != null) Journals.id eq journalId
+        else {
+            (studentId?.let { Journals.studentId eq studentId } ?: Op.TRUE) andIfNotNull
+                    (groupId?.let { Journals.groupId eq groupId }) andIfNotNull
+                    (disciplineId?.let { Journals.disciplineId eq disciplineId }) andIfNotNull
+                    (teacherId?.let { Journals.teacherId eq teacherId }) andIfNotNull
+                    (workId?.let { Journals.workId eq workId }) andIfNotNull
+                    (departmentId?.let { Teachers.departmentId eq departmentId }) andIfNotNull
+                    (workTypeId?.let { Disciplines.workTypeId eq workTypeId })
+        }
+
         Journals
             .innerJoin(Students, { Journals.studentId }, { Students.id })
             .innerJoin(Groups, { Journals.groupId }, { Groups.id })
             .innerJoin(Disciplines, { Journals.disciplineId }, { Disciplines.id })
             .innerJoin(Teachers, { Journals.teacherId }, { Teachers.id })
             .innerJoin(Works, { Journals.workId }, { Works.id })
+            .innerJoin(Departments, { Teachers.departmentId }, { Departments.id })
             .selectAll()
+            .where { query }
             .map(::mapResultRow)
-            .filter { item ->
-                if (journalId != null) {
-                    item.id == journalId
-                } else {
-                    (item.work.id == workId || workId == null) &&
-                            (item.discipline.id == disciplineId || disciplineId == null) &&
-                            (item.teacher.id == teacherId || teacherId == null) &&
-                            (item.group.id == groupId || groupId == null) &&
-                            (item.student.id == studentId || studentId == null)
-                }
-            }
     }
 
     override suspend fun addNewJournal(

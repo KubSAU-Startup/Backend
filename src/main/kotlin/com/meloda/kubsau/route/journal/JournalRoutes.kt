@@ -23,27 +23,29 @@ fun Route.journalsRoutes() {
                 val workTypes = workTypesDao.allWorkTypes()
 
                 val params = call.request.queryParameters
-                val workTypeId = params["workTypeId"]?.toInt()
-                val disciplineId = params["disciplineId"]?.toInt()
-                val teacherId = params["teacherId"]?.toInt()
-                val departmentId = params["departmentId"]?.toInt()
-                val groupId = params["groupId"]?.toInt()
+                val workTypeId = params["workTypeId"]?.toIntOrNull()
+                val disciplineId = params["disciplineId"]?.toIntOrNull()
+                val teacherId = params["teacherId"]?.toIntOrNull()
+                val departmentId = params["departmentId"]?.toIntOrNull()
+                val groupId = params["groupId"]?.toIntOrNull()
+                val studentId = params["studentId"]?.toIntOrNull()
 
-                val journals = journalsDao.allJournals()
-
-                val filteredJournal = journals.filter { item ->
-                    (item.discipline.workTypeId == workTypeId || workTypeId == null) &&
-                            (item.discipline.id == disciplineId || disciplineId == null) &&
-                            (item.teacher.id == teacherId || teacherId == null) &&
-                            (item.group.id == groupId || groupId == null) &&
-                            (item.teacher.departmentId == departmentId || departmentId == null)
-                }
+                val journals = journalsDao.allJournals(
+                    journalId = null,
+                    studentId = studentId,
+                    groupId = groupId,
+                    disciplineId = disciplineId,
+                    teacherId = teacherId,
+                    workId = null,
+                    departmentId = departmentId,
+                    workTypeId = workTypeId
+                )
 
                 respondSuccess {
                     GetJournalResponse(
-                        count = filteredJournal.size,
+                        count = journals.size,
                         offset = 0,
-                        journal = filteredJournal.mapNotNull { journal ->
+                        journal = journals.mapNotNull { journal ->
                             journal.mapToItem(workType = workTypes.find { it.id == journal.discipline.workTypeId })
                         }
                     )
@@ -100,11 +102,13 @@ private fun Journal.mapToItem(workType: WorkType?): JournalItem? =
         group = group,
         discipline = discipline,
         teacher = teacher,
-        work = work.mapToJournalWork(workType)
+        work = work.mapToJournalWork(workType),
+        department = department
     )
 
 private fun Student.mapToJournalStudent(): JournalStudent =
     JournalStudent(
+        id = id,
         fullName = fullName,
         status = status
     )
@@ -135,10 +139,12 @@ private data class JournalItem(
     val group: Group,
     val discipline: Discipline,
     val teacher: Teacher,
-    val work: JournalWork
+    val work: JournalWork,
+    val department: Department?
 )
 
 private data class JournalStudent(
+    val id: Int,
     val fullName: String,
     val status: Int
 )
