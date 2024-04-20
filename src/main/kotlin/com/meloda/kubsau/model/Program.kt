@@ -7,14 +7,16 @@ import org.jetbrains.exposed.sql.ResultRow
 data class Program(
     val id: Int,
     val title: String,
-    val semester: Int
+    val semester: Int,
+    val disciplineIds: List<Int>
 ) {
 
     companion object {
         fun mapResultRow(row: ResultRow): Program = Program(
             id = row[Programs.id].value,
             title = row[Programs.title],
-            semester = row[semester]
+            semester = row[semester],
+            disciplineIds = emptyList()
         )
     }
 }

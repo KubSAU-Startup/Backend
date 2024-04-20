@@ -60,9 +60,5 @@ class ProgramsDaoImpl : ProgramsDao {
         Programs.deleteWhere { Programs.id inList programIds } > 0
     }
 
-    override fun mapResultRow(row: ResultRow): Program = Program(
-        id = row[Programs.id].value,
-        title = row[Programs.title],
-        semester = row[Programs.semester]
-    )
+    override fun mapResultRow(row: ResultRow): Program = Program.mapResultRow(row)
 }

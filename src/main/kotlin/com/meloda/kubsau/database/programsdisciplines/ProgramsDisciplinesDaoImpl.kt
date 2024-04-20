@@ -64,6 +64,10 @@ class ProgramsDisciplinesDaoImpl : ProgramsDisciplinesDao {
         query?.let { ProgramsDisciplines.deleteWhere { query } > 0 } ?: false
     }
 
+    override suspend fun deleteReferencesByProgramId(programId: Int): Boolean = dbQuery {
+        ProgramsDisciplines.deleteWhere { ProgramsDisciplines.programId eq programId } > 0
+    }
+
     override fun mapFirstResultRow(row: ResultRow): Program = Program.mapResultRow(row)
 
     override fun mapSecondResultRow(row: ResultRow): Discipline = Discipline.mapResultRow(row)
