@@ -7,8 +7,7 @@ interface JournalsDao : Dao<Journal> {
 
     suspend fun allJournals(): List<Journal>
 
-    suspend fun allJournals(
-        journalId: Int?,
+    suspend fun allJournalsByFilters(
         studentId: Int?,
         groupId: Int?,
         disciplineId: Int?,
@@ -19,7 +18,29 @@ interface JournalsDao : Dao<Journal> {
     ): List<Journal>
 
     suspend fun allJournalsByIds(journalIds: List<Int>): List<Journal>
+
+    suspend fun allJournalsByIdsWithFilters(
+        journalIds: List<Int>,
+        studentId: Int?,
+        groupId: Int?,
+        disciplineId: Int?,
+        teacherId: Int?,
+        workId: Int?,
+        departmentId: Int?,
+        workTypeId: Int?
+    ): List<Journal>
+
     suspend fun singleById(journalId: Int): Journal?
+
+    suspend fun singleByFilters(
+        studentId: Int?,
+        groupId: Int?,
+        disciplineId: Int?,
+        teacherId: Int?,
+        workId: Int?,
+        departmentId: Int?,
+        workTypeId: Int?
+    ): Journal?
 
     suspend fun addNewJournal(
         studentId: Int,

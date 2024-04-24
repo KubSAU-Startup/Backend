@@ -2,6 +2,7 @@ package com.meloda.kubsau.database.teachers
 
 import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.model.Teacher
+import com.meloda.kubsau.route.journal.JournalFilter
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
@@ -10,6 +11,17 @@ class TeachersDaoImpl : TeachersDao {
 
     override suspend fun allTeachers(): List<Teacher> = dbQuery {
         Teachers.selectAll().map(::mapResultRow)
+    }
+
+    override suspend fun allTeachersAsFilters(): List<JournalFilter> = dbQuery {
+        Teachers
+            .select(
+                Teachers.id,
+                Teachers.lastName,
+                Teachers.firstName,
+                Teachers.middleName
+            )
+            .map(::mapFilterResultRow)
     }
 
     override suspend fun allTeachersByIds(teacherIds: List<Int>): List<Teacher> = dbQuery {
@@ -65,4 +77,13 @@ class TeachersDaoImpl : TeachersDao {
     }
 
     override fun mapResultRow(row: ResultRow): Teacher = Teacher.mapResultRow(row)
+
+    override fun mapFilterResultRow(row: ResultRow): JournalFilter = JournalFilter(
+        id = row[Teachers.id].value,
+        title = "%s %s %s".format(
+            row[Teachers.lastName],
+            row[Teachers.firstName],
+            row[Teachers.middleName]
+        )
+    )
 }

@@ -7,6 +7,8 @@ import com.meloda.kubsau.database.groups.GroupsDao
 import com.meloda.kubsau.database.journals.JournalsDao
 import com.meloda.kubsau.database.teachers.TeachersDao
 import com.meloda.kubsau.database.worktypes.WorkTypesDao
+import com.meloda.kubsau.errors.ContentNotFoundException
+import com.meloda.kubsau.errors.ValidationException
 import com.meloda.kubsau.model.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -14,24 +16,66 @@ import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
 fun Route.journalsRoutes() {
+    authenticate {
+        route("/journals") {
+            getFilters()
+            getJournals()
+            getJournalById()
+        }
+    }
+}
+
+private fun Route.getFilters() {
+    val workTypesDao by inject<WorkTypesDao>()
+    val disciplinesDao by inject<DisciplinesDao>()
+    val teachersDao by inject<TeachersDao>()
+    val groupsDao by inject<GroupsDao>()
+    val departmentsDao by inject<DepartmentsDao>()
+
+    get("/filters") {
+        val workTypes = workTypesDao.allWorkTypesAsFilters()
+        val disciplines = disciplinesDao.allDisciplinesAsFilters()
+        val teachers = teachersDao.allTeachersAsFilters()
+        val groups = groupsDao.allGroupsAsFilters()
+        val departments = departmentsDao.allDepartmentsAsFilters()
+
+        respondSuccess {
+            JournalFilters(
+                workTypes = workTypes,
+                disciplines = disciplines,
+                teachers = teachers,
+                groups = groups,
+                departments = departments
+            )
+        }
+    }
+}
+
+private fun Route.getJournals() {
     val journalsDao by inject<JournalsDao>()
     val workTypesDao by inject<WorkTypesDao>()
 
-    authenticate {
-        route("/journals") {
-            get {
-                val workTypes = workTypesDao.allWorkTypes()
+    get {
+        val workTypes = workTypesDao.allWorkTypes()
 
-                val params = call.request.queryParameters
-                val workTypeId = params["workTypeId"]?.toIntOrNull()
-                val disciplineId = params["disciplineId"]?.toIntOrNull()
-                val teacherId = params["teacherId"]?.toIntOrNull()
-                val departmentId = params["departmentId"]?.toIntOrNull()
-                val groupId = params["groupId"]?.toIntOrNull()
-                val studentId = params["studentId"]?.toIntOrNull()
+        val parameters = call.request.queryParameters
 
-                val journals = journalsDao.allJournals(
-                    journalId = null,
+        val journalIds = parameters["journalIds"]
+            ?.split(",")
+            ?.map(String::trim)
+            ?.mapNotNull(String::toIntOrNull)
+            ?: emptyList()
+
+        val workTypeId = parameters["workTypeId"]?.toIntOrNull()
+        val disciplineId = parameters["disciplineId"]?.toIntOrNull()
+        val teacherId = parameters["teacherId"]?.toIntOrNull()
+        val departmentId = parameters["departmentId"]?.toIntOrNull()
+        val groupId = parameters["groupId"]?.toIntOrNull()
+        val studentId = parameters["studentId"]?.toIntOrNull()
+
+        val journals =
+            if (journalIds.isEmpty()) {
+                journalsDao.allJournalsByFilters(
                     studentId = studentId,
                     groupId = groupId,
                     disciplineId = disciplineId,
@@ -40,20 +84,41 @@ fun Route.journalsRoutes() {
                     departmentId = departmentId,
                     workTypeId = workTypeId
                 )
-
-                respondSuccess {
-                    GetJournalResponse(
-                        count = journals.size,
-                        offset = 0,
-                        journal = journals.mapNotNull { journal ->
-                            journal.mapToItem(workType = workTypes.find { it.id == journal.discipline.workTypeId })
-                        }
-                    )
-                }
+            } else {
+                journalsDao.allJournalsByIdsWithFilters(
+                    journalIds = journalIds,
+                    studentId = studentId,
+                    groupId = groupId,
+                    disciplineId = disciplineId,
+                    teacherId = teacherId,
+                    workId = null,
+                    departmentId = departmentId,
+                    workTypeId = workTypeId
+                )
             }
-        }
 
-        filters()
+        respondSuccess {
+            GetJournalResponse(
+                count = journals.size,
+                offset = 0,
+                journal = journals.mapNotNull { journal ->
+                    journal.mapToItem(workType = workTypes.find { it.id == journal.discipline.workTypeId })
+                }
+            )
+        }
+    }
+}
+
+private fun Route.getJournalById() {
+    val journalsDao by inject<JournalsDao>()
+    val workTypesDao by inject<WorkTypesDao>()
+
+    get("{id}") {
+        val journalId = call.parameters["id"]?.toIntOrNull() ?: throw ValidationException("id is empty")
+        val journal = journalsDao.singleById(journalId) ?: throw ContentNotFoundException
+        val workType = workTypesDao.singleWorkType(journal.discipline.workTypeId)
+
+        respondSuccess { journal.mapToItem(workType) }
     }
 }
 
@@ -62,38 +127,6 @@ private data class GetJournalResponse(
     val offset: Int,
     val journal: List<JournalItem>
 )
-
-private fun Route.filters() {
-    val workTypesDao by inject<WorkTypesDao>()
-    val disciplinesDao by inject<DisciplinesDao>()
-    val teachersDao by inject<TeachersDao>()
-    val groupsDao by inject<GroupsDao>()
-    val departmentsDao by inject<DepartmentsDao>()
-
-    get("/journals/filters") {
-        val workTypes = workTypesDao.allWorkTypes()
-        val disciplines = disciplinesDao.allDisciplines()
-        val teachers = teachersDao.allTeachers()
-        val groups = groupsDao.allGroups()
-        val departments = departmentsDao.allDepartments()
-
-        respondSuccess {
-            JournalFilters(
-                workTypes = workTypes.map(WorkType::mapToFilter),
-                disciplines = disciplines.map(Discipline::mapToFilter),
-                teachers = teachers.map(Teacher::mapToFilter),
-                groups = groups.map(Group::mapToFilter),
-                departments = departments.map(Department::mapToFilter)
-            )
-        }
-    }
-}
-
-private fun Filterable.mapToFilter(): JournalFilter =
-    JournalFilter(
-        id = this.id,
-        title = this.title
-    )
 
 private fun Journal.mapToItem(workType: WorkType?): JournalItem? =
     if (workType == null) null
@@ -129,7 +162,7 @@ private data class JournalFilters(
     val departments: List<JournalFilter>
 )
 
-private data class JournalFilter(
+data class JournalFilter(
     val id: Int,
     val title: String
 )

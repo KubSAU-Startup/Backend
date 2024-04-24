@@ -2,6 +2,7 @@ package com.meloda.kubsau.database.groups
 
 import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.model.Group
+import com.meloda.kubsau.route.journal.JournalFilter
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
@@ -10,6 +11,12 @@ class GroupsDaoImpl : GroupsDao {
 
     override suspend fun allGroups(): List<Group> = dbQuery {
         Groups.selectAll().map(::mapResultRow)
+    }
+
+    override suspend fun allGroupsAsFilters(): List<JournalFilter> = dbQuery {
+        Groups
+            .select(Groups.id, Groups.title)
+            .map(::mapFilterResultRow)
     }
 
     override suspend fun allGroupsByIds(groupIds: List<Int>): List<Group> = dbQuery {
@@ -50,4 +57,9 @@ class GroupsDaoImpl : GroupsDao {
     }
 
     override fun mapResultRow(row: ResultRow): Group = Group.mapResultRow(row)
+
+    override fun mapFilterResultRow(row: ResultRow): JournalFilter = JournalFilter(
+        id = row[Groups.id].value,
+        title = row[Groups.title]
+    )
 }

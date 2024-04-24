@@ -2,6 +2,7 @@ package com.meloda.kubsau.database.worktypes
 
 import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.model.WorkType
+import com.meloda.kubsau.route.journal.JournalFilter
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
@@ -10,6 +11,12 @@ class WorkTypesDaoImpl : WorkTypesDao {
 
     override suspend fun allWorkTypes(): List<WorkType> = dbQuery {
         WorkTypes.selectAll().map(::mapResultRow)
+    }
+
+    override suspend fun allWorkTypesAsFilters(): List<JournalFilter> = dbQuery {
+        WorkTypes
+            .select(WorkTypes.id, WorkTypes.title)
+            .map(::mapFilterResultRow)
     }
 
     override suspend fun allWorkTypesByIds(workTypeIds: List<Int>): List<WorkType> = dbQuery {
@@ -62,4 +69,9 @@ class WorkTypesDaoImpl : WorkTypesDao {
     }
 
     override fun mapResultRow(row: ResultRow): WorkType = WorkType.mapResultRow(row)
+
+    override fun mapFilterResultRow(row: ResultRow): JournalFilter = JournalFilter(
+        id = row[WorkTypes.id].value,
+        title = row[WorkTypes.title]
+    )
 }

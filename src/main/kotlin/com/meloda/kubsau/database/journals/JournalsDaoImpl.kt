@@ -26,8 +26,7 @@ class JournalsDaoImpl : JournalsDao {
             .map(::mapResultRow)
     }
 
-    override suspend fun allJournals(
-        journalId: Int?,
+    override suspend fun allJournalsByFilters(
         studentId: Int?,
         groupId: Int?,
         disciplineId: Int?,
@@ -36,16 +35,13 @@ class JournalsDaoImpl : JournalsDao {
         departmentId: Int?,
         workTypeId: Int?
     ) = dbQuery {
-        val query = if (journalId != null) Journals.id eq journalId
-        else {
-            (studentId?.let { Journals.studentId eq studentId } ?: Op.TRUE) andIfNotNull
-                    (groupId?.let { Journals.groupId eq groupId }) andIfNotNull
-                    (disciplineId?.let { Journals.disciplineId eq disciplineId }) andIfNotNull
-                    (teacherId?.let { Journals.teacherId eq teacherId }) andIfNotNull
-                    (workId?.let { Journals.workId eq workId }) andIfNotNull
-                    (departmentId?.let { Teachers.departmentId eq departmentId }) andIfNotNull
-                    (workTypeId?.let { Disciplines.workTypeId eq workTypeId })
-        }
+        val query = (studentId?.let { Journals.studentId eq studentId } ?: Op.TRUE) andIfNotNull
+                (groupId?.let { Journals.groupId eq groupId }) andIfNotNull
+                (disciplineId?.let { Journals.disciplineId eq disciplineId }) andIfNotNull
+                (teacherId?.let { Journals.teacherId eq teacherId }) andIfNotNull
+                (workId?.let { Journals.workId eq workId }) andIfNotNull
+                (departmentId?.let { Teachers.departmentId eq departmentId }) andIfNotNull
+                (workTypeId?.let { Disciplines.workTypeId eq workTypeId })
 
         Journals
             .innerJoin(Students, { Journals.studentId }, { Students.id })
@@ -72,6 +68,38 @@ class JournalsDaoImpl : JournalsDao {
             .map(::mapResultRow)
     }
 
+    override suspend fun allJournalsByIdsWithFilters(
+        journalIds: List<Int>,
+        studentId: Int?,
+        groupId: Int?,
+        disciplineId: Int?,
+        teacherId: Int?,
+        workId: Int?,
+        departmentId: Int?,
+        workTypeId: Int?
+    ): List<Journal> = dbQuery {
+        val query =
+            (Journals.id inList journalIds) andIfNotNull
+                    (studentId?.let { Journals.studentId eq studentId } ?: Op.TRUE) andIfNotNull
+                    (groupId?.let { Journals.groupId eq groupId }) andIfNotNull
+                    (disciplineId?.let { Journals.disciplineId eq disciplineId }) andIfNotNull
+                    (teacherId?.let { Journals.teacherId eq teacherId }) andIfNotNull
+                    (workId?.let { Journals.workId eq workId }) andIfNotNull
+                    (departmentId?.let { Teachers.departmentId eq departmentId }) andIfNotNull
+                    (workTypeId?.let { Disciplines.workTypeId eq workTypeId })
+
+        Journals
+            .innerJoin(Students, { Journals.studentId }, { Students.id })
+            .innerJoin(Groups, { Journals.groupId }, { Groups.id })
+            .innerJoin(Disciplines, { Journals.disciplineId }, { Disciplines.id })
+            .innerJoin(Teachers, { Journals.teacherId }, { Teachers.id })
+            .innerJoin(Works, { Journals.workId }, { Works.id })
+            .innerJoin(Departments, { Teachers.departmentId }, { Departments.id })
+            .selectAll()
+            .where { query }
+            .map(::mapResultRow)
+    }
+
     override suspend fun singleById(journalId: Int): Journal? = dbQuery {
         Journals
             .innerJoin(Students, { studentId }, { Students.id })
@@ -82,6 +110,37 @@ class JournalsDaoImpl : JournalsDao {
             .innerJoin(Departments, { Teachers.departmentId }, { Departments.id })
             .selectAll()
             .where { Journals.id eq journalId }
+            .map(::mapResultRow)
+            .singleOrNull()
+    }
+
+    override suspend fun singleByFilters(
+        studentId: Int?,
+        groupId: Int?,
+        disciplineId: Int?,
+        teacherId: Int?,
+        workId: Int?,
+        departmentId: Int?,
+        workTypeId: Int?
+    ): Journal? = dbQuery {
+        val query =
+            (studentId?.let { Journals.studentId eq studentId } ?: Op.TRUE) andIfNotNull
+                    (groupId?.let { Journals.groupId eq groupId }) andIfNotNull
+                    (disciplineId?.let { Journals.disciplineId eq disciplineId }) andIfNotNull
+                    (teacherId?.let { Journals.teacherId eq teacherId }) andIfNotNull
+                    (workId?.let { Journals.workId eq workId }) andIfNotNull
+                    (departmentId?.let { Teachers.departmentId eq departmentId }) andIfNotNull
+                    (workTypeId?.let { Disciplines.workTypeId eq workTypeId })
+
+        Journals
+            .innerJoin(Students, { Journals.studentId }, { Students.id })
+            .innerJoin(Groups, { Journals.groupId }, { Groups.id })
+            .innerJoin(Disciplines, { Journals.disciplineId }, { Disciplines.id })
+            .innerJoin(Teachers, { Journals.teacherId }, { Teachers.id })
+            .innerJoin(Works, { Journals.workId }, { Works.id })
+            .innerJoin(Departments, { Teachers.departmentId }, { Departments.id })
+            .selectAll()
+            .where { query }
             .map(::mapResultRow)
             .singleOrNull()
     }

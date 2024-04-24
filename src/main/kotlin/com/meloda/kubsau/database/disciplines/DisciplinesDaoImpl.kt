@@ -2,6 +2,7 @@ package com.meloda.kubsau.database.disciplines
 
 import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.model.Discipline
+import com.meloda.kubsau.route.journal.JournalFilter
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
@@ -10,6 +11,12 @@ class DisciplinesDaoImpl : DisciplinesDao {
 
     override suspend fun allDisciplines(): List<Discipline> = dbQuery {
         Disciplines.selectAll().map(::mapResultRow)
+    }
+
+    override suspend fun allDisciplinesAsFilters(): List<JournalFilter> = dbQuery {
+        Disciplines
+            .select(Disciplines.id, Disciplines.title)
+            .map(::mapFilterResultRow)
     }
 
     override suspend fun allDisciplinesByIds(disciplineIds: List<Int>): List<Discipline> = dbQuery {
@@ -50,4 +57,9 @@ class DisciplinesDaoImpl : DisciplinesDao {
     }
 
     override fun mapResultRow(row: ResultRow): Discipline = Discipline.mapResultRow(row)
+
+    override fun mapFilterResultRow(row: ResultRow): JournalFilter = JournalFilter(
+        id = row[Disciplines.id].value,
+        title = row[Disciplines.title]
+    )
 }

@@ -1,11 +1,13 @@
 package com.meloda.kubsau.database.worktypes
 
-import com.meloda.kubsau.database.Dao
+import com.meloda.kubsau.database.FilterableDao
 import com.meloda.kubsau.model.WorkType
+import com.meloda.kubsau.route.journal.JournalFilter
 
-interface WorkTypesDao : Dao<WorkType> {
+interface WorkTypesDao : FilterableDao<WorkType, JournalFilter> {
 
     suspend fun allWorkTypes(): List<WorkType>
+    suspend fun allWorkTypesAsFilters(): List<JournalFilter>
     suspend fun allWorkTypesByIds(workTypeIds: List<Int>): List<WorkType>
     suspend fun singleWorkType(workTypeId: Int): WorkType?
     suspend fun singleWorkType(title: String): WorkType?

@@ -1,11 +1,13 @@
 package com.meloda.kubsau.database.groups
 
-import com.meloda.kubsau.database.Dao
+import com.meloda.kubsau.database.FilterableDao
 import com.meloda.kubsau.model.Group
+import com.meloda.kubsau.route.journal.JournalFilter
 
-interface GroupsDao : Dao<Group> {
+interface GroupsDao : FilterableDao<Group, JournalFilter> {
 
     suspend fun allGroups(): List<Group>
+    suspend fun allGroupsAsFilters(): List<JournalFilter>
     suspend fun allGroupsByIds(groupIds: List<Int>): List<Group>
     suspend fun singleGroup(groupId: Int): Group?
     suspend fun addNewGroup(title: String, majorId: Int): Group?
