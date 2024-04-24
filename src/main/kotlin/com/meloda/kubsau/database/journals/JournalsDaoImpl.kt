@@ -10,6 +10,7 @@ import com.meloda.kubsau.database.works.Works
 import com.meloda.kubsau.model.Journal
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 
 class JournalsDaoImpl : JournalsDao {
 
@@ -58,25 +59,75 @@ class JournalsDaoImpl : JournalsDao {
             .map(::mapResultRow)
     }
 
+    override suspend fun allJournalsByIds(journalIds: List<Int>): List<Journal> = dbQuery {
+        Journals
+            .innerJoin(Students, { studentId }, { Students.id })
+            .innerJoin(Groups, { Journals.groupId }, { Groups.id })
+            .innerJoin(Disciplines, { Journals.disciplineId }, { Disciplines.id })
+            .innerJoin(Teachers, { Journals.teacherId }, { Teachers.id })
+            .innerJoin(Works, { Journals.workId }, { Works.id })
+            .innerJoin(Departments, { Teachers.departmentId }, { Departments.id })
+            .selectAll()
+            .where { Journals.id inList journalIds }
+            .map(::mapResultRow)
+    }
+
+    override suspend fun singleById(journalId: Int): Journal? = dbQuery {
+        Journals
+            .innerJoin(Students, { studentId }, { Students.id })
+            .innerJoin(Groups, { Journals.groupId }, { Groups.id })
+            .innerJoin(Disciplines, { Journals.disciplineId }, { Disciplines.id })
+            .innerJoin(Teachers, { Journals.teacherId }, { Teachers.id })
+            .innerJoin(Works, { Journals.workId }, { Works.id })
+            .innerJoin(Departments, { Teachers.departmentId }, { Departments.id })
+            .selectAll()
+            .where { Journals.id eq journalId }
+            .map(::mapResultRow)
+            .singleOrNull()
+    }
+
     override suspend fun addNewJournal(
         studentId: Int,
         groupId: Int,
         disciplineId: Int,
         teacherId: Int,
         workId: Int
-    ): Int? = dbQuery {
-        Journals
-            .insert {
-                it[Journals.studentId] = studentId
-                it[Journals.groupId] = groupId
-                it[Journals.disciplineId] = disciplineId
-                it[Journals.teacherId] = teacherId
-                it[Journals.workId] = workId
-            }.resultedValues?.singleOrNull()?.let { row -> row[Journals.id].value }
+    ): Journal? = dbQuery {
+        Journals.insert {
+            it[Journals.studentId] = studentId
+            it[Journals.groupId] = groupId
+            it[Journals.disciplineId] = disciplineId
+            it[Journals.teacherId] = teacherId
+            it[Journals.workId] = workId
+        }.resultedValues
+            ?.singleOrNull()
+            ?.let { row -> row[Journals.id].value }
+            ?.let { id -> singleById(id) }
+    }
+
+    override suspend fun updateJournal(
+        journalId: Int,
+        studentId: Int,
+        groupId: Int,
+        disciplineId: Int,
+        teacherId: Int,
+        workId: Int
+    ): Int = dbQuery {
+        Journals.update(where = { Journals.id eq journalId }) {
+            it[Journals.studentId] = studentId
+            it[Journals.groupId] = groupId
+            it[Journals.disciplineId] = disciplineId
+            it[Journals.teacherId] = teacherId
+            it[Journals.workId] = workId
+        }
     }
 
     override suspend fun deleteJournal(journalId: Int): Boolean = dbQuery {
         Journals.deleteWhere { Journals.id eq journalId } > 0
+    }
+
+    override suspend fun deleteJournals(journalIds: List<Int>): Boolean = dbQuery {
+        Journals.deleteWhere { Journals.id inList journalIds } > 0
     }
 
     override fun mapResultRow(row: ResultRow): Journal = Journal.mapResultRow(row)

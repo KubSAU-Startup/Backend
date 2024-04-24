@@ -18,13 +18,26 @@ interface JournalsDao : Dao<Journal> {
         workTypeId: Int?
     ): List<Journal>
 
+    suspend fun allJournalsByIds(journalIds: List<Int>): List<Journal>
+    suspend fun singleById(journalId: Int): Journal?
+
     suspend fun addNewJournal(
         studentId: Int,
         groupId: Int,
         disciplineId: Int,
         teacherId: Int,
         workId: Int
-    ): Int?
+    ): Journal?
+
+    suspend fun updateJournal(
+        journalId: Int,
+        studentId: Int,
+        groupId: Int,
+        disciplineId: Int,
+        teacherId: Int,
+        workId: Int
+    ): Int
 
     suspend fun deleteJournal(journalId: Int): Boolean
+    suspend fun deleteJournals(journalIds: List<Int>): Boolean
 }
