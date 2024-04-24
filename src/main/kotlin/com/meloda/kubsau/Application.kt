@@ -68,6 +68,7 @@ private fun configureServer() {
             allowMethod(HttpMethod.Get)
             allowMethod(HttpMethod.Post)
             allowMethod(HttpMethod.Delete)
+            allowMethod(HttpMethod.Patch)
 
             allowHeader(HttpHeaders.ContentType)
             allowHeader(HttpHeaders.Accept)
