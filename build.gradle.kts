@@ -12,7 +12,7 @@ application {
 }
 
 group = "com.meloda.kubsau.backend"
-version = "0.0.9"
+version = "0.1.0"
 
 repositories {
     mavenCentral()
@@ -50,9 +50,13 @@ dependencies {
     implementation("io.insert-koin:koin-ktor")
     implementation("io.insert-koin:koin-logger-slf4j")
 
-    val sqliteJdbcVersion = "3.45.0.0"
+    val sqliteJdbcVersion = "3.45.3.0"
 
     implementation("org.xerial:sqlite-jdbc:$sqliteJdbcVersion")
+
+    val logBackVersion = "1.5.6"
+
+    implementation("ch.qos.logback:logback-classic:$logBackVersion")
 }
 
 kotlin {

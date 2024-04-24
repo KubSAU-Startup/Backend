@@ -2,7 +2,7 @@ package com.meloda.kubsau.common
 
 object Constants {
 
-    const val BACKEND_VERSION = "0.0.9"
+    const val BACKEND_VERSION = "0.1.0"
 }
 
-val isInDocker = System.getenv("IS_DOCKER") == "true"
+val isInDocker = getEnvOrElse("IS_DOCKER") { "false" }.toBooleanStrict()

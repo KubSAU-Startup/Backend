@@ -1,6 +1,8 @@
 package com.meloda.kubsau
 
 import com.meloda.kubsau.common.Constants
+import com.meloda.kubsau.common.LogLevel
+import com.meloda.kubsau.common.getEnvOrNull
 import com.meloda.kubsau.common.isInDocker
 import com.meloda.kubsau.database.DatabaseController
 import com.meloda.kubsau.database.departments.DepartmentsDao
@@ -33,11 +35,9 @@ import org.slf4j.event.Level
 import kotlin.random.Random
 import kotlin.system.measureTimeMillis
 
-val PORT = try {
-    System.getenv("PORT").toIntOrNull() ?: 8080
-} catch (e: Exception) {
-    8080
-}
+val PORT = getEnvOrNull("PORT")?.toIntOrNull() ?: 8080
+val CALL_LOG_LEVEL = getEnvOrNull("CALL_LOG_LEVEL")
+    ?.let(LogLevel.Companion::parse)?.toLevel() ?: Level.WARN
 
 var startTime = 0L
 
@@ -54,11 +54,12 @@ private fun configureServer() {
         port = PORT,
         watchPaths = listOf("classes")
     ) {
+
         configureKoin()
         prepopulateDB()
 
         install(CallLogging) {
-            level = Level.DEBUG
+            level = CALL_LOG_LEVEL
         }
 
         install(AutoHeadResponse)
