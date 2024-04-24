@@ -4,25 +4,25 @@ import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.model.User
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 
 class UsersDaoImpl : UsersDao {
-
-    override fun mapResultRow(row: ResultRow) = User(
-        id = row[Users.id].value,
-        login = row[Users.login],
-        password = row[Users.password],
-        type = row[Users.type],
-        departmentId = row[Users.departmentId]
-    )
 
     override suspend fun allUsers(): List<User> = dbQuery {
         Users.selectAll().map(::mapResultRow)
     }
 
-    override suspend fun singleUser(id: Int): User? = dbQuery {
+    override suspend fun allUsersByIds(userIds: List<Int>): List<User> = dbQuery {
         Users
             .selectAll()
-            .where { Users.id eq id }
+            .where { Users.id inList userIds }
+            .map(::mapResultRow)
+    }
+
+    override suspend fun singleUser(userId: Int): User? = dbQuery {
+        Users
+            .selectAll()
+            .where { Users.id eq userId }
             .map(::mapResultRow)
             .singleOrNull()
     }
@@ -49,14 +49,20 @@ class UsersDaoImpl : UsersDao {
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 
-    override suspend fun editUser(id: Int, login: String, password: String): Boolean = dbQuery {
-        Users.update({ Users.id eq id }) {
+    override suspend fun updateUser(userId: Int, login: String, password: String): Int = dbQuery {
+        Users.update({ Users.id eq userId }) {
             it[Users.login] = login
             it[Users.password] = password
-        } > 0
+        }
     }
 
-    override suspend fun deleteUser(id: Int): Boolean = dbQuery {
-        Users.deleteWhere { Users.id eq id } > 0
+    override suspend fun deleteUser(userId: Int): Boolean = dbQuery {
+        Users.deleteWhere { Users.id eq userId } > 0
     }
+
+    override suspend fun deleteUsers(userIds: List<Int>): Boolean = dbQuery {
+        Users.deleteWhere { Users.id inList userIds } > 0
+    }
+
+    override fun mapResultRow(row: ResultRow): User = User.mapResultRow(row)
 }

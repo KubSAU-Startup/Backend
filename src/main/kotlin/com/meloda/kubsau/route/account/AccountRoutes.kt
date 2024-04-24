@@ -31,7 +31,7 @@ private fun Route.getAccountInfoRoute() {
         val userId = usersDao.singleUser(login = login)?.id ?: throw UnknownException
 
         val session = sessionsDao.singleSession(userId = userId) ?: throw SessionExpiredException
-        val user = usersDao.singleUser(id = session.userId) ?: throw UnknownException
+        val user = usersDao.singleUser(userId = session.userId) ?: throw UnknownException
 
         respondSuccess {
             AccountInfo(
