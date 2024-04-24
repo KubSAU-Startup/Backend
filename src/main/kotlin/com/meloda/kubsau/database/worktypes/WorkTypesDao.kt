@@ -10,6 +10,8 @@ interface WorkTypesDao : Dao<WorkType> {
     suspend fun singleWorkType(workTypeId: Int): WorkType?
     suspend fun singleWorkType(title: String): WorkType?
     suspend fun addNewWorkType(title: String, isEditable: Boolean): WorkType?
+    suspend fun updateWorkType(workTypeId: Int, title: String, isEditable: Boolean): Int
     suspend fun deleteWorkType(workTypeId: Int): Boolean
     suspend fun deleteWorkType(title: String): Boolean
+    suspend fun deleteWorkTypes(workTypeIds: List<Int>): Boolean
 }
