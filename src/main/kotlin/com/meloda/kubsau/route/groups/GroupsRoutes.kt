@@ -18,8 +18,8 @@ fun Route.groupsRoutes() {
             getGroupById()
             addGroup()
             editGroup()
-            deleteGroup()
-            deleteGroups()
+            deleteGroupById()
+            deleteGroupsByIds()
         }
     }
 }
@@ -103,7 +103,7 @@ private fun Route.editGroup() {
     }
 }
 
-private fun Route.deleteGroup() {
+private fun Route.deleteGroupById() {
     val groupsDao by inject<GroupsDao>()
 
     delete("{id}") {
@@ -118,7 +118,7 @@ private fun Route.deleteGroup() {
     }
 }
 
-private fun Route.deleteGroups() {
+private fun Route.deleteGroupsByIds() {
     val groupsDao by inject<GroupsDao>()
 
     delete {
