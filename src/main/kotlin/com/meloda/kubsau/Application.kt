@@ -1,9 +1,6 @@
 package com.meloda.kubsau
 
-import com.meloda.kubsau.common.Constants
-import com.meloda.kubsau.common.LogLevel
-import com.meloda.kubsau.common.getEnvOrNull
-import com.meloda.kubsau.common.isInDocker
+import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.DatabaseController
 import com.meloda.kubsau.database.departments.DepartmentsDao
 import com.meloda.kubsau.database.disciplines.DisciplinesDao
@@ -29,6 +26,7 @@ import io.ktor.server.netty.*
 import io.ktor.server.plugins.autohead.*
 import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.cors.routing.*
+import io.ktor.server.request.*
 import kotlinx.coroutines.runBlocking
 import org.koin.ktor.ext.inject
 import org.slf4j.event.Level
@@ -36,8 +34,6 @@ import kotlin.random.Random
 import kotlin.system.measureTimeMillis
 
 val PORT = getEnvOrNull("PORT")?.toIntOrNull() ?: 8080
-val CALL_LOG_LEVEL = getEnvOrNull("CALL_LOG_LEVEL")
-    ?.let(LogLevel.Companion::parse)?.toLevel() ?: Level.WARN
 
 var startTime = 0L
 
@@ -54,12 +50,16 @@ private fun configureServer() {
         port = PORT,
         watchPaths = listOf("classes")
     ) {
-
-        configureKoin()
-        prepopulateDB()
-
         install(CallLogging) {
-            level = CALL_LOG_LEVEL
+            level = Level.INFO
+            filter { call ->
+                call.request.path().startsWith("/")
+            }
+            format { call ->
+                val requestLog = call.request.toLogString()
+                val responseLog = call.response.toLogString()
+                "$requestLog -> $responseLog"
+            }
         }
 
         install(AutoHeadResponse)
@@ -79,6 +79,9 @@ private fun configureServer() {
         configureAuthentication()
         configureExceptions()
         configureContentNegotiation()
+
+        configureKoin()
+        prepopulateDB()
 
         routing()
     }

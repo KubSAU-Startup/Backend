@@ -26,28 +26,62 @@ fun Route.journalsRoutes() {
 }
 
 private fun Route.getFilters() {
+    route("/filters") {
+        getWorkTypesFilters()
+        getDisciplinesFilters()
+        getTeachersFilters()
+        getGroupsFilters()
+        getDepartmentsFilters()
+    }
+}
+
+private fun Route.getWorkTypesFilters() {
     val workTypesDao by inject<WorkTypesDao>()
+
+    get("/worktypes") {
+        val workTypesFilters = workTypesDao.allWorkTypesAsFilters()
+
+        respondSuccess { workTypesFilters }
+    }
+}
+
+private fun Route.getDisciplinesFilters() {
     val disciplinesDao by inject<DisciplinesDao>()
+
+    get("/disciplines") {
+        val disciplinesFilters = disciplinesDao.allDisciplinesAsFilters()
+
+        respondSuccess { disciplinesFilters }
+    }
+}
+
+private fun Route.getTeachersFilters() {
     val teachersDao by inject<TeachersDao>()
+
+    get("/teachers") {
+        val teachersFilters = teachersDao.allTeachersAsFilters()
+
+        respondSuccess { teachersFilters }
+    }
+}
+
+private fun Route.getGroupsFilters() {
     val groupsDao by inject<GroupsDao>()
+
+    get("/groups") {
+        val groupsFilters = groupsDao.allGroupsAsFilters()
+
+        respondSuccess { groupsFilters }
+    }
+}
+
+private fun Route.getDepartmentsFilters() {
     val departmentsDao by inject<DepartmentsDao>()
 
-    get("/filters") {
-        val workTypes = workTypesDao.allWorkTypesAsFilters()
-        val disciplines = disciplinesDao.allDisciplinesAsFilters()
-        val teachers = teachersDao.allTeachersAsFilters()
-        val groups = groupsDao.allGroupsAsFilters()
-        val departments = departmentsDao.allDepartmentsAsFilters()
+    get("/departments") {
+        val departmentsFilters = departmentsDao.allDepartmentsAsFilters()
 
-        respondSuccess {
-            JournalFilters(
-                workTypes = workTypes,
-                disciplines = disciplines,
-                teachers = teachers,
-                groups = groups,
-                departments = departments
-            )
-        }
+        respondSuccess { departmentsFilters }
     }
 }
 
