@@ -34,17 +34,17 @@ class GroupsDaoImpl : GroupsDao {
             .singleOrNull()
     }
 
-    override suspend fun addNewGroup(title: String, majorId: Int): Group? = dbQuery {
+    override suspend fun addNewGroup(title: String, directivityId: Int): Group? = dbQuery {
         Groups.insert {
             it[Groups.title] = title
-            it[Groups.majorId] = majorId
+            it[Groups.directivityId] = directivityId
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 
-    override suspend fun updateGroup(groupId: Int, title: String, majorId: Int): Int = dbQuery {
+    override suspend fun updateGroup(groupId: Int, title: String, directivityId: Int): Int = dbQuery {
         Groups.update(where = { Groups.id eq groupId }) {
             it[Groups.title] = title
-            it[Groups.majorId] = majorId
+            it[Groups.directivityId] = directivityId
         }
     }
 

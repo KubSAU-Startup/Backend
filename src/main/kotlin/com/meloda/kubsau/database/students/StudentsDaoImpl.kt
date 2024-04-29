@@ -44,16 +44,16 @@ class StudentsDaoImpl : StudentsDao {
     override suspend fun addNewStudent(
         firstName: String,
         lastName: String,
-        middleName: String,
+        middleName: String?,
         groupId: Int,
-        status: Int
+        statusId: Int
     ): Student? = dbQuery {
         Students.insert {
             it[Students.firstName] = firstName
             it[Students.lastName] = lastName
             it[Students.middleName] = middleName
             it[Students.groupId] = groupId
-            it[Students.status] = status
+            it[Students.statusId] = statusId
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 
@@ -61,17 +61,17 @@ class StudentsDaoImpl : StudentsDao {
         studentId: Int,
         firstName: String,
         lastName: String,
-        middleName: String,
+        middleName: String?,
         groupId: Int,
-        status: Int
-    ): Int = dbQuery {
+        statusId: Int
+    ): Boolean = dbQuery {
         Students.update(where = { Students.id eq studentId }) {
             it[Students.firstName] = firstName
             it[Students.lastName] = lastName
             it[Students.middleName] = middleName
             it[Students.groupId] = groupId
-            it[Students.status] = status
-        }
+            it[Students.statusId] = statusId
+        } > 0
     }
 
     override suspend fun deleteStudent(studentId: Int): Boolean = dbQuery {

@@ -14,19 +14,19 @@ interface StudentsDao : Dao<Student> {
     suspend fun addNewStudent(
         firstName: String,
         lastName: String,
-        middleName: String,
+        middleName: String?,
         groupId: Int,
-        status: Int
+        statusId: Int
     ): Student?
 
     suspend fun updateStudent(
         studentId: Int,
         firstName: String,
         lastName: String,
-        middleName: String,
+        middleName: String?,
         groupId: Int,
-        status: Int
-    ): Int
+        statusId: Int
+    ): Boolean
 
     suspend fun deleteStudent(studentId: Int): Boolean
     suspend fun deleteStudents(studentIds: List<Int>): Boolean

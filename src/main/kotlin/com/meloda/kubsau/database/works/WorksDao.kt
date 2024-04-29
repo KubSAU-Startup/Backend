@@ -2,10 +2,21 @@ package com.meloda.kubsau.database.works
 
 import com.meloda.kubsau.database.Dao
 import com.meloda.kubsau.model.Work
+import com.meloda.kubsau.route.journal.JournalItem
 
 interface WorksDao : Dao<Work> {
 
     suspend fun allWorks(): List<Work>
+
+    suspend fun allWorksByFilters(
+        disciplineId: Int?,
+        studentId: Int?,
+        groupId: Int?,
+        employeeId: Int?,
+        departmentId: Int?,
+        workTypeId: Int?
+    ): List<JournalItem>
+
     suspend fun allWorksByIds(workIds: List<Int>): List<Work>
     suspend fun singleWork(workId: Int): Work?
 
@@ -13,7 +24,8 @@ interface WorksDao : Dao<Work> {
         disciplineId: Int,
         studentId: Int,
         registrationDate: Long,
-        title: String?
+        title: String?,
+        workTypeId: Int
     ): Work?
 
     suspend fun updateWork(
@@ -21,8 +33,9 @@ interface WorksDao : Dao<Work> {
         disciplineId: Int,
         studentId: Int,
         registrationDate: Long,
-        title: String?
-    ): Int
+        title: String?,
+        workTypeId: Int
+    ): Boolean
 
     suspend fun deleteWork(workId: Int): Boolean
     suspend fun deleteWorks(workIds: List<Int>): Boolean

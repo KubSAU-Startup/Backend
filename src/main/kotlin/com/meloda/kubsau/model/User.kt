@@ -9,7 +9,7 @@ data class User(
     // TODO: 24/02/2024, Danil Nikolaev: SECURITY, FOR FUCK's SAKE
     val password: String,
     val type: Int,
-    val departmentId: Int
+    val employeeId: Int
 ) {
     companion object {
 
@@ -18,7 +18,7 @@ data class User(
             login = row[Users.login],
             password = row[Users.password],
             type = row[Users.type],
-            departmentId = row[Users.departmentId]
+            employeeId = row[Users.employeeId]
         )
     }
 }

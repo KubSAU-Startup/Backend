@@ -3,13 +3,18 @@ package com.meloda.kubsau.database.programsdisciplines
 import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.database.disciplines.Disciplines
 import com.meloda.kubsau.database.programs.Programs
+import com.meloda.kubsau.database.programs.ProgramsDao
 import com.meloda.kubsau.model.Discipline
 import com.meloda.kubsau.model.Program
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
-class ProgramsDisciplinesDaoImpl : ProgramsDisciplinesDao {
-    override suspend fun allItems(): List<Pair<Program, Discipline>> = dbQuery {
+class ProgramsDisciplinesDaoImpl(
+    private val programsDao: ProgramsDao,
+    private val disciplinesDao: ProgramsDisciplinesDao
+) : ProgramsDisciplinesDao {
+
+    override suspend fun allReferences(): List<Pair<Program, Discipline>> = dbQuery {
         ProgramsDisciplines.innerJoin(Programs).innerJoin(Disciplines)
             .selectAll()
             .map(::mapBothResultRow)
@@ -37,10 +42,11 @@ class ProgramsDisciplinesDaoImpl : ProgramsDisciplinesDao {
             .singleOrNull()
     }
 
-    override suspend fun addNewReference(programId: Int, disciplineId: Int): Boolean = dbQuery {
+    override suspend fun addNewReference(programId: Int, disciplineId: Int, workTypeId: Int): Boolean = dbQuery {
         ProgramsDisciplines.insert {
             it[ProgramsDisciplines.programId] = programId
             it[ProgramsDisciplines.disciplineId] = disciplineId
+            it[ProgramsDisciplines.workTypeId] = workTypeId
         }.resultedValues?.size != 0
     }
 

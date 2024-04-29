@@ -42,18 +42,18 @@ class WorkTypesDaoImpl : WorkTypesDao {
             .singleOrNull()
     }
 
-    override suspend fun addNewWorkType(title: String, isEditable: Boolean): WorkType? = dbQuery {
+    override suspend fun addNewWorkType(title: String, needTitle: Boolean): WorkType? = dbQuery {
         WorkTypes.insert {
             it[WorkTypes.title] = title
-            it[WorkTypes.isEditable] = if (isEditable) 1 else 0
+            it[WorkTypes.needTitle] = needTitle
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 
-    override suspend fun updateWorkType(workTypeId: Int, title: String, isEditable: Boolean): Int = dbQuery {
+    override suspend fun updateWorkType(workTypeId: Int, title: String, needTitle: Boolean): Boolean = dbQuery {
         WorkTypes.update(where = { WorkTypes.id eq workTypeId }) {
             it[WorkTypes.title] = title
-            it[WorkTypes.isEditable] = if (isEditable) 1 else 0
-        }
+            it[WorkTypes.needTitle] = needTitle
+        } > 0
     }
 
     override suspend fun deleteWorkType(workTypeId: Int): Boolean = dbQuery {

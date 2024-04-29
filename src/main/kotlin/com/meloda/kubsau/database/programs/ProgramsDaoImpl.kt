@@ -34,22 +34,25 @@ class ProgramsDaoImpl : ProgramsDao {
             .singleOrNull()
     }
 
-    override suspend fun addNewProgram(title: String, semester: Int): Program? = dbQuery {
+    override suspend fun addNewProgram(title: String, semester: Int, directivityId: Int): Program? = dbQuery {
         Programs.insert {
             it[Programs.title] = title
             it[Programs.semester] = semester
+            it[Programs.directivityId] = directivityId
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 
     override suspend fun updateProgram(
         programId: Int,
         title: String,
-        semester: Int
-    ): Int = dbQuery {
+        semester: Int,
+        directivityId: Int
+    ): Boolean = dbQuery {
         Programs.update(where = { Programs.id eq programId }) {
             it[Programs.title] = title
             it[Programs.semester] = semester
-        }
+            it[Programs.directivityId] = directivityId
+        } > 0
     }
 
     override suspend fun deleteProgram(programId: Int): Boolean = dbQuery {

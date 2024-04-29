@@ -1,6 +1,8 @@
 package com.meloda.kubsau.route.qr
 
 import com.meloda.kubsau.api.respondSuccess
+import com.meloda.kubsau.common.getIntOrThrow
+import com.meloda.kubsau.common.getOrThrow
 import com.meloda.kubsau.database.groups.GroupsDao
 import com.meloda.kubsau.database.programs.ProgramsDao
 import com.meloda.kubsau.database.programsdisciplines.ProgramsDisciplinesDao
@@ -16,8 +18,6 @@ import org.koin.ktor.ext.inject
 fun Route.qrRoutes() {
     authenticate {
         route("/qr") {
-            getData()
-
             groups()
             students()
             programs()
@@ -41,18 +41,21 @@ private fun Route.students() {
     val studentsDao by inject<StudentsDao>()
 
     get("/groups/{groupId}/students") {
-        val groupId = call.parameters["groupId"]?.toIntOrNull() ?: throw ValidationException("groupId is empty")
+        val groupId = call.parameters.getIntOrThrow("groupId")
         val students = studentsDao.allStudentsByGroupId(groupId)
         respondSuccess { students }
     }
 
     get("/groups/students") {
         val params = call.request.queryParameters
-        val groupIds = params["groupIds"]
-            ?.split(",")
-            ?.map(String::trim)
-            ?.mapNotNull(String::toIntOrNull)
-            ?: throw ValidationException("groupIds is empty")
+        val groupIds = params.getOrThrow("groupIds")
+            .split(",")
+            .map(String::trim)
+            .mapNotNull(String::toIntOrNull)
+
+        if (groupIds.isEmpty()) {
+            throw ValidationException("groupId is invalid")
+        }
 
         val fullStudents = studentsDao.allStudentsByGroupIds(groupIds)
 
@@ -93,119 +96,94 @@ private fun Route.disciplines() {
     val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
 
     get("/programs/{programId}/disciplines") {
-        val programId = call.parameters["programId"]?.toIntOrNull() ?: throw ValidationException("programId is empty")
+        val programId = call.parameters.getIntOrThrow("programId")
         val disciplines = programsDisciplinesDao.allDisciplinesByProgramId(programId)
 
         respondSuccess { disciplines }
     }
 
-    get("/programs/disciplines") {
-        val params = call.request.queryParameters
+//    get("/programs/disciplines") {
+//        val params = call.request.queryParameters
+//
+//        // TODO: 17/04/2024, Danil Nikolaev: shitty solution
+//        val programIds = params["programIds"]
+//            ?.split(",")
+//            ?.map(String::trim)
+//            ?.mapNotNull(String::toIntOrNull)
+//            ?: programsDisciplinesDao.allReferences().map { (program, _) -> program.id }
+//
+//        val disciplines = if (programIds.isEmpty()) {
+//            programsDisciplinesDao.allReferences().map { (_, discipline) -> discipline }
+//        } else {
+//            programsDisciplinesDao.allDisciplinesByProgramIds(programIds)
+//        }
 
-        val extended = params["extended"]?.toBoolean() ?: false
-
-        // TODO: 17/04/2024, Danil Nikolaev: shitty solution, rewrite db
-        val programIds = params["programIds"]
-            ?.split(",")
-            ?.map(String::trim)
-            ?.mapNotNull(String::toIntOrNull)
-            ?: programsDisciplinesDao.allItems().map { it.first.id }
-
-        val disciplines = if (programIds.isEmpty()) {
-            programsDisciplinesDao.allItems().map { it.second }
-        } else {
-            programsDisciplinesDao.allDisciplinesByProgramIds(programIds)
-        }
-
-        // TODO: 17/04/2024, Danil Nikolaev: improve
-        val response = if (extended) {
-            val workTypes = disciplines.map(Discipline::workTypeId).distinct().let { ids ->
-                workTypesDao.allWorkTypesByIds(ids)
-            }
-
-            val resultDisciplines = List(programIds.size) { index ->
-                DisciplinesWithWorkTypesWithProgramId(
-                    programId = programIds[index],
-                    disciplines = emptyList()
-                )
-            }.toMutableList()
-
-            disciplines.forEach { discipline ->
-                // TODO: 17/04/2024, Danil Nikolaev: shitty solution, rewrite db
-                val programId = programsDisciplinesDao.programByDisciplineId(discipline.id)?.id ?: -1
-                val disciplinesList = resultDisciplines
-                    .firstOrNull { it.programId == programId }?.disciplines
-                    .orEmpty()
-                    .toMutableList()
-
-                disciplinesList += DisciplineWithWorkType(
-                    discipline = discipline,
-                    workType = workTypes.first { it.id == discipline.workTypeId }
-                )
-
-                resultDisciplines
-                    .indexOfFirst { it.programId == programId }
-                    .let { index ->
-                        if (index != -1) {
-                            resultDisciplines[index] = resultDisciplines[index].copy(disciplines = disciplinesList)
-                        }
-                    }
-            }
-
-            resultDisciplines
-        } else {
-            val resultDisciplines = List(programIds.size) { index ->
-                DisciplinesWithProgramId(
-                    programId = programIds[index],
-                    disciplines = emptyList()
-                )
-            }.toMutableList()
-
-            disciplines.forEach { discipline ->
-                // TODO: 17/04/2024, Danil Nikolaev: shitty solution, rewrite db
-                val programId = programsDisciplinesDao.programByDisciplineId(discipline.id)?.id ?: -1
-                val disciplinesList = resultDisciplines
-                    .firstOrNull { it.programId == programId }?.disciplines
-                    .orEmpty()
-                    .toMutableList()
-
-                disciplinesList += discipline
-
-                resultDisciplines
-                    .indexOfFirst { it.programId == programId }
-                    .let { index ->
-                        if (index != -1) {
-                            resultDisciplines[index] = resultDisciplines[index].copy(disciplines = disciplinesList)
-                        }
-                    }
-            }
-
-            resultDisciplines
-        }
-
-        respondSuccess { response }
-    }
-}
-
-@Deprecated("Replace with separated requests")
-private fun Route.getData() {
-    val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
-    val programsDao by inject<ProgramsDao>()
-    val groupsDao by inject<GroupsDao>()
-    val studentsDao by inject<StudentsDao>()
-
-    get {
-        val programs = programsDao.allPrograms().map { program ->
-            val disciplines = programsDisciplinesDao.allDisciplinesByProgramId(program.id)
-            program.mapWithDisciplines(disciplines)
-        }
-        val groups = groupsDao.allGroups().map { group ->
-            val students = studentsDao.allStudentsByGroupId(group.id)
-            group.mapWithStudents(students)
-        }
-
-        respondSuccess { GetDataResponse(programs = programs, groups = groups) }
-    }
+//        val response = if (extended) {
+//            val workTypes = disciplines.map(Discipline::workTypeId).distinct().let { ids ->
+//                workTypesDao.allWorkTypesByIds(ids)
+//            }
+//
+//            val resultDisciplines = List(programIds.size) { index ->
+//                DisciplinesWithWorkTypesWithProgramId(
+//                    programId = programIds[index],
+//                    disciplines = emptyList()
+//                )
+//            }.toMutableList()
+//
+//            disciplines.forEach { discipline ->
+//                val programId = programsDisciplinesDao.programByDisciplineId(discipline.id)?.id ?: -1
+//                val disciplinesList = resultDisciplines
+//                    .firstOrNull { it.programId == programId }?.disciplines
+//                    .orEmpty()
+//                    .toMutableList()
+//
+//                disciplinesList += DisciplineWithWorkType(
+//                    discipline = discipline,
+//                    workType = workTypes.first { it.id == discipline.workTypeId }
+//                )
+//
+//                resultDisciplines
+//                    .indexOfFirst { it.programId == programId }
+//                    .let { index ->
+//                        if (index != -1) {
+//                            resultDisciplines[index] = resultDisciplines[index].copy(disciplines = disciplinesList)
+//                        }
+//                    }
+//            }
+//
+//            resultDisciplines
+//        } else {
+//
+//        }
+//
+//        val resultDisciplines = List(programIds.size) { index ->
+//            DisciplinesWithProgramId(
+//                programId = programIds[index],
+//                disciplines = emptyList()
+//            )
+//        }.toMutableList()
+//
+//        disciplines.forEach { discipline ->
+//            // TODO: 17/04/2024, Danil Nikolaev: shitty solution, rewrite db
+//            val programId = programsDisciplinesDao.programByDisciplineId(discipline.id)?.id ?: -1
+//            val disciplinesList = resultDisciplines
+//                .firstOrNull { it.programId == programId }?.disciplines
+//                .orEmpty()
+//                .toMutableList()
+//
+//            disciplinesList += discipline
+//
+//            resultDisciplines
+//                .indexOfFirst { it.programId == programId }
+//                .let { index ->
+//                    if (index != -1) {
+//                        resultDisciplines[index] = resultDisciplines[index].copy(disciplines = disciplinesList)
+//                    }
+//                }
+//        }
+//
+//        respondSuccess { response }
+//    }
 }
 
 private data class DisciplinesWithProgramId(
@@ -234,16 +212,12 @@ private fun Program.mapWithDisciplines(disciplines: List<Discipline>): ProgramWi
 
 private fun Group.mapWithStudents(students: List<Student>): GroupWithStudents =
     GroupWithStudents(
-        id = id,
-        title = title,
-        majorId = majorId,
+        group = this,
         students = students
     )
 
 private data class GroupWithStudents(
-    val id: Int,
-    val title: String,
-    val majorId: Int,
+    val group: Group,
     val students: List<Student>
 )
 

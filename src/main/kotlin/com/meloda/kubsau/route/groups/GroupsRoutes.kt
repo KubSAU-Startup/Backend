@@ -62,11 +62,11 @@ private fun Route.addGroup() {
         val parameters = call.receiveParameters()
 
         val title = parameters["title"]?.trim() ?: throw ValidationException("title is empty")
-        val majorId = parameters["majorId"]?.toIntOrNull() ?: throw ValidationException("majorId is empty")
+        val directivityId = parameters["directivityId"]?.toIntOrNull() ?: throw ValidationException("directivityId is empty")
 
         val created = groupsDao.addNewGroup(
             title = title,
-            majorId = majorId
+            directivityId = directivityId
         )
 
         if (created != null) {
@@ -87,12 +87,12 @@ private fun Route.editGroup() {
         val parameters = call.receiveParameters()
 
         val title = parameters["title"]?.trim()
-        val majorId = parameters["majorId"]?.toIntOrNull()
+        val directivityId = parameters["directivityId"]?.toIntOrNull()
 
         groupsDao.updateGroup(
             groupId = groupId,
             title = title ?: currentGroup.title,
-            majorId = majorId ?: currentGroup.majorId
+            directivityId = directivityId ?: currentGroup.directivityId
         ).let { changedCount ->
             if (changedCount == 1) {
                 respondSuccess { 1 }

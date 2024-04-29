@@ -10,6 +10,7 @@ data class Department(
 ) : Filterable {
 
     companion object {
+
         fun mapResultRow(row: ResultRow): Department = Department(
             id = row[Departments.id].value,
             title = row[Departments.title],

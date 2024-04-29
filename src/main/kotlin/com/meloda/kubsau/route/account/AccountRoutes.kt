@@ -38,7 +38,7 @@ private fun Route.getAccountInfoRoute() {
                 id = user.id,
                 type = user.type,
                 login = user.login,
-                departmentId = user.departmentId
+                employeeId = user.employeeId
             )
         }
     }
@@ -48,5 +48,5 @@ private data class AccountInfo(
     val id: Int,
     val type: Int,
     val login: String,
-    val departmentId: Int
+    val employeeId: Int
 )

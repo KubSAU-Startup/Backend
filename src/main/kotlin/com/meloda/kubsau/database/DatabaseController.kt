@@ -2,18 +2,20 @@ package com.meloda.kubsau.database
 
 import com.meloda.kubsau.common.isInDocker
 import com.meloda.kubsau.database.departments.Departments
+import com.meloda.kubsau.database.directivities.Directivities
 import com.meloda.kubsau.database.disciplines.Disciplines
+import com.meloda.kubsau.database.employees.Employees
+import com.meloda.kubsau.database.employeesdepartments.EmployeesDepartments
+import com.meloda.kubsau.database.employeesfaculties.EmployeesFaculties
+import com.meloda.kubsau.database.employeetypes.EmployeeTypes
+import com.meloda.kubsau.database.faculties.Faculties
 import com.meloda.kubsau.database.groups.Groups
-import com.meloda.kubsau.database.journals.Journals
-import com.meloda.kubsau.database.majors.Majors
+import com.meloda.kubsau.database.heads.Heads
 import com.meloda.kubsau.database.programs.Programs
 import com.meloda.kubsau.database.programsdisciplines.ProgramsDisciplines
 import com.meloda.kubsau.database.sessions.Sessions
-import com.meloda.kubsau.database.specializations.Specializations
-import com.meloda.kubsau.database.specializationsdisciplines.SpecializationsDisciplines
 import com.meloda.kubsau.database.students.Students
-import com.meloda.kubsau.database.teachers.Teachers
-import com.meloda.kubsau.database.teachersdisciplines.TeachersDisciplines
+import com.meloda.kubsau.database.studentstatuses.StudentStatuses
 import com.meloda.kubsau.database.users.Users
 import com.meloda.kubsau.database.works.Works
 import com.meloda.kubsau.database.worktypes.WorkTypes
@@ -46,12 +48,13 @@ object DatabaseController {
         transaction(database) {
             addLogger(StdOutSqlLogger)
             SchemaUtils.create(
-                Departments, Disciplines, Groups,
-                Journals, Majors, Programs,
-                ProgramsDisciplines, Sessions, Specializations,
-                SpecializationsDisciplines, Students, Teachers,
-                TeachersDisciplines, Users, Works,
-                WorkTypes
+                Departments, Directivities, Disciplines, Employees,
+                EmployeeTypes, Faculties, Groups, Heads,
+                Programs, Sessions, Students, StudentStatuses,
+                Users, Works, WorkTypes
+            )
+            SchemaUtils.create(
+                EmployeesDepartments, EmployeesFaculties, ProgramsDisciplines
             )
         }
     }

@@ -12,14 +12,16 @@ interface ProgramsDao : Dao<Program> {
 
     suspend fun addNewProgram(
         title: String,
-        semester: Int
+        semester: Int,
+        directivityId: Int
     ): Program?
 
     suspend fun updateProgram(
         programId: Int,
         title: String,
-        semester: Int
-    ): Int
+        semester: Int,
+        directivityId: Int
+    ): Boolean
 
     suspend fun deleteProgram(programId: Int): Boolean
     suspend fun deletePrograms(programIds: List<Int>): Boolean

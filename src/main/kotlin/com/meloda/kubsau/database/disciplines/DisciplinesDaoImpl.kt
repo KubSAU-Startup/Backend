@@ -34,17 +34,17 @@ class DisciplinesDaoImpl : DisciplinesDao {
             .singleOrNull()
     }
 
-    override suspend fun addNewDiscipline(title: String, workTypeId: Int): Discipline? = dbQuery {
+    override suspend fun addNewDiscipline(title: String, departmentId: Int): Discipline? = dbQuery {
         Disciplines.insert {
             it[Disciplines.title] = title
-            it[Disciplines.workTypeId] = workTypeId
+            it[Disciplines.departmentId] = departmentId
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 
-    override suspend fun updateDiscipline(disciplineId: Int, title: String, workTypeId: Int): Int = dbQuery {
+    override suspend fun updateDiscipline(disciplineId: Int, title: String, departmentId: Int): Int = dbQuery {
         Disciplines.update(where = { Disciplines.id eq disciplineId }) {
             it[Disciplines.title] = title
-            it[Disciplines.workTypeId] = workTypeId
+            it[Disciplines.departmentId] = departmentId
         }
     }
 

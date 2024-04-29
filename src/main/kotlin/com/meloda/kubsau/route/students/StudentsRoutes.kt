@@ -1,6 +1,10 @@
 package com.meloda.kubsau.route.students
 
 import com.meloda.kubsau.api.respondSuccess
+import com.meloda.kubsau.common.getInt
+import com.meloda.kubsau.common.getIntOrThrow
+import com.meloda.kubsau.common.getOrThrow
+import com.meloda.kubsau.common.getString
 import com.meloda.kubsau.database.students.StudentsDao
 import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.UnknownException
@@ -48,7 +52,7 @@ private fun Route.getStudentById() {
     val studentsDao by inject<StudentsDao>()
 
     get("{id}") {
-        val studentId = call.parameters["id"]?.toIntOrNull() ?: throw ValidationException("id is empty")
+        val studentId = call.parameters.getIntOrThrow("id")
         val student = studentsDao.singleStudent(studentId) ?: throw ContentNotFoundException
 
         respondSuccess { student }
@@ -61,18 +65,18 @@ private fun Route.addStudent() {
     post {
         val parameters = call.receiveParameters()
 
-        val firstName = parameters["firstName"]?.trim() ?: throw ValidationException("firstName is empty")
-        val lastName = parameters["lastName"]?.trim() ?: throw ValidationException("lastName is empty")
-        val middleName = parameters["middleName"]?.trim() ?: throw ValidationException("middleName is empty")
-        val groupId = parameters["groupId"]?.toIntOrNull() ?: throw ValidationException("groupId is empty")
-        val status = parameters["status"]?.toIntOrNull() ?: throw ValidationException("status is empty")
+        val lastName = parameters.getOrThrow("lastName")
+        val firstName = parameters.getOrThrow("firstName")
+        val middleName = parameters.getString("middleName")
+        val groupId = parameters.getIntOrThrow("groupId")
+        val statusId = parameters.getIntOrThrow("statusId")
 
         val created = studentsDao.addNewStudent(
             firstName = firstName,
             lastName = lastName,
             middleName = middleName,
             groupId = groupId,
-            status = status
+            statusId = statusId
         )
 
         if (created != null) {
@@ -87,26 +91,26 @@ private fun Route.editStudent() {
     val studentsDao by inject<StudentsDao>()
 
     patch("{id}") {
-        val studentId = call.parameters["id"]?.toIntOrNull() ?: throw ValidationException("id is empty")
+        val studentId = call.parameters.getIntOrThrow("id")
         val currentStudent = studentsDao.singleStudent(studentId) ?: throw ContentNotFoundException
 
         val parameters = call.receiveParameters()
 
-        val firstName = parameters["firstName"]?.trim()
-        val lastName = parameters["lastName"]?.trim()
-        val middleName = parameters["middleName"]?.trim()
-        val groupId = parameters["groupId"]?.toIntOrNull()
-        val status = parameters["status"]?.toIntOrNull()
+        val lastName = parameters.getString("lastName")
+        val firstName = parameters.getString("firstName")
+        val middleName = parameters.getString("middleName")
+        val groupId = parameters.getInt("groupId")
+        val statusId = parameters.getInt("statusId")
 
         studentsDao.updateStudent(
             studentId = studentId,
             firstName = firstName ?: currentStudent.firstName,
             lastName = lastName ?: currentStudent.lastName,
-            middleName = middleName ?: currentStudent.middleName,
+            middleName = if ("middleName" in parameters) middleName else currentStudent.middleName,
             groupId = groupId ?: currentStudent.groupId,
-            status = status ?: currentStudent.status
-        ).let { changedCount ->
-            if (changedCount == 1) {
+            statusId = statusId ?: currentStudent.statusId
+        ).let { success ->
+            if (success) {
                 respondSuccess { 1 }
             } else {
                 throw UnknownException
@@ -119,7 +123,7 @@ private fun Route.deleteStudent() {
     val studentsDao by inject<StudentsDao>()
 
     delete("{id}") {
-        val studentId = call.parameters["id"]?.toIntOrNull() ?: throw ValidationException("id is empty")
+        val studentId = call.parameters.getIntOrThrow("id")
         studentsDao.singleStudent(studentId) ?: throw ContentNotFoundException
 
         if (studentsDao.deleteStudent(studentId)) {
@@ -134,11 +138,14 @@ private fun Route.deleteStudents() {
     val studentsDao by inject<StudentsDao>()
 
     delete {
-        val studentIds = call.request.queryParameters["studentIds"]
-            ?.split(",")
-            ?.map(String::trim)
-            ?.mapNotNull(String::toIntOrNull)
-            ?: throw ValidationException("studentIds is empty")
+        val studentIds = call.request.queryParameters.getOrThrow("studentIds")
+            .split(",")
+            .map(String::trim)
+            .mapNotNull(String::toIntOrNull)
+
+        if (studentIds.isEmpty()) {
+            throw ValidationException("studentIds is invalid")
+        }
 
         val currentStudents = studentsDao.allStudentsByIds(studentIds)
         if (currentStudents.isEmpty()) {

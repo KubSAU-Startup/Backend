@@ -7,12 +7,12 @@ import com.meloda.kubsau.route.department.departmentsRoutes
 import com.meloda.kubsau.route.disciplines.disciplinesRoutes
 import com.meloda.kubsau.route.groups.groupsRoutes
 import com.meloda.kubsau.route.journal.journalsRoutes
-import com.meloda.kubsau.route.majors.majorsRoutes
+import com.meloda.kubsau.route.heads.majorsRoutes
 import com.meloda.kubsau.route.programs.programsRoutes
 import com.meloda.kubsau.route.qr.qrRoutes
-import com.meloda.kubsau.route.specializations.specializationsRoutes
+import com.meloda.kubsau.route.directivities.directivitiesRoutes
 import com.meloda.kubsau.route.students.studentsRoutes
-import com.meloda.kubsau.route.teachers.teachersRoutes
+import com.meloda.kubsau.route.employees.employeesRoutes
 import com.meloda.kubsau.route.users.usersRoutes
 import com.meloda.kubsau.route.works.worksRoutes
 import com.meloda.kubsau.route.worktypes.workTypesRoutes
@@ -40,8 +40,8 @@ fun Application.routing() {
         groupsRoutes()
         worksRoutes()
         usersRoutes()
-        teachersRoutes()
-        specializationsRoutes()
+        employeesRoutes()
+        directivitiesRoutes()
         majorsRoutes()
     }
 }
