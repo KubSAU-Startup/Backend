@@ -1,7 +1,6 @@
 package com.meloda.kubsau
 
-import com.meloda.kubsau.common.Constants
-import com.meloda.kubsau.common.isInDocker
+import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.DatabaseController
 import com.meloda.kubsau.database.departments.DepartmentsDao
 import com.meloda.kubsau.database.disciplines.DisciplinesDao
@@ -27,13 +26,14 @@ import io.ktor.server.netty.*
 import io.ktor.server.plugins.autohead.*
 import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.cors.routing.*
+import io.ktor.server.request.*
 import kotlinx.coroutines.runBlocking
 import org.koin.ktor.ext.inject
 import org.slf4j.event.Level
 import kotlin.random.Random
 import kotlin.system.measureTimeMillis
 
-const val PORT = 8080
+val PORT = getEnvOrNull("PORT")?.toIntOrNull() ?: 8080
 
 var startTime = 0L
 
@@ -50,11 +50,16 @@ private fun configureServer() {
         port = PORT,
         watchPaths = listOf("classes")
     ) {
-        configureKoin()
-        prepopulateDB()
-
         install(CallLogging) {
-            level = Level.DEBUG
+            level = Level.INFO
+            filter { call ->
+                call.request.path().startsWith("/")
+            }
+            format { call ->
+                val requestLog = call.request.toLogString()
+                val responseLog = call.response.toLogString()
+                "$requestLog -> $responseLog"
+            }
         }
 
         install(AutoHeadResponse)
@@ -64,6 +69,7 @@ private fun configureServer() {
             allowMethod(HttpMethod.Get)
             allowMethod(HttpMethod.Post)
             allowMethod(HttpMethod.Delete)
+            allowMethod(HttpMethod.Patch)
 
             allowHeader(HttpHeaders.ContentType)
             allowHeader(HttpHeaders.Accept)
@@ -73,6 +79,9 @@ private fun configureServer() {
         configureAuthentication()
         configureExceptions()
         configureContentNegotiation()
+
+        configureKoin()
+        prepopulateDB()
 
         routing()
     }
@@ -253,8 +262,6 @@ private fun Application.createDummyTeachers() {
             if (allTeachers().size < 10) {
                 println("Creating dummy teachers...")
 
-                // на каждую кафедру по 10 преподов
-
                 val time = measureTimeMillis {
                     val departmentIds = departmentsDao.allDepartments().map(Department::id)
 
@@ -320,6 +327,7 @@ private fun Application.createDummyDisciplines() {
     )
 
     val disciplinesDao by inject<DisciplinesDao>()
+    val workTypesDao by inject<WorkTypesDao>()
 
     disciplinesDao.apply {
         runBlocking {
@@ -327,7 +335,14 @@ private fun Application.createDummyDisciplines() {
                 println("Creating dummy disciplines...")
 
                 val time = measureTimeMillis {
-                    disciplinesString.forEach { title -> addNewDiscipline(title) }
+                    val workTypes = workTypesDao.allWorkTypes().map(WorkType::id)
+
+                    disciplinesString.forEach { title ->
+                        addNewDiscipline(
+                            title = title,
+                            workTypeId = workTypes.random()
+                        )
+                    }
                 }
 
                 println("Dummy disciplines created. Took ${time}ms")
@@ -560,7 +575,6 @@ private fun Application.createDummyGroups() {
 }
 
 private fun Application.createDummyJournalWorks() {
-    val workTypesDao by inject<WorkTypesDao>()
     val worksDao by inject<WorksDao>()
     val disciplinesDao by inject<DisciplinesDao>()
     val studentsDao by inject<StudentsDao>()
@@ -572,16 +586,14 @@ private fun Application.createDummyJournalWorks() {
             println("Creating dummy works...")
 
             val time = measureTimeMillis {
-                val workTypeIds = workTypesDao.allWorkTypes().map(WorkType::id)
                 val disciplineIds = disciplinesDao.allDisciplines().map(Discipline::id)
                 val studentIds = studentsDao.allStudents().map(Student::id)
 
                 repeat(10) { index ->
                     worksDao.addNewWork(
-                        typeId = workTypeIds.random(),
                         disciplineId = disciplineIds.random(),
                         studentId = studentIds.random(),
-                        registrationDate = getRandomUnixTime(1609459200L, 1708775961L),
+                        registrationDate = getRandomUnixTime(),
                         title = "Work #${index + 1}"
                     )
                 }
@@ -633,8 +645,8 @@ private fun Application.createDummyJournalEntries() {
 }
 
 
-private fun getRandomUnixTime(startTime: Long, endTime: Long): Long {
+private fun getRandomUnixTime(): Long {
+    val (startTime, endTime) = 1609459200L to 1708775961L
     require(startTime < endTime) { "Start time must be before end time" }
-    val randomUnixTime = Random.nextLong(startTime, endTime)
-    return randomUnixTime
+    return Random.nextLong(startTime, endTime)
 }

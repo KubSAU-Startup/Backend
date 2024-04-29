@@ -11,11 +11,10 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
-fun Route.account() {
+fun Route.accountRoutes() {
     authenticate {
         route("/account") {
             getAccountInfoRoute()
-            getAllTokensRoute()
         }
     }
 }
@@ -32,7 +31,7 @@ private fun Route.getAccountInfoRoute() {
         val userId = usersDao.singleUser(login = login)?.id ?: throw UnknownException
 
         val session = sessionsDao.singleSession(userId = userId) ?: throw SessionExpiredException
-        val user = usersDao.singleUser(id = session.userId) ?: throw UnknownException
+        val user = usersDao.singleUser(userId = session.userId) ?: throw UnknownException
 
         respondSuccess {
             AccountInfo(
@@ -42,15 +41,6 @@ private fun Route.getAccountInfoRoute() {
                 departmentId = user.departmentId
             )
         }
-    }
-}
-
-private fun Route.getAllTokensRoute() {
-    val sessionsDao by inject<SessionsDao>()
-
-    get("all") {
-        val sessions = sessionsDao.allSessions()
-        respondSuccess { sessions }
     }
 }
 

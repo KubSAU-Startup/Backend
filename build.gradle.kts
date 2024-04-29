@@ -6,13 +6,10 @@ plugins {
 
 application {
     mainClass.set("com.meloda.kubsau.ApplicationKt")
-
-    // TODO: 03/04/2024, Danil Nikolaev: check. Not working
-    applicationDefaultJvmArgs = listOf("-Dio.ktor.development=true")
 }
 
 group = "com.meloda.kubsau.backend"
-version = "0.0.9"
+version = "0.2.1"
 
 repositories {
     mavenCentral()
@@ -33,8 +30,6 @@ dependencies {
     implementation("io.ktor:ktor-server-call-logging:$ktorVersion")
     implementation("io.ktor:ktor-server-swagger:$ktorVersion")
 
-    implementation("com.google.code.gson:gson:2.10.1")
-
     val exposedVersion = "0.49.0"
 
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
@@ -52,7 +47,18 @@ dependencies {
     implementation("io.insert-koin:koin-ktor")
     implementation("io.insert-koin:koin-logger-slf4j")
 
-    implementation("org.xerial:sqlite-jdbc:3.45.0.0")
+    val sqliteJdbcVersion = "3.45.3.0"
+
+    implementation("org.xerial:sqlite-jdbc:$sqliteJdbcVersion")
+
+    val logBackVersion = "1.5.6"
+
+    implementation("ch.qos.logback:logback-classic:$logBackVersion")
+
+    val kotlinxHtmlVersion = "0.11.0"
+
+    implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:$kotlinxHtmlVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-html:$kotlinxHtmlVersion")
 }
 
 kotlin {

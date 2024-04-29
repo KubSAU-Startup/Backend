@@ -6,15 +6,41 @@ import com.meloda.kubsau.model.Journal
 interface JournalsDao : Dao<Journal> {
 
     suspend fun allJournals(): List<Journal>
-    suspend fun singleJournal(journalId: Int): Journal?
-    suspend fun singleJournal(
-        journalId: Int?,
+
+    suspend fun allJournalsByFilters(
         studentId: Int?,
         groupId: Int?,
         disciplineId: Int?,
         teacherId: Int?,
-        workId: Int?
+        workId: Int?,
+        departmentId: Int?,
+        workTypeId: Int?
     ): List<Journal>
+
+    suspend fun allJournalsByIds(journalIds: List<Int>): List<Journal>
+
+    suspend fun allJournalsByIdsWithFilters(
+        journalIds: List<Int>,
+        studentId: Int?,
+        groupId: Int?,
+        disciplineId: Int?,
+        teacherId: Int?,
+        workId: Int?,
+        departmentId: Int?,
+        workTypeId: Int?
+    ): List<Journal>
+
+    suspend fun singleById(journalId: Int): Journal?
+
+    suspend fun singleByFilters(
+        studentId: Int?,
+        groupId: Int?,
+        disciplineId: Int?,
+        teacherId: Int?,
+        workId: Int?,
+        departmentId: Int?,
+        workTypeId: Int?
+    ): Journal?
 
     suspend fun addNewJournal(
         studentId: Int,
@@ -22,7 +48,17 @@ interface JournalsDao : Dao<Journal> {
         disciplineId: Int,
         teacherId: Int,
         workId: Int
-    ): Int?
+    ): Journal?
+
+    suspend fun updateJournal(
+        journalId: Int,
+        studentId: Int,
+        groupId: Int,
+        disciplineId: Int,
+        teacherId: Int,
+        workId: Int
+    ): Int
 
     suspend fun deleteJournal(journalId: Int): Boolean
+    suspend fun deleteJournals(journalIds: List<Int>): Boolean
 }

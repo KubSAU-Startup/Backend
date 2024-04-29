@@ -10,6 +10,7 @@ data class Teacher(
     val middleName: String,
     val departmentId: Int
 ) : Filterable {
+
     override val title: String
         get() = "$lastName $firstName $middleName"
 

@@ -5,90 +5,84 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.meloda.kubsau.api.respondSuccess
 import com.meloda.kubsau.database.sessions.SessionsDao
 import com.meloda.kubsau.database.users.UsersDao
+import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.UnknownException
 import com.meloda.kubsau.errors.ValidationException
+import com.meloda.kubsau.model.User
 import com.meloda.kubsau.plugins.AUDIENCE
 import com.meloda.kubsau.plugins.ISSUER
 import com.meloda.kubsau.plugins.SECRET
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
+import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
-fun Route.auth() {
+fun Route.authRoutes() {
     route("/auth") {
-        getToken()
-        getAll()
-        deleteUser()
+        addSession()
+        deleteSession()
     }
 }
 
-private fun Route.getToken() {
+private fun Route.addSession() {
     val usersDao by inject<UsersDao>()
     val sessionsDao by inject<SessionsDao>()
 
-    get {
-        try {
-            val params = call.request.queryParameters
-            val login = params["login"]
-            val password = params["password"]
+    post {
+        val parameters = call.receiveParameters()
+        val login = parameters["login"]?.trim() ?: throw ValidationException("login is empty")
+        val password = parameters["password"]?.trim() ?: throw ValidationException("password is empty")
 
-            val users = usersDao.allUsers()
+        val users = usersDao.allUsers()
 
-            val loginsPasswords = users.map { user -> Pair(user.login, user.password) }
+        val logins = users.map(User::login)
+        val passwords = users.map(User::password)
 
-            val logins = loginsPasswords.map { it.first }
-            val passwords = loginsPasswords.map { it.second }
+        if (!logins.contains(login)) {
+            throw WrongCredentialsException
+        }
 
-            if (!logins.contains(login)) {
-                throw WrongCredentialsException
-            }
+        val loginIndex = logins.indexOf(login)
 
-            val loginIndex = logins.indexOf(login)
+        if (passwords[loginIndex] != password) {
+            throw WrongCredentialsException
+        }
 
-            if (passwords[loginIndex] != password) {
-                throw WrongCredentialsException
-            }
+        val user = users[loginIndex]
 
-            val user = users[loginIndex]
+        val accessToken = JWT.create()
+            .withAudience(AUDIENCE)
+            .withIssuer(ISSUER)
+            .withClaim("login", login)
+            .sign(Algorithm.HMAC256(SECRET))
 
-            val accessToken = JWT.create()
-                .withAudience(AUDIENCE)
-                .withIssuer(ISSUER)
-                .withClaim("login", login)
-                .sign(Algorithm.HMAC256(SECRET))
+        sessionsDao.addNewSession(user.id, accessToken)
 
-            sessionsDao.addNewSession(user.id, accessToken)
-
-            respondSuccess {
-                AuthResponse(
-                    userId = user.id,
-                    accessToken = accessToken
-                )
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
+        respondSuccess {
+            AuthResponse(
+                userId = user.id,
+                accessToken = accessToken
+            )
         }
     }
 }
 
-private fun Route.getAll() {
+private fun Route.deleteSession() {
     val usersDao by inject<UsersDao>()
+    val sessionsDao by inject<SessionsDao>()
 
-    get("all") {
-        val users = usersDao.allUsers()
-        respondSuccess { users }
-    }
-}
+    delete {
+        val principal = call.principal<JWTPrincipal>()
 
-// TODO: 24/02/2024, Danil Nikolaev: remove or move out
-private fun Route.deleteUser() {
-    val usersDao by inject<UsersDao>()
+        val login = principal?.payload?.getClaim("login")?.asString() ?: throw UnknownException
 
-    delete("{id}") {
-        val userId = call.parameters["id"]?.toInt() ?: throw ValidationException("id is empty")
+        val userId = usersDao.singleUser(login = login)?.id ?: throw UnknownException
 
-        val success = usersDao.deleteUser(userId)
-        if (success) {
+        val session = sessionsDao.singleSession(userId = userId) ?: throw ContentNotFoundException
+
+        if (sessionsDao.deleteSession(userId = session.userId, accessToken = session.accessToken)) {
             respondSuccess { 1 }
         } else {
             throw UnknownException

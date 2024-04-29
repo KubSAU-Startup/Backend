@@ -6,9 +6,9 @@ import com.meloda.kubsau.model.Student
 interface StudentsDao : Dao<Student> {
 
     suspend fun allStudents(): List<Student>
-
+    suspend fun allStudentsByIds(studentIds: List<Int>): List<Student>
     suspend fun allStudentsByGroupId(groupId: Int): List<Student>
-
+    suspend fun allStudentsByGroupIds(groupIds: List<Int>): List<Student>
     suspend fun singleStudent(studentId: Int): Student?
 
     suspend fun addNewStudent(
@@ -19,5 +19,15 @@ interface StudentsDao : Dao<Student> {
         status: Int
     ): Student?
 
+    suspend fun updateStudent(
+        studentId: Int,
+        firstName: String,
+        lastName: String,
+        middleName: String,
+        groupId: Int,
+        status: Int
+    ): Int
+
     suspend fun deleteStudent(studentId: Int): Boolean
+    suspend fun deleteStudents(studentIds: List<Int>): Boolean
 }

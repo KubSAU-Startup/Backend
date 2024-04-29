@@ -9,7 +9,8 @@ data class Journal(
     val group: Group,
     val discipline: Discipline,
     val teacher: Teacher,
-    val work: Work
+    val work: Work,
+    val department: Department?
 ) {
 
     companion object {
@@ -20,7 +21,12 @@ data class Journal(
             group = Group.mapResultRow(row),
             discipline = Discipline.mapResultRow(row),
             teacher = Teacher.mapResultRow(row),
-            work = Work.mapResultRow(row)
+            work = Work.mapResultRow(row),
+            department = try {
+                Department.mapResultRow(row)
+            } catch (e: Exception) {
+                null
+            }
         )
     }
 }

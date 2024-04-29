@@ -2,22 +2,28 @@ package com.meloda.kubsau.database.worktypes
 
 import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.model.WorkType
-import org.jetbrains.exposed.sql.ResultRow
+import com.meloda.kubsau.route.journal.JournalFilter
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 
 class WorkTypesDaoImpl : WorkTypesDao {
 
-    override fun mapResultRow(row: ResultRow): WorkType = WorkType(
-        id = row[WorkTypes.id].value,
-        title = row[WorkTypes.title],
-        isEditable = row[WorkTypes.isEditable] == 1
-    )
-
     override suspend fun allWorkTypes(): List<WorkType> = dbQuery {
         WorkTypes.selectAll().map(::mapResultRow)
+    }
+
+    override suspend fun allWorkTypesAsFilters(): List<JournalFilter> = dbQuery {
+        WorkTypes
+            .select(WorkTypes.id, WorkTypes.title)
+            .map(::mapFilterResultRow)
+    }
+
+    override suspend fun allWorkTypesByIds(workTypeIds: List<Int>): List<WorkType> = dbQuery {
+        WorkTypes
+            .selectAll()
+            .where { WorkTypes.id inList workTypeIds }
+            .map(::mapResultRow)
     }
 
     override suspend fun singleWorkType(workTypeId: Int): WorkType? = dbQuery {
@@ -43,6 +49,13 @@ class WorkTypesDaoImpl : WorkTypesDao {
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 
+    override suspend fun updateWorkType(workTypeId: Int, title: String, isEditable: Boolean): Int = dbQuery {
+        WorkTypes.update(where = { WorkTypes.id eq workTypeId }) {
+            it[WorkTypes.title] = title
+            it[WorkTypes.isEditable] = if (isEditable) 1 else 0
+        }
+    }
+
     override suspend fun deleteWorkType(workTypeId: Int): Boolean = dbQuery {
         WorkTypes.deleteWhere { WorkTypes.id eq workTypeId } > 0
     }
@@ -50,4 +63,15 @@ class WorkTypesDaoImpl : WorkTypesDao {
     override suspend fun deleteWorkType(title: String): Boolean = dbQuery {
         WorkTypes.deleteWhere { WorkTypes.title eq title } > 0
     }
+
+    override suspend fun deleteWorkTypes(workTypeIds: List<Int>): Boolean = dbQuery {
+        WorkTypes.deleteWhere { WorkTypes.id inList workTypeIds } > 0
+    }
+
+    override fun mapResultRow(row: ResultRow): WorkType = WorkType.mapResultRow(row)
+
+    override fun mapFilterResultRow(row: ResultRow): JournalFilter = JournalFilter(
+        id = row[WorkTypes.id].value,
+        title = row[WorkTypes.title]
+    )
 }
