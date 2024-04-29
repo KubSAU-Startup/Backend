@@ -19,7 +19,6 @@ fun Route.journalsRoutes() {
         route("/journals") {
             getFilters()
             getJournals()
-            getJournalById()
         }
     }
 }
@@ -28,7 +27,7 @@ private fun Route.getFilters() {
     route("/filters") {
         getWorkTypesFilters()
         getDisciplinesFilters()
-        getTeachersFilters()
+        getEmployeesFilters()
         getGroupsFilters()
         getDepartmentsFilters()
     }
@@ -54,13 +53,13 @@ private fun Route.getDisciplinesFilters() {
     }
 }
 
-private fun Route.getTeachersFilters() {
+private fun Route.getEmployeesFilters() {
     val employeesDao by inject<EmployeesDao>()
 
-    get("/teachers") {
-        val teachersFilters = employeesDao.allEmployees()
+    get("/employees") {
+        val employeeFilters = employeesDao.allEmployeesAsFilters()
 
-        respondSuccess { teachersFilters }
+        respondSuccess { employeeFilters }
     }
 }
 
@@ -108,7 +107,7 @@ private fun Route.getJournals() {
 
         respondSuccess {
             GetJournalResponse(
-                count = 0,
+                count = journal.size,
                 offset = 0,
                 journal = journal
             )
@@ -167,20 +166,6 @@ private fun Route.getJournals() {
 //                }
 //            )
 //        }
-//    }
-}
-
-private fun Route.getJournalById() {
-    // TODO: 29/04/2024, Danil Nikolaev: implement
-//    val journalsDao by inject<JournalsDao>()
-//    val workTypesDao by inject<WorkTypesDao>()
-//
-//    get("{id}") {
-//        val journalId = call.parameters["id"]?.toIntOrNull() ?: throw ValidationException("id is empty")
-//        val journal = journalsDao.singleById(journalId) ?: throw ContentNotFoundException
-//        val workType = workTypesDao.singleWorkType(journal.discipline.workTypeId)
-//
-//        respondSuccess { journal.mapToItem(workType) }
 //    }
 }
 

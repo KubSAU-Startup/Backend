@@ -53,7 +53,7 @@ dependencies {
 
     val logBackVersion = "1.5.6"
 
-    implementation("ch.qos.logback:logback-classic:$logBackVersion")
+//    implementation("ch.qos.logback:logback-classic:$logBackVersion")
 
     val kotlinxHtmlVersion = "0.11.0"
 

@@ -16,7 +16,6 @@ data class Student(
             "$firstName $lastName"
         } else {
             "$lastName $firstName $middleName"
-
         }
 
     companion object {

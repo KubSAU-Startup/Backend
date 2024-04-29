@@ -9,9 +9,7 @@ import com.meloda.kubsau.database.groups.Groups
 import com.meloda.kubsau.database.students.Students
 import com.meloda.kubsau.database.worktypes.WorkTypes
 import com.meloda.kubsau.model.*
-import com.meloda.kubsau.route.journal.JournalItem
-import com.meloda.kubsau.route.journal.mapToJournalStudent
-import com.meloda.kubsau.route.journal.mapToJournalWork
+import com.meloda.kubsau.route.journal.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
@@ -34,20 +32,42 @@ class WorksDaoImpl : WorksDao {
                 (groupId?.let { Students.groupId eq groupId }) andIfNotNull
                 (disciplineId?.let { Works.disciplineId eq disciplineId }) andIfNotNull
                 (departmentId?.let { Disciplines.departmentId eq departmentId }) andIfNotNull
-                (workTypeId?.let { Works.workTypeId eq workTypeId }) andIfNotNull
+                (workTypeId?.let { Works.workTypeId eq workTypeId })
                 (employeeId?.let { EmployeesDepartments.employeeId eq employeeId })
 
         Works
             .innerJoin(Disciplines)
             .innerJoin(Students)
-            .innerJoin(Groups)
-            .innerJoin(Employees)
-            .innerJoin(Departments)
             .innerJoin(WorkTypes)
-            .innerJoin(EmployeesDepartments)
+            .innerJoin(Groups, { Students.groupId }, { Groups.id })
+            .innerJoin(Departments, { Disciplines.departmentId }, { Departments.id })
+            .innerJoin(EmployeesDepartments, { Departments.id }, { EmployeesDepartments.departmentId })
+            .innerJoin(Employees, { EmployeesDepartments.employeeId }, { Employees.id })
             .selectAll()
-            .where(query)
+            .where { query }
             .map { row ->
+//                JournalItem(
+//                    student = JournalStudent(id = 8853, fullName = "Laurie Gillespie"),
+//                    group = Group(id = 2392, title = "possim", directivityId = 5593),
+//                    discipline = Discipline(id = 9212, title = "postulant", departmentId = 7796),
+//                    employee = Employee(
+//                        id = 2745,
+//                        lastName = "Joanne Shaffer",
+//                        firstName = "Wade Suarez",
+//                        middleName = null,
+//                        email = null,
+//                        employeeTypeId = 4804
+//                    ),
+//                    work = JournalWork(
+//                        id = 8028,
+//                        type = WorkType(id = 1123, title = "curabitur", needTitle = false),
+//                        registrationDate = 2221,
+//                        title = null
+//                    ),
+//                    department = Department(id = 3300, title = "movet", phone = "(919) 213-1355")
+//
+//
+//                )
                 JournalItem(
                     student = Student.mapResultRow(row).mapToJournalStudent(),
                     group = Group.mapResultRow(row),

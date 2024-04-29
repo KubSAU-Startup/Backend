@@ -42,7 +42,7 @@ private fun Route.getPrograms() {
             ?.split(",")
             ?.map(String::trim)
             ?.mapNotNull(String::toIntOrNull)
-            ?: emptyList()
+            ?: programsDao.allPrograms().map(Program::id)
 
         val disciplineIds = hashMapOf<Int, List<Int>>()
 

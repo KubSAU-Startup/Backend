@@ -11,6 +11,12 @@ data class Employee(
     val email: String?,
     val employeeTypeId: Int
 ) {
+    val fullName: String
+        get() = if (middleName == null) {
+            "$firstName $lastName"
+        } else {
+            "$lastName $firstName $middleName"
+        }
 
     companion object {
 

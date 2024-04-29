@@ -55,6 +55,9 @@ private fun configureServer() {
         port = PORT,
         watchPaths = listOf("classes")
     ) {
+        configureKoin()
+        prepopulateDB()
+
         install(CallLogging) {
             level = Level.INFO
             filter { call ->
@@ -84,9 +87,6 @@ private fun configureServer() {
         configureAuthentication()
         configureExceptions()
         configureContentNegotiation()
-
-        configureKoin()
-        prepopulateDB()
 
         routing()
     }
@@ -461,83 +461,83 @@ private fun Application.createDummyDirectivities() {
                 val time = measureTimeMillis {
                     addNewDirectivity(
                         title = "Экология и природопользование",
-                        headId = headIds.random()
+                        headId = 1
                     )
                     addNewDirectivity(
                         title = "Проектирование зданий",
-                        headId = headIds.random()
+                        headId = 2
                     )
                     addNewDirectivity(
                         title = "Промышленное и гражданское строительство",
-                        headId = headIds.random()
+                        headId = 3
                     )
                     addNewDirectivity(
                         title = "Создание, модификация и сопровождение информационных систем, администрирование баз данных",
-                        headId = headIds.random()
+                        headId = 4
                     )
                     addNewDirectivity(
                         title = "Менеджмент проектов в области информационных технологий, создание и поддержка информационных систем",
-                        headId = headIds.random()
+                        headId = 5
                     )
                     addNewDirectivity(
                         title = "Электроснабжение",
-                        headId = headIds.random()
+                        headId = 6
                     )
                     addNewDirectivity(
                         title = "Производство продуктов питания из растительного сырья",
-                        headId = headIds.random()
+                        headId = 7
                     )
                     addNewDirectivity(
                         title = "Инженерные системы сельскохозяйственного снабжения, обводнения и водоотделения",
-                        headId = headIds.random()
+                        headId = 8
                     )
                     addNewDirectivity(
                         title = "Землеустройство и кадастры",
-                        headId = headIds.random()
+                        headId = 9
                     )
                     addNewDirectivity(
                         title = "Почвенно-агрохимическое обеспечение АПК",
-                        headId = headIds.random()
+                        headId = 10
                     )
                     addNewDirectivity(
                         title = "Защита растений",
-                        headId = headIds.random()
+                        headId = 11
                     )
                     addNewDirectivity(
                         title = "Декоративное садоводство, плодоовощеводство, виноградство и виноделие",
-                        headId = headIds.random()
+                        headId = 12
                     )
                     addNewDirectivity(
                         title = "Технические системы в агробизнесе",
-                        headId = headIds.random()
+                        headId = 13
                     )
                     addNewDirectivity(
                         title = "Ветеринарно-санитарная экспертиза",
-                        headId = headIds.random()
+                        headId = 14
                     )
                     addNewDirectivity(
                         title = "Технология производства продуктов животноводства",
-                        headId = headIds.random()
+                        headId = 15
                     )
                     addNewDirectivity(
                         title = "Бизнес-аналитика",
-                        headId = headIds.random()
+                        headId = 16
                     )
                     addNewDirectivity(
                         title = "Инновационный менеджмент",
-                        headId = headIds.random()
+                        headId = 17
                     )
                     addNewDirectivity(
                         title = "Государственное и муниципальное управление",
-                        headId = headIds.random()
+                        headId = 18
                     )
                     addNewDirectivity(
                         title = "Анализ, моделирование и формирование интегрального представления стратегий и целей, бизнес-процессов и информационно-логической инфраструктуры предприятий и организаций",
-                        headId = headIds.random()
+                        headId = 19
                     )
                     addNewDirectivity(
                         title = "Гражданско-правовой",
-                        headId = headIds.random()
+                        headId = 20
                     )
                 }
 

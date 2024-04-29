@@ -1,7 +1,9 @@
 package com.meloda.kubsau.database.employeesfaculties
 
 import com.meloda.kubsau.database.DatabaseController.dbQuery
+import com.meloda.kubsau.database.employees.Employees
 import com.meloda.kubsau.database.employees.EmployeesDao
+import com.meloda.kubsau.database.faculties.Faculties
 import com.meloda.kubsau.database.faculties.FacultiesDao
 import com.meloda.kubsau.model.Employee
 import com.meloda.kubsau.model.Faculty
@@ -15,7 +17,11 @@ class EmployeesFacultiesDaoImpl(
 ) : EmployeesFacultiesDao {
 
     override suspend fun allReferences(): List<Pair<Employee, Faculty>> = dbQuery {
-        EmployeesFaculties.selectAll().map(::mapBothResultRow)
+        EmployeesFaculties
+            .innerJoin(Employees)
+            .innerJoin(Faculties)
+            .selectAll()
+            .map(::mapBothResultRow)
     }
 
     override suspend fun allEmployees(): List<Employee> = employeesDao.allEmployees()

@@ -2,6 +2,7 @@ package com.meloda.kubsau.database.programsdisciplines
 
 import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.database.disciplines.Disciplines
+import com.meloda.kubsau.database.disciplines.DisciplinesDao
 import com.meloda.kubsau.database.programs.Programs
 import com.meloda.kubsau.database.programs.ProgramsDao
 import com.meloda.kubsau.model.Discipline
@@ -11,7 +12,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 class ProgramsDisciplinesDaoImpl(
     private val programsDao: ProgramsDao,
-    private val disciplinesDao: ProgramsDisciplinesDao
+    private val disciplinesDao: DisciplinesDao
 ) : ProgramsDisciplinesDao {
 
     override suspend fun allReferences(): List<Pair<Program, Discipline>> = dbQuery {
