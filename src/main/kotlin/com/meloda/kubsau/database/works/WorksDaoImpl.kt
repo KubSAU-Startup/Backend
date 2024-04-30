@@ -40,32 +40,32 @@ class WorksDaoImpl : WorksDao {
         workTypeId: Int?,
     ): List<JournalItem> = dbQuery {
         val query =
-            (studentId?.let { Works.studentId eq studentId } ?: Op.TRUE) andIfNotNull
-                    (groupId?.let { Students.groupId eq groupId }) andIfNotNull
-                    (disciplineId?.let { Works.disciplineId eq disciplineId }) andIfNotNull
-                    (departmentId?.let { Works.departmentId eq departmentId }) andIfNotNull
-                    (workTypeId?.let { Works.workTypeId eq workTypeId }) andIfNotNull
-                    (employeeId?.let { Works.employeeId eq employeeId })
+            Works
+                .innerJoin(Disciplines, { Works.disciplineId }, { Disciplines.id })
+                .innerJoin(Students, { Works.studentId }, { Students.id })
+                .innerJoin(WorkTypes, { Works.workTypeId }, { WorkTypes.id })
+                .innerJoin(Groups, { Students.groupId }, { Groups.id })
+                .innerJoin(Employees, { Works.employeeId }, { Employees.id })
+                .innerJoin(Departments, { Disciplines.departmentId }, { Departments.id })
+                .selectAll()
 
-        Works
-            .innerJoin(Disciplines, { Works.disciplineId }, { Disciplines.id })
-            .innerJoin(Students, { Works.studentId }, { Students.id })
-            .innerJoin(WorkTypes, { Works.workTypeId }, { WorkTypes.id })
-            .innerJoin(Groups, { Students.groupId }, { Groups.id })
-            .innerJoin(Employees, { Works.employeeId }, { Employees.id })
-            .innerJoin(Departments, { Disciplines.departmentId }, { Departments.id })
-            .selectAll()
-            .where { query }
-            .map { row ->
-                JournalItem(
-                    student = Student.mapResultRow(row).mapToJournalStudent(),
-                    group = Group.mapResultRow(row),
-                    discipline = Discipline.mapResultRow(row),
-                    employee = Employee.mapResultRow(row),
-                    work = mapResultRow(row).mapToJournalWork(WorkType.mapResultRow(row)),
-                    department = Department.mapResultRow(row)
-                )
-            }
+        studentId?.let { query.andWhere { Works.studentId eq studentId } }
+        groupId?.let { query.andWhere { Students.groupId eq groupId } }
+        disciplineId?.let { query.andWhere { Works.disciplineId eq disciplineId } }
+        departmentId?.let { query.andWhere { Works.departmentId eq departmentId } }
+        workTypeId?.let { query.andWhere { Works.workTypeId eq workTypeId } }
+        employeeId?.let { query.andWhere { Works.employeeId eq employeeId } }
+
+        query.map { row ->
+            JournalItem(
+                student = Student.mapResultRow(row).mapToJournalStudent(),
+                group = Group.mapResultRow(row),
+                discipline = Discipline.mapResultRow(row),
+                employee = Employee.mapResultRow(row),
+                work = mapResultRow(row).mapToJournalWork(WorkType.mapResultRow(row)),
+                department = Department.mapResultRow(row)
+            )
+        }
     }
 
     override suspend fun allWorksByIds(workIds: List<Int>): List<Work> = dbQuery {
