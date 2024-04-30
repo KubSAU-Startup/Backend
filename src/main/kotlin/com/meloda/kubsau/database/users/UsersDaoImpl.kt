@@ -44,7 +44,6 @@ class UsersDaoImpl : UsersDao {
         Users.insert {
             it[Users.login] = login
             it[Users.password] = password
-            it[Users.type] = type
             it[Users.employeeId] = employeeId
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }

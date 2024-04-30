@@ -18,7 +18,7 @@ fun ApplicationResponse.toLogString(): String {
 
 fun Parameters.getString(key: String, trim: Boolean = true): String? = try {
     getOrThrow(key, trim)
-} catch (e: Exception) {
+} catch (ignored: ValidationException) {
     null
 }
 
@@ -26,7 +26,7 @@ fun Parameters.getOrThrow(key: String, trim: Boolean = true): String = getOrThro
 
 fun Parameters.getBoolean(key: String): Boolean? = try {
     getBooleanOrThrow(key)
-} catch (e: Exception) {
+} catch (ignored: ValidationException) {
     null
 }
 
@@ -38,15 +38,14 @@ fun Parameters.getBooleanOrThrow(key: String): Boolean =
 
 fun Parameters.getInt(key: String): Int? = try {
     getIntOrThrow(key)
-} catch (e: Exception) {
+} catch (ignored: ValidationException) {
     null
 }
 
-fun Parameters.getIntOrThrow(key: String): Int =
-    getOrThrow(
-        key = key,
-        mapper = { it.toIntOrNull() ?: throw ValidationException("$key is invalid") }
-    )
+fun Parameters.getIntOrThrow(key: String): Int = getOrThrow(
+    key = key,
+    mapper = { it.toIntOrNull() ?: throw ValidationException("$key is invalid") }
+)
 
 fun <T> Parameters.getOrThrow(key: String, mapper: (String) -> T): T = getOrThrow(
     key = key,
@@ -54,6 +53,5 @@ fun <T> Parameters.getOrThrow(key: String, mapper: (String) -> T): T = getOrThro
     message = { "$key is empty" }
 )
 
-fun <T> Parameters.getOrThrow(key: String, mapper: (String) -> T, message: () -> String): T {
-    return mapper(this[key] ?: throw ValidationException(message()))
-}
+fun <T> Parameters.getOrThrow(key: String, mapper: (String) -> T, message: () -> String): T =
+    mapper(this[key] ?: throw ValidationException(message()))

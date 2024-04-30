@@ -28,6 +28,15 @@ class EmployeesFacultiesDaoImpl(
 
     override suspend fun allFaculties(): List<Faculty> = facultiesDao.allFaculties()
 
+    override suspend fun singleFacultyByEmplyeeId(employeeId: Int): Faculty? = dbQuery {
+        EmployeesFaculties
+            .innerJoin(Faculties)
+            .selectAll()
+            .where { EmployeesFaculties.employeeId eq employeeId }
+            .map(::mapSecondResultRow)
+            .singleOrNull()
+    }
+
     override suspend fun addNewReference(employeeId: Int, facultyId: Int): Boolean = dbQuery {
         EmployeesFaculties.insert {
             it[EmployeesFaculties.employeeId] = employeeId

@@ -2,7 +2,7 @@ package com.meloda.kubsau.database.departments
 
 import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.model.Department
-import com.meloda.kubsau.route.journal.JournalFilter
+import com.meloda.kubsau.route.works.JournalFilter
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
@@ -26,10 +26,10 @@ class DepartmentsDaoImpl : DepartmentsDao {
             .map(::mapResultRow)
     }
 
-    override suspend fun singleDepartment(id: Int): Department? = dbQuery {
+    override suspend fun singleDepartment(departmentId: Int): Department? = dbQuery {
         Departments
             .selectAll()
-            .where { Departments.id eq id }
+            .where { Departments.id eq departmentId }
             .map(::mapResultRow)
             .singleOrNull()
     }

@@ -9,5 +9,6 @@ interface EmployeesFacultiesDao : RefDao<Employee, Faculty> {
     suspend fun allReferences(): List<Pair<Employee, Faculty>>
     suspend fun allEmployees(): List<Employee>
     suspend fun allFaculties(): List<Faculty>
+    suspend fun singleFacultyByEmplyeeId(employeeId: Int): Faculty?
     suspend fun addNewReference(employeeId: Int, facultyId: Int): Boolean
 }

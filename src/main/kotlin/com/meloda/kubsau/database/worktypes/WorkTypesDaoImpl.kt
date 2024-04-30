@@ -2,7 +2,7 @@ package com.meloda.kubsau.database.worktypes
 
 import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.model.WorkType
-import com.meloda.kubsau.route.journal.JournalFilter
+import com.meloda.kubsau.route.works.JournalFilter
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList

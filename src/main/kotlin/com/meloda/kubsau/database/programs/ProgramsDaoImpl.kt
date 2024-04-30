@@ -34,9 +34,8 @@ class ProgramsDaoImpl : ProgramsDao {
             .singleOrNull()
     }
 
-    override suspend fun addNewProgram(title: String, semester: Int, directivityId: Int): Program? = dbQuery {
+    override suspend fun addNewProgram(semester: Int, directivityId: Int): Program? = dbQuery {
         Programs.insert {
-            it[Programs.title] = title
             it[Programs.semester] = semester
             it[Programs.directivityId] = directivityId
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
@@ -44,12 +43,10 @@ class ProgramsDaoImpl : ProgramsDao {
 
     override suspend fun updateProgram(
         programId: Int,
-        title: String,
         semester: Int,
         directivityId: Int
     ): Boolean = dbQuery {
         Programs.update(where = { Programs.id eq programId }) {
-            it[Programs.title] = title
             it[Programs.semester] = semester
             it[Programs.directivityId] = directivityId
         } > 0

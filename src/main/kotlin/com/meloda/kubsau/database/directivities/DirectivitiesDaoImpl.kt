@@ -12,10 +12,11 @@ class DirectivitiesDaoImpl : DirectivitiesDao {
         Directivities.selectAll().map(::mapResultRow)
     }
 
-    override suspend fun addNewDirectivity(title: String, headId: Int): Directivity? = dbQuery {
+    override suspend fun addNewDirectivity(title: String, headId: Int, gradeId: Int): Directivity? = dbQuery {
         Directivities.insert {
             it[Directivities.title] = title
             it[Directivities.headId] = headId
+            it[Directivities.gradeId] = gradeId
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 

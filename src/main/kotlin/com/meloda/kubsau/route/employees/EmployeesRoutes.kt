@@ -68,15 +68,15 @@ private fun Route.addEmployee() {
         val lastName = parameters.getOrThrow("lastName")
         val firstName = parameters.getOrThrow("firstName")
         val middleName = parameters.getOrThrow("middleName")
-        val email = parameters.getString("email")
-        val employeeTypeId = parameters.getIntOrThrow("employeeTypeId")
+        val email = parameters.getOrThrow("email")
+        val type = parameters.getIntOrThrow("type")
 
         val created = employeesDao.addNewEmployee(
             firstName = firstName,
             lastName = lastName,
             middleName = middleName,
             email = email,
-            employeeTypeId = employeeTypeId
+            type = type
         )
 
         if (created != null) {
@@ -100,15 +100,15 @@ private fun Route.editEmployee() {
         val firstName = parameters.getString("firstName")
         val middleName = parameters.getString("middleName")
         val email = parameters.getString("email")
-        val employeeTypeId = parameters.getInt("employeeTypeId")
+        val type = parameters.getInt("type")
 
         employeesDao.updateEmployee(
             employeeId = employeeId,
             firstName = firstName ?: currentEmployee.firstName,
             lastName = lastName ?: currentEmployee.lastName,
             middleName = middleName ?: currentEmployee.middleName,
-            email = if ("email" in parameters) email else currentEmployee.email,
-            employeeTypeId = employeeTypeId ?: currentEmployee.employeeTypeId
+            email = email ?: currentEmployee.email,
+            type = type ?: currentEmployee.type
         ).let { success ->
             if (success) {
                 respondSuccess { 1 }

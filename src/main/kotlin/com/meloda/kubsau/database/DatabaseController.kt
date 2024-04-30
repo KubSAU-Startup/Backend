@@ -7,8 +7,8 @@ import com.meloda.kubsau.database.disciplines.Disciplines
 import com.meloda.kubsau.database.employees.Employees
 import com.meloda.kubsau.database.employeesdepartments.EmployeesDepartments
 import com.meloda.kubsau.database.employeesfaculties.EmployeesFaculties
-import com.meloda.kubsau.database.employeetypes.EmployeeTypes
 import com.meloda.kubsau.database.faculties.Faculties
+import com.meloda.kubsau.database.grades.Grades
 import com.meloda.kubsau.database.groups.Groups
 import com.meloda.kubsau.database.heads.Heads
 import com.meloda.kubsau.database.programs.Programs
@@ -49,7 +49,7 @@ object DatabaseController {
             addLogger(StdOutSqlLogger)
             SchemaUtils.create(
                 Departments, Directivities, Disciplines, Employees,
-                EmployeeTypes, Faculties, Groups, Heads,
+                Faculties, Grades, Groups, Heads,
                 Programs, Sessions, Students, StudentStatuses,
                 Users, Works, WorkTypes
             )

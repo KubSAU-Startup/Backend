@@ -1,22 +1,26 @@
 package com.meloda.kubsau.route.programs
 
 import com.meloda.kubsau.api.respondSuccess
+import com.meloda.kubsau.common.getBoolean
 import com.meloda.kubsau.common.getInt
 import com.meloda.kubsau.common.getIntOrThrow
 import com.meloda.kubsau.common.getOrThrow
-import com.meloda.kubsau.common.getString
+import com.meloda.kubsau.database.disciplines.DisciplinesDao
 import com.meloda.kubsau.database.programs.ProgramsDao
 import com.meloda.kubsau.database.programsdisciplines.ProgramsDisciplinesDao
+import com.meloda.kubsau.database.worktypes.WorkTypesDao
 import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.UnknownException
 import com.meloda.kubsau.errors.ValidationException
 import com.meloda.kubsau.model.Discipline
 import com.meloda.kubsau.model.Program
+import com.meloda.kubsau.model.WorkType
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
+import kotlin.collections.set
 
 fun Route.programsRoutes() {
     authenticate {
@@ -33,16 +37,39 @@ fun Route.programsRoutes() {
     }
 }
 
+private data class ProgramsWithDisciplines(
+    val count: Int,
+    val offset: Int,
+    val programs: List<ProgramWithDisciplineIds>,
+    val disciplines: List<DisciplineWithWorkType>?
+)
+
+private data class Programs(
+    val count: Int,
+    val offset: Int,
+    val programs: List<ProgramWithDisciplineIds>
+)
+
+private data class DisciplineWithWorkType(
+    val discipline: Discipline,
+    val workType: WorkType
+)
+
 private fun Route.getPrograms() {
     val programsDao by inject<ProgramsDao>()
     val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
+    val disciplinesDao by inject<DisciplinesDao>()
 
     get {
-        val programIds = call.request.queryParameters["programIds"]
+        val parameters = call.request.queryParameters
+
+        val programIds = parameters["programIds"]
             ?.split(",")
             ?.map(String::trim)
             ?.mapNotNull(String::toIntOrNull)
             ?: programsDao.allPrograms().map(Program::id)
+
+        val extended = parameters.getBoolean("extended") ?: false
 
         val disciplineIds = hashMapOf<Int, List<Int>>()
 
@@ -62,7 +89,38 @@ private fun Route.getPrograms() {
             )
         }
 
-        respondSuccess { programs }
+        val disciplines = mutableListOf<DisciplineWithWorkType>()
+
+        programs.forEach { program ->
+            program.disciplineIds.forEach { disciplineId ->
+                val workType = programsDisciplinesDao.workType(program.program.id, disciplineId)
+                val discipline = disciplinesDao.singleDiscipline(disciplineId)
+
+                if (workType != null && discipline != null) {
+                    disciplines += DisciplineWithWorkType(
+                        discipline = discipline,
+                        workType = workType
+                    )
+                }
+            }
+        }
+
+        respondSuccess {
+            if (extended) {
+                ProgramsWithDisciplines(
+                    count = programs.size,
+                    offset = 0,
+                    programs = programs,
+                    disciplines = disciplines
+                )
+            } else {
+                Programs(
+                    count = programs.size,
+                    offset = 0,
+                    programs = programs
+                )
+            }
+        }
     }
 }
 
@@ -92,12 +150,10 @@ private fun Route.addProgram() {
     post {
         val parameters = call.receiveParameters()
 
-        val title = parameters.getOrThrow("title")
         val semester = parameters.getIntOrThrow("semester")
         val directivityId = parameters.getIntOrThrow("directivityId")
 
         val created = programsDao.addNewProgram(
-            title = title,
             semester = semester,
             directivityId = directivityId
         )
@@ -166,13 +222,11 @@ private fun Route.editProgram() {
 
         val parameters = call.receiveParameters()
 
-        val title = parameters.getString("title")
         val semester = parameters.getInt("semester")
         val directivityId = parameters.getInt("directivityId")
 
         programsDao.updateProgram(
             programId = programId,
-            title = title ?: currentProgram.title,
             semester = semester ?: currentProgram.semester,
             directivityId = directivityId ?: currentProgram.directivityId
         ).let { success ->

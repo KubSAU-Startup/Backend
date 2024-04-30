@@ -11,8 +11,8 @@ import com.meloda.kubsau.database.disciplines.DisciplinesDao
 import com.meloda.kubsau.database.employees.EmployeesDao
 import com.meloda.kubsau.database.employeesdepartments.EmployeesDepartmentsDao
 import com.meloda.kubsau.database.employeesfaculties.EmployeesFacultiesDao
-import com.meloda.kubsau.database.employeetypes.EmployeeTypesDao
 import com.meloda.kubsau.database.faculties.FacultiesDao
+import com.meloda.kubsau.database.grades.GradesDao
 import com.meloda.kubsau.database.groups.GroupsDao
 import com.meloda.kubsau.database.heads.HeadsDao
 import com.meloda.kubsau.database.programs.ProgramsDao
@@ -103,7 +103,8 @@ private fun Application.prepopulateDB() {
 
     createDummyUsers()
 
-    createDummyEmployeeTypes()
+    createDummyGrades()
+
     createDummyEmployees()
 
     createDummyDepartments()
@@ -151,21 +152,23 @@ private fun Application.createDummyUsers() {
     }
 }
 
-private fun Application.createDummyEmployeeTypes() {
-    val employeeTypesDao by inject<EmployeeTypesDao>()
+private fun Application.createDummyGrades() {
+    val gradesDao by inject<GradesDao>()
 
-    employeeTypesDao.apply {
+    gradesDao.apply {
         runBlocking {
-            if (allTypes().isEmpty()) {
-                println("Creating dummy employee types...")
+            if (allGrades().isEmpty()) {
+                println("Crearing dummy grades...")
 
                 val time = measureTimeMillis {
-                    addNewType(title = "Администратор")
-                    addNewType(title = "Преподаватель")
-                    addNewType(title = "Кафедра")
+                    addNewGrade("Бакалавр")
+                    addNewGrade("Магистратура")
+                    addNewGrade("Специалитет")
+                    addNewGrade("Аспирантура")
+                    addNewGrade("Интернатура")
                 }
 
-                println("Dummy employee types created. Took ${time}ms")
+                println("Dummy grades created. Took ${time}ms")
             }
         }
     }
@@ -173,14 +176,72 @@ private fun Application.createDummyEmployeeTypes() {
 
 private fun Application.createDummyEmployees() {
     val employeesDao by inject<EmployeesDao>()
-    val employeeTypesDao by inject<EmployeeTypesDao>()
+
+    val names = ("Савина Валентина Ярославовна\n" +
+            "Попов Фёдор Тимофеевич\n" +
+            "Чернышева Ксения Михайловна\n" +
+            "Фокин Артемий Львович\n" +
+            "Романова Дарья Николаевна\n" +
+            "Ильина Ульяна Ярославовна\n" +
+            "Семенова Василиса Артёмовна\n" +
+            "Лебедев Марк Платонович\n" +
+            "Чернов Владимир Фёдорович\n" +
+            "Румянцев Марк Маркович\n" +
+            "Захарова Мария Антоновна\n" +
+            "Иванов Алексей Артурович\n" +
+            "Борисов Артур Владиславович\n" +
+            "Лазарев Никита Ярославович\n" +
+            "Семенова Кира Александровна\n" +
+            "Зверева Ксения Константиновна\n" +
+            "Ульянов Дмитрий Матвеевич\n" +
+            "Белов Даниил Артёмович\n" +
+            "Орлов Глеб Тимурович\n" +
+            "Евдокимова София Кирилловна\n" +
+            "Лапшин Михаил Ярославович\n" +
+            "Матвеев Дмитрий Макарович\n" +
+            "Куликова София Тихоновна\n" +
+            "Сычев Иван Степанович\n" +
+            "Матвеев Серафим Михайлович\n" +
+            "Глухов Максим Егорович\n" +
+            "Орехов Михаил Максимович\n" +
+            "Федоров Максим Сергеевич\n" +
+            "Корнеева Полина Марковна\n" +
+            "Дмитриева Дарья Львовна\n" +
+            "Григорьева Николь Степановна\n" +
+            "Акимов Илья Евгеньевич\n" +
+            "Колосова Мария Андреевна\n" +
+            "Ефимов Лев Павлович\n" +
+            "Петров Иван Маркович\n" +
+            "Фролов Иван Максимович\n" +
+            "Капустин Давид Семёнович\n" +
+            "Чернова Виктория Фёдоровна\n" +
+            "Тарасова Полина Ярославовна\n" +
+            "Чернышев Всеволод Александрович\n" +
+            "Ткачев Матвей Маркович\n" +
+            "Лебедева София Тимофеевна\n" +
+            "Федотова Яна Вадимовна\n" +
+            "Иванов Леонид Даниэльевич\n" +
+            "Ильина Анна Львовна\n" +
+            "Петровская Софья Ильинична\n" +
+            "Белов Роман Константинович\n" +
+            "Филиппова Мадина Егоровна\n" +
+            "Селезнева Милана Артёмовна\n" +
+            "Филиппов Артём Максимович\n" +
+            "Ефремов Марсель Фёдорович\n" +
+            "Гришин Григорий Артёмович\n" +
+            "Гущина Полина Максимовна\n" +
+            "Воронова Таисия Константиновна\n" +
+            "Никитин Артём Михайлович\n" +
+            "Соловьев Михаил Андреевич\n" +
+            "Киселева Малика Львовна\n" +
+            "Федотова Софья Макаровна\n" +
+            "Беспалов Лука Маркович\n" +
+            "Карпова Юлия Кирилловна").split("\n")
 
     employeesDao.apply {
         runBlocking {
             if (allEmployees().isEmpty()) {
                 println("Creating dummy employees...")
-
-                val employeeTypeIds = employeeTypesDao.allTypes().map(EmployeeType::id)
 
                 val time = measureTimeMillis {
                     addNewEmployee(
@@ -188,22 +249,40 @@ private fun Application.createDummyEmployees() {
                         firstName = "Данил",
                         middleName = "Станиславович",
                         email = "lischenkodev@gmail.com",
-                        employeeTypeId = employeeTypeIds.first()
+                        type = 1
                     )
                     addNewEmployee(
                         lastName = "Кожухар",
                         firstName = "Марина",
                         middleName = "Константиновна",
                         email = "m.kozhukhar@gmail.com",
-                        employeeTypeId = employeeTypeIds.last()
+                        type = 2
                     )
                     addNewEmployee(
                         lastName = "Абросимов",
                         firstName = "Ярослав",
                         middleName = "Валерьевич",
                         email = "ya.abros@gmail.com",
-                        employeeTypeId = employeeTypeIds[1]
+                        type = 3
                     )
+                    addNewEmployee(
+                        lastName = "Берон",
+                        firstName = "Григорий",
+                        middleName = "Игоревич",
+                        email = "grisha@google.com",
+                        type = 1
+                    )
+
+                    names.map { it.split(" ") }
+                        .forEach { (lastName, firstName, middleName) ->
+                            addNewEmployee(
+                                lastName = lastName,
+                                firstName = firstName,
+                                middleName = middleName,
+                                email = "test@test.test",
+                                type = 3
+                            )
+                        }
                 }
 
                 println("Dummy employees created. Took ${time}ms")
@@ -250,26 +329,21 @@ private fun Application.createDummyDepartments() {
 
 private fun Application.createDummyEmployeesDepartments() {
     val employeesDepartmentsDao by inject<EmployeesDepartmentsDao>()
-    val employeesDao by inject<EmployeesDao>()
-    val departmentsDao by inject<DepartmentsDao>()
 
     employeesDepartmentsDao.apply {
         runBlocking {
             if (allReferences().isEmpty()) {
                 println("Creating dummy employees departments references...")
 
-                val employeeIds = employeesDao.allEmployees().map(Employee::id)
-                val departmentIds = departmentsDao.allDepartments().map(Department::id)
-
                 val time = measureTimeMillis {
-                    List(20) {
-                        employeeIds.random() to departmentIds.random()
-                    }.distinct().forEach { (employeeId, departmentId) ->
-                        addNewReference(
-                            employeeId = employeeId,
-                            departmentId = departmentId
-                        )
-                    }
+                    addNewReference(1, 1)
+                    addNewReference(2, 2)
+                    addNewReference(3, 3)
+                    addNewReference(1, 4)
+                    addNewReference(2, 5)
+                    addNewReference(3, 6)
+                    addNewReference(4, 7)
+                    addNewReference(4, 8)
                 }
 
                 println("Dummy employees departments references created. Took ${time}ms")
@@ -349,15 +423,36 @@ private fun Application.createDummyDisciplines() {
 private fun Application.createDummyFaculties() {
     val facultiesDao by inject<FacultiesDao>()
 
+    val titles = listOf(
+        "Агрономии и экологии",
+        "Агрохимии и защиты растений",
+        "Архитектурно-строительный",
+        "Ветеринарная медицина",
+        "Гидромелиорации",
+        "Землеустроительный",
+        "Зоотехнии",
+        "Институт цифровой экономики и инноваций",
+        "Механизации",
+        "Пищевых производств и биотехнологий",
+        "Плодоовощеводство и виноградство",
+        "Прикладной информатики",
+        "Управления",
+        "Учётно-финансовый",
+        "Финансы и кредиты",
+        "Экономический",
+        "Энергетики",
+        "Юридический",
+        "Заочное",
+        "Военное обучение"
+    )
+
     facultiesDao.apply {
         runBlocking {
             if (allFaculties().isEmpty()) {
                 println("Creating dummy faculties...")
 
                 val time = measureTimeMillis {
-                    repeat(20) { index ->
-                        addNewFaculty("Faculty #${index + 1}")
-                    }
+                    titles.forEach { title -> facultiesDao.addNewFaculty(title) }
                 }
 
                 println("Dummy faculties created. Took ${time}ms")
@@ -368,26 +463,17 @@ private fun Application.createDummyFaculties() {
 
 private fun Application.createDummyEmployeesFaculties() {
     val employeesFacultiesDao by inject<EmployeesFacultiesDao>()
-    val employeesDao by inject<EmployeesDao>()
-    val facultiesDao by inject<FacultiesDao>()
 
     employeesFacultiesDao.apply {
         runBlocking {
             if (allReferences().isEmpty()) {
                 println("Creating dummy employees faculties references...")
 
-                val employeeIds = employeesDao.allEmployees().map(Employee::id)
-                val facultyIds = facultiesDao.allFaculties().map(Faculty::id)
-
                 val time = measureTimeMillis {
-                    List(20) {
-                        employeeIds.random() to facultyIds.random()
-                    }.distinct().forEach { (employeeId, facultyId) ->
-                        addNewReference(
-                            employeeId = employeeId,
-                            facultyId = facultyId
-                        )
-                    }
+                    addNewReference(1, 12)
+                    addNewReference(1, 15)
+                    addNewReference(4, 11)
+                    addNewReference(4, 14)
                 }
 
                 println("Dummy employees faculties references created. Took ${time}ms")
@@ -421,22 +507,19 @@ private fun Application.createDummyHeads() {
     )
 
     val headsDao by inject<HeadsDao>()
-    val facultiesDao by inject<FacultiesDao>()
 
     headsDao.apply {
         runBlocking {
             if (allHeads().isEmpty()) {
                 println("Creating dummy heads...")
 
-                val facultyIds = facultiesDao.allFaculties().map(Faculty::id)
-
                 val time = measureTimeMillis {
-                    heads.forEach { (code, title, abbreviation) ->
+                    heads.forEachIndexed { index, (code, title, abbreviation) ->
                         addNewHead(
                             code = code,
                             abbreviation = abbreviation,
                             title = title,
-                            facultyId = facultyIds.random()
+                            facultyId = index + 1
                         )
                     }
                 }
@@ -448,7 +531,6 @@ private fun Application.createDummyHeads() {
 }
 
 private fun Application.createDummyDirectivities() {
-    val headsDao by inject<HeadsDao>()
     val directivitiesDao by inject<DirectivitiesDao>()
 
     directivitiesDao.apply {
@@ -456,88 +538,141 @@ private fun Application.createDummyDirectivities() {
             if (allDirectivities().isEmpty()) {
                 println("Creating dummy directivities...")
 
-                val headIds = headsDao.allHeads().map(Head::id)
-
                 val time = measureTimeMillis {
                     addNewDirectivity(
                         title = "Экология и природопользование",
-                        headId = 1
+                        headId = 1,
+                        gradeId = 1
                     )
                     addNewDirectivity(
                         title = "Проектирование зданий",
-                        headId = 2
+                        headId = 2,
+                        gradeId = 1
                     )
                     addNewDirectivity(
                         title = "Промышленное и гражданское строительство",
-                        headId = 3
+                        headId = 2,
+                        gradeId = 1
                     )
                     addNewDirectivity(
                         title = "Создание, модификация и сопровождение информационных систем, администрирование баз данных",
-                        headId = 4
+                        headId = 3,
+                        gradeId = 1
                     )
                     addNewDirectivity(
                         title = "Менеджмент проектов в области информационных технологий, создание и поддержка информационных систем",
-                        headId = 5
+                        headId = 4,
+                        gradeId = 1
                     )
                     addNewDirectivity(
                         title = "Электроснабжение",
-                        headId = 6
+                        headId = 5,
+                        gradeId = 1
                     )
                     addNewDirectivity(
                         title = "Производство продуктов питания из растительного сырья",
-                        headId = 7
+                        headId = 6,
+                        gradeId = 1
                     )
                     addNewDirectivity(
                         title = "Инженерные системы сельскохозяйственного снабжения, обводнения и водоотделения",
-                        headId = 8
+                        headId = 7,
+                        gradeId = 1
+                    )
+                    addNewDirectivity(
+                        title = "Мелиорация, рекультивация и охрана земель",
+                        headId = 7,
+                        gradeId = 1
                     )
                     addNewDirectivity(
                         title = "Землеустройство и кадастры",
-                        headId = 9
+                        headId = 8,
+                        gradeId = 1
                     )
                     addNewDirectivity(
                         title = "Почвенно-агрохимическое обеспечение АПК",
-                        headId = 10
+                        headId = 9,
+                        gradeId = 1
                     )
                     addNewDirectivity(
                         title = "Защита растений",
-                        headId = 11
+                        headId = 10,
+                        gradeId = 1
+                    )
+                    addNewDirectivity(
+                        title = "Селекция и генетика сельскохозяйственных культур",
+                        headId = 10,
+                        gradeId = 1
                     )
                     addNewDirectivity(
                         title = "Декоративное садоводство, плодоовощеводство, виноградство и виноделие",
-                        headId = 12
+                        headId = 11,
+                        gradeId = 1
                     )
                     addNewDirectivity(
                         title = "Технические системы в агробизнесе",
-                        headId = 13
+                        headId = 12,
+                        gradeId = 1
+                    )
+                    addNewDirectivity(
+                        title = "Электрооборудование и электротехнологии",
+                        headId = 12,
+                        gradeId = 1
+                    )
+                    addNewDirectivity(
+                        title = "Технология хранения и переработки сельскозяйственной продукции",
+                        headId = 13,
+                        gradeId = 1
                     )
                     addNewDirectivity(
                         title = "Ветеринарно-санитарная экспертиза",
-                        headId = 14
+                        headId = 14,
+                        gradeId = 1
                     )
                     addNewDirectivity(
                         title = "Технология производства продуктов животноводства",
-                        headId = 15
+                        headId = 15,
+                        gradeId = 1
                     )
                     addNewDirectivity(
                         title = "Бизнес-аналитика",
-                        headId = 16
+                        headId = 16,
+                        gradeId = 1
+                    )
+                    addNewDirectivity(
+                        title = "Бухгалтерский учёт, анализ и аудит",
+                        headId = 16,
+                        gradeId = 1
                     )
                     addNewDirectivity(
                         title = "Инновационный менеджмент",
-                        headId = 17
+                        headId = 17,
+                        gradeId = 1
+                    )
+                    addNewDirectivity(
+                        title = "Производственный менеджмент",
+                        headId = 17,
+                        gradeId = 1
                     )
                     addNewDirectivity(
                         title = "Государственное и муниципальное управление",
-                        headId = 18
+                        headId = 18,
+                        gradeId = 1
                     )
                     addNewDirectivity(
                         title = "Анализ, моделирование и формирование интегрального представления стратегий и целей, бизнес-процессов и информационно-логической инфраструктуры предприятий и организаций",
-                        headId = 19
+                        headId = 19,
+                        gradeId = 1
                     )
                     addNewDirectivity(
                         title = "Гражданско-правовой",
-                        headId = 20
+                        headId = 20,
+                        gradeId = 1
+                    )
+                    addNewDirectivity(
+                        title = "Уголовно-правовой",
+                        headId = 20,
+                        gradeId = 1
                     )
                 }
 
@@ -625,7 +760,48 @@ private fun Application.createDummyStudents() {
             "Погуляйло Вадим Андреевич\n" +
             "Рябов Алексей Алексеевич\n" +
             "Шепетило Константин Валерьевич\n" +
-            "Яценко Никита Алексеевич").split("\n")
+            "Яценко Никита Алексеевич" +
+            "Крюков Егор Богданович\n" +
+            "Филиппов Марк Фёдорович\n" +
+            "Михайлов Андрей Андреевич\n" +
+            "Плотников Артём Давидович\n" +
+            "Егоров Роман Даниэльевич\n" +
+            "Овчинников Михаил Никитич\n" +
+            "Митрофанов Александр Сергеевич\n" +
+            "Лапина Виктория Артёмовна\n" +
+            "Бурова Анастасия Александровна\n" +
+            "Молчанова Кира Марковна\n" +
+            "Дементьев Матвей Иванович\n" +
+            "Попова Таисия Мироновна\n" +
+            "Герасимов Фёдор Антонович\n" +
+            "Рыбаков Дмитрий Павлович\n" +
+            "Колосов Денис Романович\n" +
+            "Виноградова Сафия Фёдоровна\n" +
+            "Титова Анастасия Сергеевна\n" +
+            "Михайлова Анна Данииловна\n" +
+            "Токарев Всеволод Егорович\n" +
+            "Гончарова Мария Лукинична\n" +
+            "Лаврова Софья Владиславовна\n" +
+            "Комиссарова Арина Михайловна\n" +
+            "Скворцова Ника Тимофеевна\n" +
+            "Иванов Михаил Владиславович\n" +
+            "Майорова Анна Сергеевна\n" +
+            "Сизов Лев Михайлович\n" +
+            "Александров Евгений Платонович\n" +
+            "Кузнецова Ольга Артёмовна\n" +
+            "Дегтярев Семён Маркович\n" +
+            "Третьяков Макар Артёмович\n" +
+            "Клюева Полина Дмитриевна\n" +
+            "Калинина Полина Марковна\n" +
+            "Медведева Наталья Лукинична\n" +
+            "Касьянова Евгения Макаровна\n" +
+            "Маслов Савва Тимофеевич\n" +
+            "Елисеев Марк Данилович\n" +
+            "Захарова Алиса Сергеевна\n" +
+            "Журавлева Стефания Матвеевна\n" +
+            "Рыбаков Даниил Тихонович\n" +
+            "Матвеева Анна Вячеславовна")
+        .split("\n")
 
     val groupsDao by inject<GroupsDao>()
     val studentsDao by inject<StudentsDao>()
@@ -642,17 +818,13 @@ private fun Application.createDummyStudents() {
 
                 val time = measureTimeMillis {
                     groups.forEach { groupId ->
-                        List(25) {
-                            names.random() to statusIds.random()
-                        }.distinct().forEach { (fullName, statusId) ->
-                            val (lastName, firstName, middleName) = fullName.split(" ")
-
+                        names.shuffled().take(25).map { it.split(" ") }.forEach { (lastName, firstName, middleName) ->
                             addNewStudent(
                                 firstName = firstName,
                                 lastName = lastName,
                                 middleName = middleName,
                                 groupId = groupId,
-                                statusId = statusId
+                                statusId = statusIds.random()
                             )
                         }
                     }
@@ -663,88 +835,6 @@ private fun Application.createDummyStudents() {
         }
     }
 }
-
-//private fun Application.createDummyTeachers() {
-//    val departmentsDao by inject<DepartmentsDao>()
-//    val teachersDao by inject<TeachersDao>()
-//
-//    teachersDao.apply {
-//        runBlocking {
-//            if (allTeachers().size < 10) {
-//                println("Creating dummy teachers...")
-//
-//                val time = measureTimeMillis {
-//                    val departmentIds = departmentsDao.allDepartments().map(Department::id)
-//
-//                    repeat(10) {
-//                        val nameSplit = studentNames.random().split(" ")
-//
-//                        addNewTeacher(
-//                            firstName = nameSplit[0],
-//                            lastName = nameSplit[1],
-//                            middleName = nameSplit[2],
-//                            departmentId = departmentIds.random()
-//                        )
-//                    }
-//                }
-//
-//                println("Dummy teachers created. Took ${time}ms")
-//            }
-//        }
-//    }
-//}
-
-//private fun Application.createDummySpecializationsDisciplines() {
-//    val specializationsDisciplinesDao by inject<SpecializationsDisciplinesDao>()
-//    val specializationsDao by inject<SpecializationsDao>()
-//    val disciplinesDao by inject<DisciplinesDao>()
-//
-//    runBlocking {
-//        if (specializationsDisciplinesDao.allItems().size < 100) {
-//            println("Creating dummy specializations-disciplines references...")
-//
-//            val time = measureTimeMillis {
-//                val specializationIds = specializationsDao.allSpecializations().map(Specialization::id)
-//                val disciplineIds = disciplinesDao.allDisciplines().map(Discipline::id)
-//
-//                repeat(100) {
-//                    specializationsDisciplinesDao.addNewReference(
-//                        specializationId = specializationIds.random(),
-//                        disciplineId = disciplineIds.random()
-//                    )
-//                }
-//            }
-//
-//            println("Dummy specializations-disciplines references created. Took ${time}ms")
-//        }
-//    }
-//}
-
-//private fun Application.createDummyTeachersDisciplines() {
-//    val teachersDisciplinesDao by inject<TeachersDisciplinesDao>()
-//    val teachersDao by inject<TeachersDao>()
-//    val disciplinesDao by inject<DisciplinesDao>()
-//
-//    runBlocking {
-//        if (teachersDisciplinesDao.allItems().size < 100) {
-//            println("Creating dummy teachers-disciplines references...")
-//
-//            val time = measureTimeMillis {
-//                val teacherIds = teachersDao.allTeachers().map(Teacher::id)
-//                val disciplineIds = disciplinesDao.allDisciplines().map(Discipline::id)
-//
-//                repeat(100) {
-//                    teachersDisciplinesDao.addNewReference(
-//                        teacherId = teacherIds.random(),
-//                        disciplineId = disciplineIds.random()
-//                    )
-//                }
-//            }
-//
-//            println("Dummy teachers-disciplines references created. Took ${time}ms")
-//        }
-//    }
-//}
 
 private fun Application.createDummyWorkTypes() {
     val workTypesDao by inject<WorkTypesDao>()
@@ -758,6 +848,7 @@ private fun Application.createDummyWorkTypes() {
                     addNewWorkType("Курсовая", true)
                     addNewWorkType("Лабораторная", false)
                     addNewWorkType("Рассчётно-графическая", true)
+                    addNewWorkType("Практика", false)
                 }
 
                 println("Dummy work types created. Took ${time}ms")
@@ -771,6 +862,7 @@ private fun Application.createDummyWorks() {
     val workTypesDao by inject<WorkTypesDao>()
     val disciplinesDao by inject<DisciplinesDao>()
     val studentsDao by inject<StudentsDao>()
+    val employeesDao by inject<EmployeesDao>()
 
     runBlocking {
         val works = worksDao.allWorks()
@@ -782,14 +874,16 @@ private fun Application.createDummyWorks() {
                 val workTypeIds = workTypesDao.allWorkTypes().map(WorkType::id)
                 val disciplineIds = disciplinesDao.allDisciplines().map(Discipline::id)
                 val studentIds = studentsDao.allStudents().map(Student::id)
+                val employeeIds = employeesDao.allTeachers().map(Employee::id)
 
-                repeat(10) { index ->
+                repeat(100) { index ->
                     worksDao.addNewWork(
                         disciplineId = disciplineIds.random(),
                         studentId = studentIds.random(),
                         registrationDate = getRandomUnixTime(),
                         title = "Work #${index + 1}",
-                        workTypeId = workTypeIds.random()
+                        workTypeId = workTypeIds.random(),
+                        employeeId = employeeIds.random()
                     )
                 }
             }
@@ -816,7 +910,6 @@ private fun Application.createDummyPrograms() {
 
                         repeat(12) {
                             addNewProgram(
-                                title = "$semester ${directivity.title}",
                                 semester = semester,
                                 directivityId = directivity.id
                             )
@@ -845,12 +938,14 @@ private fun Application.createDummyProgramsDisciplines() {
             val workTypeIds = workTypesDao.allWorkTypes().map(WorkType::id)
 
             val time = measureTimeMillis {
-                repeat(100) {
-                    programsDisciplinesDao.addNewReference(
-                        programId = programIds.random(),
-                        disciplineId = disciplineIds.random(),
-                        workTypeId = workTypeIds.random()
-                    )
+                programIds.forEach { programId ->
+                    disciplineIds.shuffled().take(9).forEach { disciplineId ->
+                        programsDisciplinesDao.addNewReference(
+                            programId = programId,
+                            disciplineId = disciplineId,
+                            workTypeId = workTypeIds.random()
+                        )
+                    }
                 }
             }
 

@@ -5,7 +5,6 @@ import org.jetbrains.exposed.sql.ResultRow
 
 data class Program(
     val id: Int,
-    val title: String,
     val semester: Int,
     val directivityId: Int
 ) {
@@ -14,7 +13,6 @@ data class Program(
 
         fun mapResultRow(row: ResultRow): Program = Program(
             id = row[Programs.id].value,
-            title = row[Programs.title],
             semester = row[Programs.semester],
             directivityId = row[Programs.directivityId]
         )

@@ -2,7 +2,7 @@ package com.meloda.kubsau.database.worktypes
 
 import com.meloda.kubsau.database.FilterableDao
 import com.meloda.kubsau.model.WorkType
-import com.meloda.kubsau.route.journal.JournalFilter
+import com.meloda.kubsau.route.works.JournalFilter
 
 interface WorkTypesDao : FilterableDao<WorkType, JournalFilter> {
 

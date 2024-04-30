@@ -4,12 +4,13 @@ import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.database.departments.Departments
 import com.meloda.kubsau.database.disciplines.Disciplines
 import com.meloda.kubsau.database.employees.Employees
-import com.meloda.kubsau.database.employeesdepartments.EmployeesDepartments
 import com.meloda.kubsau.database.groups.Groups
 import com.meloda.kubsau.database.students.Students
 import com.meloda.kubsau.database.worktypes.WorkTypes
 import com.meloda.kubsau.model.*
-import com.meloda.kubsau.route.journal.*
+import com.meloda.kubsau.route.works.JournalItem
+import com.meloda.kubsau.route.works.mapToJournalStudent
+import com.meloda.kubsau.route.works.mapToJournalWork
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
@@ -26,48 +27,26 @@ class WorksDaoImpl : WorksDao {
         groupId: Int?,
         employeeId: Int?,
         departmentId: Int?,
-        workTypeId: Int?
+        workTypeId: Int?,
     ): List<JournalItem> = dbQuery {
-        val query = (studentId?.let { Works.studentId eq studentId } ?: Op.TRUE) andIfNotNull
-                (groupId?.let { Students.groupId eq groupId }) andIfNotNull
-                (disciplineId?.let { Works.disciplineId eq disciplineId }) andIfNotNull
-                (departmentId?.let { Disciplines.departmentId eq departmentId }) andIfNotNull
-                (workTypeId?.let { Works.workTypeId eq workTypeId })
-                (employeeId?.let { EmployeesDepartments.employeeId eq employeeId })
+        val query =
+            (studentId?.let { Works.studentId eq studentId } ?: Op.TRUE) andIfNotNull
+                    (groupId?.let { Students.groupId eq groupId }) andIfNotNull
+                    (disciplineId?.let { Works.disciplineId eq disciplineId }) andIfNotNull
+                    (departmentId?.let { Disciplines.departmentId eq departmentId }) andIfNotNull
+                    (workTypeId?.let { Works.workTypeId eq workTypeId }) andIfNotNull
+                    (employeeId?.let { Works.employeeId eq employeeId })
 
         Works
-            .innerJoin(Disciplines)
-            .innerJoin(Students)
-            .innerJoin(WorkTypes)
+            .innerJoin(Disciplines, { Works.disciplineId }, { Disciplines.id })
+            .innerJoin(Students, { Works.studentId }, { Students.id })
+            .innerJoin(WorkTypes, { Works.workTypeId }, { WorkTypes.id })
             .innerJoin(Groups, { Students.groupId }, { Groups.id })
+            .innerJoin(Employees, { Works.employeeId }, { Employees.id })
             .innerJoin(Departments, { Disciplines.departmentId }, { Departments.id })
-            .innerJoin(EmployeesDepartments, { Departments.id }, { EmployeesDepartments.departmentId })
-            .innerJoin(Employees, { EmployeesDepartments.employeeId }, { Employees.id })
             .selectAll()
             .where { query }
             .map { row ->
-//                JournalItem(
-//                    student = JournalStudent(id = 8853, fullName = "Laurie Gillespie"),
-//                    group = Group(id = 2392, title = "possim", directivityId = 5593),
-//                    discipline = Discipline(id = 9212, title = "postulant", departmentId = 7796),
-//                    employee = Employee(
-//                        id = 2745,
-//                        lastName = "Joanne Shaffer",
-//                        firstName = "Wade Suarez",
-//                        middleName = null,
-//                        email = null,
-//                        employeeTypeId = 4804
-//                    ),
-//                    work = JournalWork(
-//                        id = 8028,
-//                        type = WorkType(id = 1123, title = "curabitur", needTitle = false),
-//                        registrationDate = 2221,
-//                        title = null
-//                    ),
-//                    department = Department(id = 3300, title = "movet", phone = "(919) 213-1355")
-//
-//
-//                )
                 JournalItem(
                     student = Student.mapResultRow(row).mapToJournalStudent(),
                     group = Group.mapResultRow(row),
@@ -99,7 +78,8 @@ class WorksDaoImpl : WorksDao {
         studentId: Int,
         registrationDate: Long,
         title: String?,
-        workTypeId: Int
+        workTypeId: Int,
+        employeeId: Int
     ): Work? = dbQuery {
         Works.insert {
             it[Works.disciplineId] = disciplineId
@@ -107,6 +87,7 @@ class WorksDaoImpl : WorksDao {
             it[Works.registrationDate] = registrationDate
             it[Works.title] = title
             it[Works.workTypeId] = workTypeId
+            it[Works.employeeId] = employeeId
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 
@@ -116,7 +97,8 @@ class WorksDaoImpl : WorksDao {
         studentId: Int,
         registrationDate: Long,
         title: String?,
-        workTypeId: Int
+        workTypeId: Int,
+        employeeId: Int
     ): Boolean = dbQuery {
         Works.update(where = { Works.id eq workId }) {
             it[Works.disciplineId] = disciplineId

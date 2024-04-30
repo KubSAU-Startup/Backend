@@ -2,7 +2,7 @@ package com.meloda.kubsau.database.groups
 
 import com.meloda.kubsau.database.FilterableDao
 import com.meloda.kubsau.model.Group
-import com.meloda.kubsau.route.journal.JournalFilter
+import com.meloda.kubsau.route.works.JournalFilter
 
 interface GroupsDao : FilterableDao<Group, JournalFilter> {
 

@@ -11,14 +11,12 @@ interface ProgramsDao : Dao<Program> {
     suspend fun singleProgram(programId: Int): Program?
 
     suspend fun addNewProgram(
-        title: String,
         semester: Int,
         directivityId: Int
     ): Program?
 
     suspend fun updateProgram(
         programId: Int,
-        title: String,
         semester: Int,
         directivityId: Int
     ): Boolean

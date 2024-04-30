@@ -12,10 +12,10 @@ import com.meloda.kubsau.database.employeesdepartments.EmployeesDepartmentsDao
 import com.meloda.kubsau.database.employeesdepartments.EmployeesDepartmentsDaoImpl
 import com.meloda.kubsau.database.employeesfaculties.EmployeesFacultiesDao
 import com.meloda.kubsau.database.employeesfaculties.EmployeesFacultiesDaoImpl
-import com.meloda.kubsau.database.employeetypes.EmployeeTypesDao
-import com.meloda.kubsau.database.employeetypes.EmployeeTypesDaoImpl
 import com.meloda.kubsau.database.faculties.FacultiesDao
 import com.meloda.kubsau.database.faculties.FacultiesDaoImpl
+import com.meloda.kubsau.database.grades.GradesDao
+import com.meloda.kubsau.database.grades.GradesDaoImpl
 import com.meloda.kubsau.database.groups.GroupsDao
 import com.meloda.kubsau.database.groups.GroupsDaoImpl
 import com.meloda.kubsau.database.heads.HeadsDao
@@ -47,8 +47,8 @@ val databaseModule = module {
     singleOf(::EmployeesDaoImpl) bind EmployeesDao::class
     singleOf(::EmployeesDepartmentsDaoImpl) bind EmployeesDepartmentsDao::class
     singleOf(::EmployeesFacultiesDaoImpl) bind EmployeesFacultiesDao::class
-    singleOf(::EmployeeTypesDaoImpl) bind EmployeeTypesDao::class
     singleOf(::FacultiesDaoImpl) bind FacultiesDao::class
+    singleOf(::GradesDaoImpl) bind GradesDao::class
     singleOf(::GroupsDaoImpl) bind GroupsDao::class
     singleOf(::HeadsDaoImpl) bind HeadsDao::class
     singleOf(::ProgramsDaoImpl) bind ProgramsDao::class

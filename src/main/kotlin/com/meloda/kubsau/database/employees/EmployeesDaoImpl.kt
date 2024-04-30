@@ -2,7 +2,7 @@ package com.meloda.kubsau.database.employees
 
 import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.model.Employee
-import com.meloda.kubsau.route.journal.JournalFilter
+import com.meloda.kubsau.route.works.JournalFilter
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
@@ -11,6 +11,13 @@ class EmployeesDaoImpl : EmployeesDao {
 
     override suspend fun allEmployees(): List<Employee> = dbQuery {
         Employees.selectAll().map(::mapResultRow)
+    }
+
+    override suspend fun allTeachers(): List<Employee> = dbQuery {
+        Employees
+            .selectAll()
+            .where { Employees.type eq Employee.TYPE_TEACHER }
+            .map(::mapResultRow)
     }
 
     override suspend fun allEmployeesAsFilters(): List<JournalFilter> = dbQuery {
@@ -41,15 +48,15 @@ class EmployeesDaoImpl : EmployeesDao {
         lastName: String,
         firstName: String,
         middleName: String?,
-        email: String?,
-        employeeTypeId: Int
+        email: String,
+        type: Int
     ): Employee? = dbQuery {
         Employees.insert {
             it[Employees.lastName] = lastName
             it[Employees.firstName] = firstName
             it[Employees.middleName] = middleName
             it[Employees.email] = email
-            it[Employees.employeeTypeId] = employeeTypeId
+            it[Employees.type] = type
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 
@@ -58,15 +65,15 @@ class EmployeesDaoImpl : EmployeesDao {
         lastName: String,
         firstName: String,
         middleName: String?,
-        email: String?,
-        employeeTypeId: Int
+        email: String,
+        type: Int
     ): Boolean = dbQuery {
         Employees.update(where = { Employees.id eq employeeId }) {
             it[Employees.lastName] = lastName
             it[Employees.firstName] = firstName
             it[Employees.middleName] = middleName
             it[Employees.email] = email
-            it[Employees.employeeTypeId] = employeeTypeId
+            it[Employees.type] = type
         } > 0
     }
 
