@@ -448,7 +448,7 @@ private fun Application.createDummyFaculties() {
 
     facultiesDao.apply {
         runBlocking {
-            if (allFaculties().isEmpty()) {
+            if (allFaculties(null, null).isEmpty()) {
                 println("Creating dummy faculties...")
 
                 val time = measureTimeMillis {
@@ -510,7 +510,7 @@ private fun Application.createDummyHeads() {
 
     headsDao.apply {
         runBlocking {
-            if (allHeads().isEmpty()) {
+            if (allHeads(null, null).isEmpty()) {
                 println("Creating dummy heads...")
 
                 val time = measureTimeMillis {
@@ -689,7 +689,7 @@ private fun Application.createDummyGroups() {
 
     groupsDao.apply {
         runBlocking {
-            val headTuples = headsDao.allHeads().map {
+            val headTuples = headsDao.allHeads(null, null).map {
                 it.id to it.abbreviation
             }
 
@@ -901,7 +901,7 @@ private fun Application.createDummyPrograms() {
         runBlocking {
             val directivities = directivitiesDao.allDirectivities()
 
-            if (allPrograms().isEmpty()) {
+            if (allPrograms(null, null).isEmpty()) {
                 println("Creating dummy programs...")
 
                 val time = measureTimeMillis {
@@ -930,10 +930,10 @@ private fun Application.createDummyProgramsDisciplines() {
     val workTypesDao by inject<WorkTypesDao>()
 
     runBlocking {
-        if (programsDisciplinesDao.allReferences().isEmpty()) {
+        if (programsDisciplinesDao.allReferences(null, null).isEmpty()) {
             println("Creating dummy programs-disciplines references...")
 
-            val programIds = programsDao.allPrograms().map(Program::id)
+            val programIds = programsDao.allPrograms(null, null).map(Program::id)
             val disciplineIds = disciplinesDao.allDisciplines().map(Discipline::id)
             val workTypeIds = workTypesDao.allWorkTypes().map(WorkType::id)
 

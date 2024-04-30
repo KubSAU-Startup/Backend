@@ -7,11 +7,7 @@ import com.meloda.kubsau.model.WorkType
 
 interface ProgramsDisciplinesDao : RefDao<Program, Discipline> {
 
-    suspend fun allReferences(
-        offset: Int? = null,
-        limit: Int? = null
-    ): List<Triple<Program, Discipline, WorkType>>
-
+    suspend fun allReferences(offset: Int?, limit: Int?): List<Triple<Program, Discipline, WorkType>>
     suspend fun allReferencesByIds(programId: Int, disciplineId: Int): List<Triple<Program, Discipline, WorkType>>
     suspend fun allDisciplinesByProgramId(programId: Int): List<Discipline>
     suspend fun allDisciplinesByProgramIds(programIds: List<Int>): List<Discipline>

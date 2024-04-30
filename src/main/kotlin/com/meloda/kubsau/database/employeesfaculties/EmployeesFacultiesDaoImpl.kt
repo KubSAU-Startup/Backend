@@ -24,10 +24,6 @@ class EmployeesFacultiesDaoImpl(
             .map(::mapBothResultRow)
     }
 
-    override suspend fun allEmployees(): List<Employee> = employeesDao.allEmployees()
-
-    override suspend fun allFaculties(): List<Faculty> = facultiesDao.allFaculties()
-
     override suspend fun singleFacultyByEmplyeeId(employeeId: Int): Faculty? = dbQuery {
         EmployeesFaculties
             .innerJoin(Faculties)

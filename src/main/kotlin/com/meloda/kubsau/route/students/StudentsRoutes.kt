@@ -140,7 +140,6 @@ private fun Route.deleteStudents() {
     delete {
         val studentIds = call.request.queryParameters.getOrThrow("studentIds")
             .split(",")
-            .map(String::trim)
             .mapNotNull(String::toIntOrNull)
 
         if (studentIds.isEmpty()) {
