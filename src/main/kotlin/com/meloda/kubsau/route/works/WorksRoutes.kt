@@ -378,10 +378,11 @@ data class GetJournalResponse(
     val journal: List<JournalItem>
 )
 
-fun Student.mapToJournalStudent(): JournalStudent =
+fun Student.mapToJournalStudent(status: StudentStatus): JournalStudent =
     JournalStudent(
         id = id,
-        fullName = fullName
+        fullName = fullName,
+        status = status
     )
 
 fun Work.mapToJournalWork(workType: WorkType): JournalWork =
@@ -409,7 +410,8 @@ data class JournalItem(
 
 data class JournalStudent(
     val id: Int,
-    val fullName: String
+    val fullName: String,
+    val status: StudentStatus
 )
 
 data class JournalWork(

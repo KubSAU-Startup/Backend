@@ -6,6 +6,7 @@ import com.meloda.kubsau.database.disciplines.Disciplines
 import com.meloda.kubsau.database.employees.Employees
 import com.meloda.kubsau.database.groups.Groups
 import com.meloda.kubsau.database.students.Students
+import com.meloda.kubsau.database.studentstatuses.StudentStatuses
 import com.meloda.kubsau.database.worktypes.WorkTypes
 import com.meloda.kubsau.model.*
 import com.meloda.kubsau.route.works.JournalItem
@@ -43,6 +44,7 @@ class WorksDaoImpl : WorksDao {
             Works
                 .innerJoin(Disciplines, { Works.disciplineId }, { Disciplines.id })
                 .innerJoin(Students, { Works.studentId }, { Students.id })
+                .innerJoin(StudentStatuses, { Students.statusId }, { StudentStatuses.id })
                 .innerJoin(WorkTypes, { Works.workTypeId }, { WorkTypes.id })
                 .innerJoin(Groups, { Students.groupId }, { Groups.id })
                 .innerJoin(Employees, { Works.employeeId }, { Employees.id })
@@ -58,7 +60,7 @@ class WorksDaoImpl : WorksDao {
 
         query.map { row ->
             JournalItem(
-                student = Student.mapResultRow(row).mapToJournalStudent(),
+                student = Student.mapResultRow(row).mapToJournalStudent(StudentStatus.mapResultRow(row)),
                 group = Group.mapResultRow(row),
                 discipline = Discipline.mapResultRow(row),
                 employee = Employee.mapResultRow(row),
