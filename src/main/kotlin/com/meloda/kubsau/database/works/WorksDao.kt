@@ -6,7 +6,7 @@ import com.meloda.kubsau.route.works.JournalItem
 
 interface WorksDao : Dao<Work> {
 
-    suspend fun allWorks(): List<Work>
+    suspend fun allWorks(offset: Int?, limit: Int?): List<Work>
 
     suspend fun allWorksByFilters(
         disciplineId: Int?,
@@ -26,7 +26,8 @@ interface WorksDao : Dao<Work> {
         registrationDate: Long,
         title: String?,
         workTypeId: Int,
-        employeeId: Int
+        employeeId: Int,
+        departmentId: Int
     ): Work?
 
     suspend fun updateWork(
@@ -36,7 +37,8 @@ interface WorksDao : Dao<Work> {
         registrationDate: Long,
         title: String?,
         workTypeId: Int,
-        employeeId: Int
+        employeeId: Int,
+        departmentId: Int
     ): Boolean
 
     suspend fun deleteWork(workId: Int): Boolean

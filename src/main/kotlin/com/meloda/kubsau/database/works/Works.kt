@@ -1,5 +1,6 @@
 package com.meloda.kubsau.database.works
 
+import com.meloda.kubsau.database.departments.Departments
 import com.meloda.kubsau.database.disciplines.Disciplines
 import com.meloda.kubsau.database.employees.Employees
 import com.meloda.kubsau.database.students.Students
@@ -13,4 +14,5 @@ object Works : IntIdTable() {
     val title = text("title").nullable()
     val workTypeId = integer("workTypeId").references(WorkTypes.id)
     val employeeId = integer("employeeId").references(Employees.id)
+    val departmentId = integer("departmentId").references(Departments.id)
 }

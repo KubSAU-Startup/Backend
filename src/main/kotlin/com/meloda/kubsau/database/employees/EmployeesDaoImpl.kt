@@ -2,7 +2,6 @@ package com.meloda.kubsau.database.employees
 
 import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.model.Employee
-import com.meloda.kubsau.route.works.JournalFilter
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
@@ -18,15 +17,6 @@ class EmployeesDaoImpl : EmployeesDao {
             .selectAll()
             .where { Employees.type eq Employee.TYPE_TEACHER }
             .map(::mapResultRow)
-    }
-
-    override suspend fun allEmployeesAsFilters(): List<JournalFilter> = dbQuery {
-        allEmployees().map { employee ->
-            JournalFilter(
-                id = employee.id,
-                title = employee.fullName
-            )
-        }
     }
 
     override suspend fun allEmployeesByIds(employeeIds: List<Int>): List<Employee> = dbQuery {

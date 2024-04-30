@@ -1,14 +1,14 @@
 package com.meloda.kubsau.route.students
 
 import com.meloda.kubsau.api.respondSuccess
-import com.meloda.kubsau.common.getInt
-import com.meloda.kubsau.common.getIntOrThrow
-import com.meloda.kubsau.common.getOrThrow
-import com.meloda.kubsau.common.getString
+import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.students.StudentsDao
+import com.meloda.kubsau.database.studentstatuses.StudentStatusesDao
 import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.UnknownException
 import com.meloda.kubsau.errors.ValidationException
+import com.meloda.kubsau.model.Student
+import com.meloda.kubsau.model.StudentStatus
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -28,34 +28,81 @@ fun Route.studentsRoutes() {
     }
 }
 
+private data class StudentsResponse(
+    val students: List<Student>
+)
+
+private data class FullStudentsResponse(
+    val students: List<Student>,
+    val statuses: List<StudentStatus>
+)
+
 private fun Route.getStudents() {
     val studentsDao by inject<StudentsDao>()
+    val studentStatusesDao by inject<StudentStatusesDao>()
 
     get {
-        val studentIds = call.request.queryParameters["studentIds"]
+        val parameters = call.request.queryParameters
+
+        val studentIds = parameters.getString("studentIds")
             ?.split(",")
-            ?.map(String::trim)
             ?.mapNotNull(String::toIntOrNull)
             ?: emptyList()
 
+        val offset = parameters.getInt("offset")
+        val limit = parameters.getInt("limit")
+        val extended = parameters.getBoolean("extended", false)
+
         val students = if (studentIds.isEmpty()) {
-            studentsDao.allStudents()
+            studentsDao.allStudents(offset, limit)
         } else {
             studentsDao.allStudentsByIds(studentIds)
         }
 
-        respondSuccess { students }
+        if (!extended) {
+            respondSuccess {
+                StudentsResponse(students = students)
+            }
+        } else {
+            val statusIds = students.map(Student::statusId)
+            val statuses = studentStatusesDao.allStatusesByIds(statusIds)
+
+            respondSuccess {
+                FullStudentsResponse(
+                    students = students,
+                    statuses = statuses
+                )
+            }
+        }
     }
 }
 
+private data class StudentResponse(val student: Student)
+
+private data class FullStudentResponse(val student: Student, val status: StudentStatus)
+
 private fun Route.getStudentById() {
     val studentsDao by inject<StudentsDao>()
+    val studentStatusesDao by inject<StudentStatusesDao>()
 
     get("{id}") {
         val studentId = call.parameters.getIntOrThrow("id")
+        val extended = call.request.queryParameters.getBoolean("extended", false)
+
         val student = studentsDao.singleStudent(studentId) ?: throw ContentNotFoundException
 
-        respondSuccess { student }
+        if (!extended) {
+            respondSuccess { StudentResponse(student = student) }
+        } else {
+            val status = studentStatusesDao.singleStatus(student.statusId) ?: throw ContentNotFoundException
+
+            respondSuccess {
+                FullStudentResponse(
+                    student = student,
+                    status = status
+                )
+            }
+        }
     }
 }
 

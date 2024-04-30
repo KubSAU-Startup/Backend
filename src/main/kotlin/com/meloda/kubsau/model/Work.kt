@@ -10,7 +10,8 @@ data class Work(
     val registrationDate: Long,
     val title: String?,
     val workTypeId: Int,
-    val employeeId: Int
+    val employeeId: Int,
+    val departmentId: Int
 ) {
 
     companion object {
@@ -22,7 +23,8 @@ data class Work(
             registrationDate = row[Works.registrationDate],
             title = row[Works.title],
             workTypeId = row[Works.workTypeId],
-            employeeId = row[Works.employeeId]
+            employeeId = row[Works.employeeId],
+            departmentId = row[Works.departmentId]
         )
     }
 }

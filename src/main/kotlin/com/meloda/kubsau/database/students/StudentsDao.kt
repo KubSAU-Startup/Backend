@@ -5,7 +5,7 @@ import com.meloda.kubsau.model.Student
 
 interface StudentsDao : Dao<Student> {
 
-    suspend fun allStudents(): List<Student>
+    suspend fun allStudents(offset: Int?, limit: Int?): List<Student>
     suspend fun allStudentsByIds(studentIds: List<Int>): List<Student>
     suspend fun allStudentsByGroupId(groupId: Int): List<Student>
     suspend fun allStudentsByGroupIds(groupIds: List<Int>): List<Student>

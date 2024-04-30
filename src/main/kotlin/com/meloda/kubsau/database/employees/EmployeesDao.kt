@@ -2,13 +2,11 @@ package com.meloda.kubsau.database.employees
 
 import com.meloda.kubsau.database.Dao
 import com.meloda.kubsau.model.Employee
-import com.meloda.kubsau.route.works.JournalFilter
 
 interface EmployeesDao : Dao<Employee> {
 
     suspend fun allEmployees(): List<Employee>
     suspend fun allTeachers(): List<Employee>
-    suspend fun allEmployeesAsFilters(): List<JournalFilter>
     suspend fun allEmployeesByIds(employeeIds: List<Int>): List<Employee>
     suspend fun singleEmployee(employeeId: Int): Employee?
 

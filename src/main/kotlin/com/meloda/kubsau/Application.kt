@@ -157,7 +157,7 @@ private fun Application.createDummyGrades() {
 
     gradesDao.apply {
         runBlocking {
-            if (allGrades().isEmpty()) {
+            if (allGrades(null, null).isEmpty()) {
                 println("Crearing dummy grades...")
 
                 val time = measureTimeMillis {
@@ -535,7 +535,7 @@ private fun Application.createDummyDirectivities() {
 
     directivitiesDao.apply {
         runBlocking {
-            if (allDirectivities().isEmpty()) {
+            if (allDirectivities(null, null).isEmpty()) {
                 println("Creating dummy directivities...")
 
                 val time = measureTimeMillis {
@@ -696,7 +696,7 @@ private fun Application.createDummyGroups() {
             if (allGroups().isEmpty()) {
                 println("Creating dummy groups...")
 
-                val directivities = directivitiesDao.allDirectivities()
+                val directivities = directivitiesDao.allDirectivities(null, null)
 
                 val time = measureTimeMillis {
                     headTuples.forEach { (headId, abbreviation) ->
@@ -811,7 +811,7 @@ private fun Application.createDummyStudents() {
         runBlocking {
             val groups = groupsDao.allGroups().map(Group::id)
 
-            if (allStudents().isEmpty()) {
+            if (allStudents(null, null).isEmpty()) {
                 println("Creating dummy students...")
 
                 val statusIds = studentStatusesDao.allStatuses().map(StudentStatus::id)
@@ -865,25 +865,27 @@ private fun Application.createDummyWorks() {
     val employeesDao by inject<EmployeesDao>()
 
     runBlocking {
-        val works = worksDao.allWorks()
+        val works = worksDao.allWorks(null, null)
 
         if (works.isEmpty()) {
             println("Creating dummy works...")
 
             val time = measureTimeMillis {
                 val workTypeIds = workTypesDao.allWorkTypes().map(WorkType::id)
-                val disciplineIds = disciplinesDao.allDisciplines().map(Discipline::id)
-                val studentIds = studentsDao.allStudents().map(Student::id)
+                val disciplines = disciplinesDao.allDisciplines()
+                val studentIds = studentsDao.allStudents(null, null).map(Student::id)
                 val employeeIds = employeesDao.allTeachers().map(Employee::id)
 
                 repeat(100) { index ->
+                    val discipline = disciplines.random()
                     worksDao.addNewWork(
-                        disciplineId = disciplineIds.random(),
+                        disciplineId = discipline.id,
                         studentId = studentIds.random(),
                         registrationDate = getRandomUnixTime(),
                         title = "Work #${index + 1}",
                         workTypeId = workTypeIds.random(),
-                        employeeId = employeeIds.random()
+                        employeeId = employeeIds.random(),
+                        departmentId = discipline.departmentId
                     )
                 }
             }
@@ -899,7 +901,7 @@ private fun Application.createDummyPrograms() {
 
     programsDao.apply {
         runBlocking {
-            val directivities = directivitiesDao.allDirectivities()
+            val directivities = directivitiesDao.allDirectivities(null, null)
 
             if (allPrograms(null, null).isEmpty()) {
                 println("Creating dummy programs...")

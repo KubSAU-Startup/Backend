@@ -1,14 +1,12 @@
 package com.meloda.kubsau.route.works
 
 import com.meloda.kubsau.api.respondSuccess
-import com.meloda.kubsau.common.getInt
-import com.meloda.kubsau.common.getIntOrThrow
-import com.meloda.kubsau.common.getOrThrow
-import com.meloda.kubsau.common.getString
+import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.departments.DepartmentsDao
 import com.meloda.kubsau.database.disciplines.DisciplinesDao
 import com.meloda.kubsau.database.employees.EmployeesDao
 import com.meloda.kubsau.database.groups.GroupsDao
+import com.meloda.kubsau.database.students.StudentsDao
 import com.meloda.kubsau.database.works.WorksDao
 import com.meloda.kubsau.database.worktypes.WorkTypesDao
 import com.meloda.kubsau.errors.ContentNotFoundException
@@ -36,36 +34,128 @@ fun Route.worksRoutes() {
     }
 }
 
+private data class WorksResponse(
+    val works: List<Work>
+)
+
+private data class FullWorksResponse(
+    val works: List<Work>,
+    val disciplines: List<Discipline>,
+    val students: List<Student>,
+    val workTypes: List<WorkType>,
+    val departments: List<Department>,
+    val employees: List<Employee>
+)
+
 private fun Route.getWorks() {
     val worksDao by inject<WorksDao>()
+    val disciplinesDao by inject<DisciplinesDao>()
+    val studentsDao by inject<StudentsDao>()
+    val workTypesDao by inject<WorkTypesDao>()
+    val departmentsDao by inject<DepartmentsDao>()
+    val employeesDao by inject<EmployeesDao>()
 
     get {
         val parameters = call.request.queryParameters
 
-        val workIds = parameters["workIds"]
+        val workIds = parameters.getString("workIds")
             ?.split(",")
-            ?.map(String::trim)
             ?.mapNotNull(String::toIntOrNull)
             ?: emptyList()
 
+        val offset = parameters.getInt("offset")
+        val limit = parameters.getInt("limit")
+        val extended = parameters.getBoolean("extended", false)
+
         val works = if (workIds.isEmpty()) {
-            worksDao.allWorks()
+            worksDao.allWorks(offset, limit)
         } else {
             worksDao.allWorksByIds(workIds)
         }
 
-        respondSuccess { works }
+        if (!extended) {
+            respondSuccess { WorksResponse(works = works) }
+        } else {
+            val disciplineIds = works.map(Work::disciplineId)
+            val disciplines = disciplinesDao.allDisciplinesByIds(disciplineIds)
+
+            val studentIds = works.map(Work::studentId)
+            val students = studentsDao.allStudentsByIds(studentIds)
+
+            val workTypeIds = works.map(Work::workTypeId)
+            val workTypes = workTypesDao.allWorkTypesByIds(workTypeIds)
+
+            val departmentIds = works.map(Work::departmentId)
+            val departments = departmentsDao.allDepartmentsByIds(departmentIds)
+
+            val employeeIds = works.map(Work::employeeId)
+            val employees = employeesDao.allEmployeesByIds(employeeIds)
+
+            respondSuccess {
+                FullWorksResponse(
+                    works = works,
+                    disciplines = disciplines,
+                    students = students,
+                    workTypes = workTypes,
+                    departments = departments,
+                    employees = employees
+                )
+            }
+        }
     }
 }
 
+private data class WorkResponse(
+    val work: Work
+)
+
+private data class FullWorkResponse(
+    val work: Work,
+    val discipline: Discipline,
+    val student: Student,
+    val workType: WorkType,
+    val department: Department,
+    val employee: Employee,
+)
+
 private fun Route.getWorkById() {
     val worksDao by inject<WorksDao>()
+    val disciplinesDao by inject<DisciplinesDao>()
+    val studentsDao by inject<StudentsDao>()
+    val workTypesDao by inject<WorkTypesDao>()
+    val departmentsDao by inject<DepartmentsDao>()
+    val employeesDao by inject<EmployeesDao>()
 
     get("{id}") {
         val workId = call.parameters.getIntOrThrow("id")
+        val extended = call.request.queryParameters.getBoolean("extended", false)
+
         val work = worksDao.singleWork(workId) ?: throw ContentNotFoundException
 
-        respondSuccess { work }
+        if (!extended) {
+            respondSuccess { WorkResponse(work = work) }
+        } else {
+            val discipline = disciplinesDao.singleDiscipline(work.disciplineId)
+            val student = studentsDao.singleStudent(work.studentId)
+            val workType = workTypesDao.singleWorkType(work.workTypeId)
+            val department = departmentsDao.singleDepartment(work.departmentId)
+            val employee = employeesDao.singleEmployee(work.employeeId)
+
+            if (discipline == null || student == null || workType == null || employee == null || department == null) {
+                throw ContentNotFoundException
+            }
+
+            respondSuccess {
+                FullWorkResponse(
+                    work = work,
+                    discipline = discipline,
+                    student = student,
+                    workType = workType,
+                    department = department,
+                    employee = employee
+                )
+            }
+        }
     }
 }
 
@@ -81,6 +171,7 @@ private fun Route.addWork() {
         val title = parameters.getString("title")
         val workTypeId = parameters.getIntOrThrow("workTypeId")
         val employeeId = parameters.getIntOrThrow("employeeId")
+        val departmentId = parameters.getIntOrThrow("departmentId")
 
         val created = worksDao.addNewWork(
             disciplineId = disciplineId,
@@ -88,7 +179,8 @@ private fun Route.addWork() {
             registrationDate = registrationDate * 1000L,
             title = title,
             workTypeId = workTypeId,
-            employeeId = employeeId
+            employeeId = employeeId,
+            departmentId = departmentId
         )
 
         if (created != null) {
@@ -114,6 +206,7 @@ private fun Route.editWork() {
         val title = parameters.getString("title")
         val workTypeId = parameters.getInt("workTypeId")
         val employeeId = parameters.getInt("employeeId")
+        val departmentId = parameters.getInt("departmentId")
 
         worksDao.updateWork(
             workId = workId,
@@ -122,7 +215,8 @@ private fun Route.editWork() {
             registrationDate = registrationDate?.let { it * 1000L } ?: currentWork.registrationDate,
             title = if ("title" in parameters) title else currentWork.title,
             workTypeId = workTypeId ?: currentWork.workTypeId,
-            employeeId = employeeId ?: currentWork.employeeId
+            employeeId = employeeId ?: currentWork.employeeId,
+            departmentId = departmentId ?: currentWork.departmentId
         ).let { success ->
             if (success) {
                 respondSuccess { 1 }
@@ -215,7 +309,12 @@ private fun Route.getEmployeesFilters() {
     val employeesDao by inject<EmployeesDao>()
 
     get("/employees") {
-        val employeeFilters = employeesDao.allEmployeesAsFilters()
+        val employeeFilters = employeesDao.allTeachers().map { employee ->
+            JournalFilter(
+                id = employee.id,
+                title = employee.fullName
+            )
+        }
 
         respondSuccess { employeeFilters }
     }

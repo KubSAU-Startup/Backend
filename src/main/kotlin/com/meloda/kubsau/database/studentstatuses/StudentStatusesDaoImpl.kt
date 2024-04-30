@@ -12,6 +12,21 @@ class StudentStatusesDaoImpl : StudentStatusesDao {
         StudentStatuses.selectAll().map(::mapResultRow)
     }
 
+    override suspend fun allStatusesByIds(statusIds: List<Int>): List<StudentStatus> = dbQuery {
+        StudentStatuses
+            .selectAll()
+            .where { StudentStatuses.id inList statusIds }
+            .map(::mapResultRow)
+    }
+
+    override suspend fun singleStatus(statusId: Int): StudentStatus? = dbQuery {
+        StudentStatuses
+            .selectAll()
+            .where { StudentStatuses.id eq statusId }
+            .map(::mapResultRow)
+            .singleOrNull()
+    }
+
     override suspend fun addNewStatus(title: String): StudentStatus? = dbQuery {
         StudentStatuses.insert {
             it[StudentStatuses.title] = title

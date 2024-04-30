@@ -62,5 +62,10 @@ object DatabaseController {
     }
 
     suspend fun <T> dbQuery(block: suspend () -> T): T =
-        newSuspendedTransaction(Dispatchers.IO) { block() }
+        newSuspendedTransaction(Dispatchers.IO) {
+            // TODO: 30/04/2024, Danil Nikolaev: enable/disable logger
+            // addLogger(StdOutSqlLogger)
+
+            block()
+        }
 }

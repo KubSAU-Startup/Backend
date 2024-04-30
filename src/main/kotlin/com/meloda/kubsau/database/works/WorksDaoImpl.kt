@@ -17,8 +17,18 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 
 class WorksDaoImpl : WorksDao {
 
-    override suspend fun allWorks(): List<Work> = dbQuery {
-        Works.selectAll().map(::mapResultRow)
+    override suspend fun allWorks(
+        offset: Int?,
+        limit: Int?
+    ): List<Work> = dbQuery {
+        Works
+            .selectAll()
+            .apply {
+                if (limit != null) {
+                    limit(limit, (offset ?: 0).toLong())
+                }
+            }
+            .map(::mapResultRow)
     }
 
     override suspend fun allWorksByFilters(
@@ -33,7 +43,7 @@ class WorksDaoImpl : WorksDao {
             (studentId?.let { Works.studentId eq studentId } ?: Op.TRUE) andIfNotNull
                     (groupId?.let { Students.groupId eq groupId }) andIfNotNull
                     (disciplineId?.let { Works.disciplineId eq disciplineId }) andIfNotNull
-                    (departmentId?.let { Disciplines.departmentId eq departmentId }) andIfNotNull
+                    (departmentId?.let { Works.departmentId eq departmentId }) andIfNotNull
                     (workTypeId?.let { Works.workTypeId eq workTypeId }) andIfNotNull
                     (employeeId?.let { Works.employeeId eq employeeId })
 
@@ -79,7 +89,8 @@ class WorksDaoImpl : WorksDao {
         registrationDate: Long,
         title: String?,
         workTypeId: Int,
-        employeeId: Int
+        employeeId: Int,
+        departmentId: Int
     ): Work? = dbQuery {
         Works.insert {
             it[Works.disciplineId] = disciplineId
@@ -88,6 +99,7 @@ class WorksDaoImpl : WorksDao {
             it[Works.title] = title
             it[Works.workTypeId] = workTypeId
             it[Works.employeeId] = employeeId
+            it[Works.departmentId] = departmentId
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 
@@ -98,7 +110,8 @@ class WorksDaoImpl : WorksDao {
         registrationDate: Long,
         title: String?,
         workTypeId: Int,
-        employeeId: Int
+        employeeId: Int,
+        departmentId: Int
     ): Boolean = dbQuery {
         Works.update(where = { Works.id eq workId }) {
             it[Works.disciplineId] = disciplineId
@@ -106,6 +119,7 @@ class WorksDaoImpl : WorksDao {
             it[Works.registrationDate] = registrationDate
             it[Works.title] = title
             it[Works.workTypeId] = workTypeId
+            it[Works.departmentId] = departmentId
         } > 0
     }
 

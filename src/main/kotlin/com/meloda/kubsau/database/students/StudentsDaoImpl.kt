@@ -8,8 +8,18 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 
 class StudentsDaoImpl : StudentsDao {
 
-    override suspend fun allStudents(): List<Student> = dbQuery {
-        Students.selectAll().map(::mapResultRow)
+    override suspend fun allStudents(
+        offset: Int?,
+        limit: Int?
+    ): List<Student> = dbQuery {
+        Students
+            .selectAll()
+            .apply {
+                if (limit != null) {
+                    limit(limit, ((offset ?: 0).toLong()))
+                }
+            }
+            .map(::mapResultRow)
     }
 
     override suspend fun allStudentsByIds(studentIds: List<Int>): List<Student> = dbQuery {
