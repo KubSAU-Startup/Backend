@@ -17,12 +17,20 @@ class ProgramsDisciplinesDaoImpl(
     private val disciplinesDao: DisciplinesDao
 ) : ProgramsDisciplinesDao {
 
-    override suspend fun allReferences(): List<Triple<Program, Discipline, WorkType>> = dbQuery {
+    override suspend fun allReferences(
+        offset: Int?,
+        limit: Int?
+    ): List<Triple<Program, Discipline, WorkType>> = dbQuery {
         ProgramsDisciplines
             .innerJoin(Programs)
             .innerJoin(Disciplines)
             .innerJoin(WorkTypes)
             .selectAll()
+            .apply {
+                if (limit != null) {
+                    limit(limit, (offset ?: 0).toLong())
+                }
+            }
             .map { row ->
                 val (program, discipline) = mapBothResultRow(row)
                 Triple(program, discipline, WorkType.mapResultRow(row))

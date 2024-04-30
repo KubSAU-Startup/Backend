@@ -5,7 +5,11 @@ import com.meloda.kubsau.model.Program
 
 interface ProgramsDao : Dao<Program> {
 
-    suspend fun allPrograms(): List<Program>
+    suspend fun allPrograms(
+        offset: Int? = null,
+        limit: Int? = null
+    ): List<Program>
+
     suspend fun allProgramsByIds(programIds: List<Int>): List<Program>
     suspend fun programsBySemester(semester: Int): List<Program>
     suspend fun singleProgram(programId: Int): Program?

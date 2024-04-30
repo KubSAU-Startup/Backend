@@ -16,6 +16,12 @@ fun ApplicationResponse.toLogString(): String {
     }"
 }
 
+fun Parameters.getString(
+    key: String,
+    defaultValue: String,
+    trim: Boolean = true
+): String = getString(key, trim) ?: defaultValue
+
 fun Parameters.getString(key: String, trim: Boolean = true): String? = try {
     getOrThrow(key, trim)
 } catch (ignored: ValidationException) {
@@ -23,6 +29,8 @@ fun Parameters.getString(key: String, trim: Boolean = true): String? = try {
 }
 
 fun Parameters.getOrThrow(key: String, trim: Boolean = true): String = getOrThrow(key) { if (trim) it.trim() else it }
+
+fun Parameters.getBoolean(key: String, defaultValue: Boolean): Boolean = getBoolean(key) ?: defaultValue
 
 fun Parameters.getBoolean(key: String): Boolean? = try {
     getBooleanOrThrow(key)
@@ -35,6 +43,8 @@ fun Parameters.getBooleanOrThrow(key: String): Boolean =
         key = key,
         mapper = { it.toBooleanStrictOrNull() ?: throw ValidationException("$key is invalid") }
     )
+
+fun Parameters.getInt(key: String, defaultValue: Int): Int = getInt(key) ?: defaultValue
 
 fun Parameters.getInt(key: String): Int? = try {
     getIntOrThrow(key)

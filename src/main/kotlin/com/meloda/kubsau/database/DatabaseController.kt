@@ -46,7 +46,9 @@ object DatabaseController {
 
         val database = Database.connect(jdbcURL, driverClassName)
         transaction(database) {
+            // TODO: 30/04/2024, Danil Nikolaev: enable/disable logger
             addLogger(StdOutSqlLogger)
+
             SchemaUtils.create(
                 Departments, Directivities, Disciplines, Employees,
                 Faculties, Grades, Groups, Heads,

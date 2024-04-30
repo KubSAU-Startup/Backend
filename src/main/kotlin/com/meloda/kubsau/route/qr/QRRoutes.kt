@@ -3,9 +3,7 @@ package com.meloda.kubsau.route.qr
 import com.meloda.kubsau.api.respondSuccess
 import com.meloda.kubsau.common.getIntOrThrow
 import com.meloda.kubsau.common.getOrThrow
-import com.meloda.kubsau.common.getString
 import com.meloda.kubsau.database.groups.GroupsDao
-import com.meloda.kubsau.database.programsdisciplines.ProgramsDisciplinesDao
 import com.meloda.kubsau.database.students.StudentsDao
 import com.meloda.kubsau.errors.ValidationException
 import com.meloda.kubsau.model.Group
@@ -20,7 +18,6 @@ fun Route.qrRoutes() {
         route("/qr") {
             groups()
             students()
-            disciplines()
         }
     }
 }
@@ -76,34 +73,6 @@ private fun Route.students() {
             val students = studentsDao.allStudents().map(Student::mapToShrankItem)
             respondSuccess { students }
         }
-    }
-}
-
-private fun Route.disciplines() {
-    val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
-
-    get("/programs/{programId}/disciplines") {
-        val programId = call.parameters.getIntOrThrow("programId")
-        val disciplines = programsDisciplinesDao.allDisciplinesByProgramId(programId)
-
-        respondSuccess { disciplines }
-    }
-
-    get("/programs/disciplines") {
-        val parameters = call.request.queryParameters
-
-        val programIds = parameters.getString("programIds")
-            ?.split(",")
-            ?.mapNotNull(String::toIntOrNull)
-            ?: programsDisciplinesDao.allReferences().map { (program, _) -> program.id }
-
-        val disciplines = if (programIds.isEmpty()) {
-            programsDisciplinesDao.allReferences().map { (_, discipline) -> discipline }
-        } else {
-            programsDisciplinesDao.allDisciplinesByProgramIds(programIds)
-        }
-
-        respondSuccess { disciplines }
     }
 }
 

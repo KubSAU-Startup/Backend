@@ -1,17 +1,15 @@
 package com.meloda.kubsau.route.programs
 
 import com.meloda.kubsau.api.respondSuccess
-import com.meloda.kubsau.common.getBoolean
-import com.meloda.kubsau.common.getInt
-import com.meloda.kubsau.common.getIntOrThrow
-import com.meloda.kubsau.common.getOrThrow
+import com.meloda.kubsau.common.*
+import com.meloda.kubsau.database.departments.DepartmentsDao
 import com.meloda.kubsau.database.disciplines.DisciplinesDao
 import com.meloda.kubsau.database.programs.ProgramsDao
 import com.meloda.kubsau.database.programsdisciplines.ProgramsDisciplinesDao
-import com.meloda.kubsau.database.worktypes.WorkTypesDao
 import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.UnknownException
 import com.meloda.kubsau.errors.ValidationException
+import com.meloda.kubsau.model.Department
 import com.meloda.kubsau.model.Discipline
 import com.meloda.kubsau.model.Program
 import com.meloda.kubsau.model.WorkType
@@ -27,6 +25,7 @@ fun Route.programsRoutes() {
         route("/programs") {
             getPrograms()
             getProgramById()
+            getDisciplines()
             addProgram()
             addDisciplinesToProgram()
             editProgram()
@@ -63,23 +62,27 @@ private fun Route.getPrograms() {
     get {
         val parameters = call.request.queryParameters
 
-        val programIds = parameters["programIds"]
+        val programIds = parameters.getString("programIds")
             ?.split(",")
-            ?.map(String::trim)
             ?.mapNotNull(String::toIntOrNull)
-            ?: programsDao.allPrograms().map(Program::id)
+            ?: emptyList()
 
-        val extended = parameters.getBoolean("extended") ?: false
+        val offset = parameters.getInt("offset")
+        val limit = parameters.getInt("limit")
+        val extended = parameters.getBoolean("extended", false)
 
         val disciplineIds = hashMapOf<Int, List<Int>>()
 
-        programIds.forEach { programId ->
-            disciplineIds[programId] = programsDisciplinesDao.allDisciplinesByProgramId(programId)
-                .map(Discipline::id)
-        }
+        programIds
+            .ifEmpty {
+                programsDao.allPrograms(offset, limit).map(Program::id)
+            }.forEach { programId ->
+                disciplineIds[programId] = programsDisciplinesDao.allDisciplinesByProgramId(programId)
+                    .map(Discipline::id)
+            }
 
         val programs = if (programIds.isEmpty()) {
-            programsDao.allPrograms()
+            programsDao.allPrograms(offset, limit)
         } else {
             programsDao.allProgramsByIds(programIds)
         }.map { program ->
@@ -91,16 +94,18 @@ private fun Route.getPrograms() {
 
         val disciplines = mutableListOf<DisciplineWithWorkType>()
 
-        programs.forEach { program ->
-            program.disciplineIds.forEach { disciplineId ->
-                val workType = programsDisciplinesDao.workType(program.program.id, disciplineId)
-                val discipline = disciplinesDao.singleDiscipline(disciplineId)
+        if (extended) {
+            programs.forEach { program ->
+                program.disciplineIds.forEach { disciplineId ->
+                    val workType = programsDisciplinesDao.workType(program.program.id, disciplineId)
+                    val discipline = disciplinesDao.singleDiscipline(disciplineId)
 
-                if (workType != null && discipline != null) {
-                    disciplines += DisciplineWithWorkType(
-                        discipline = discipline,
-                        workType = workType
-                    )
+                    if (workType != null && discipline != null) {
+                        disciplines += DisciplineWithWorkType(
+                            discipline = discipline,
+                            workType = workType
+                        )
+                    }
                 }
             }
         }
@@ -140,6 +145,73 @@ private fun Route.getProgramById() {
                 program = program,
                 disciplineIds = disciplines
             )
+        }
+    }
+}
+
+private data class DisciplinesResponse(
+    val disciplines: List<Discipline>
+)
+
+private data class FullDisciplinesResponse(
+    val disciplines: List<Discipline>,
+    val departments: List<Department>
+)
+
+private fun Route.getDisciplines() {
+    val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
+    val departmentsDao by inject<DepartmentsDao>()
+
+    get("{programId}/disciplines") {
+        val programId = call.parameters.getIntOrThrow("programId")
+        val extended = call.request.queryParameters.getBoolean("extended", false)
+
+        val disciplines = programsDisciplinesDao.allDisciplinesByProgramId(programId)
+
+        if (!extended) {
+            respondSuccess {
+                DisciplinesResponse(disciplines = disciplines)
+            }
+        } else {
+            val departmentIds = disciplines.map(Discipline::departmentId)
+            val departments = departmentsDao.allDepartmentsByIds(departmentIds)
+
+            respondSuccess {
+                FullDisciplinesResponse(
+                    disciplines = disciplines,
+                    departments = departments
+                )
+            }
+        }
+    }
+
+    get("/disciplines") {
+        val parameters = call.request.queryParameters
+
+        val programIds = parameters.getOrThrow("programIds")
+            .split(",")
+            .mapNotNull(String::toIntOrNull)
+
+        if (programIds.isEmpty()) {
+            throw ValidationException("programIds is invalid")
+        }
+
+        val extended = parameters.getBoolean("extended", false)
+
+        val disciplines = programsDisciplinesDao.allDisciplinesByProgramIds(programIds)
+
+        if (!extended) {
+            respondSuccess { DisciplinesResponse(disciplines = disciplines) }
+        } else {
+            val departmentIds = disciplines.map(Discipline::departmentId)
+            val departments = departmentsDao.allDepartmentsByIds(departmentIds)
+
+            respondSuccess {
+                FullDisciplinesResponse(
+                    disciplines = disciplines,
+                    departments = departments
+                )
+            }
         }
     }
 }
@@ -276,6 +348,8 @@ private fun Route.editProgramDisciplines() {
         disciplineIds.forEachIndexed { index, disciplineId ->
             programsDisciplinesDao.addNewReference(programId, disciplineId, workTypeIds[index])
         }
+
+        respondSuccess { 1 }
     }
 }
 
