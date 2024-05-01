@@ -9,6 +9,8 @@ interface WorksDao : Dao<Work> {
     suspend fun allWorks(offset: Int?, limit: Int?): List<Work>
 
     suspend fun allWorksByFilters(
+        offset: Int?,
+        limit: Int?,
         disciplineId: Int?,
         studentId: Int?,
         groupId: Int?,

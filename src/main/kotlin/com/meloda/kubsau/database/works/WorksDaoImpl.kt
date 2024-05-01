@@ -33,6 +33,8 @@ class WorksDaoImpl : WorksDao {
     }
 
     override suspend fun allWorksByFilters(
+        offset: Int?,
+        limit: Int?,
         disciplineId: Int?,
         studentId: Int?,
         groupId: Int?,
@@ -50,6 +52,11 @@ class WorksDaoImpl : WorksDao {
                 .innerJoin(Employees, { Works.employeeId }, { Employees.id })
                 .innerJoin(Departments, { Disciplines.departmentId }, { Departments.id })
                 .selectAll()
+                .apply {
+                    if (limit != null) {
+                        limit(limit, (offset ?: 0).toLong())
+                    }
+                }
 
         studentId?.let { query.andWhere { Works.studentId eq studentId } }
         groupId?.let { query.andWhere { Students.groupId eq groupId } }

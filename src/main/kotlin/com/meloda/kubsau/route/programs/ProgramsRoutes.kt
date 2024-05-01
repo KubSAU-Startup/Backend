@@ -114,14 +114,14 @@ private fun Route.getPrograms() {
             if (extended) {
                 ProgramsWithDisciplines(
                     count = programs.size,
-                    offset = 0,
+                    offset = offset ?: 0,
                     programs = programs,
                     disciplines = disciplines
                 )
             } else {
                 Programs(
                     count = programs.size,
-                    offset = 0,
+                    offset = offset ?: 0,
                     programs = programs
                 )
             }

@@ -346,6 +346,9 @@ private fun Route.getLatestWorks() {
     get {
         val parameters = call.request.queryParameters
 
+        val offset = parameters.getInt("offset")
+        val limit = parameters.getInt("limit")
+
         val workTypeId = parameters.getInt("workTypeId")
         val disciplineId = parameters.getInt("disciplineId")
         val employeeId = parameters.getInt("employeeId")
@@ -354,6 +357,8 @@ private fun Route.getLatestWorks() {
         val studentId = parameters.getInt("studentId")
 
         val journal = worksDao.allWorksByFilters(
+            offset = offset,
+            limit = limit,
             disciplineId = disciplineId,
             studentId = studentId,
             groupId = groupId,
@@ -365,7 +370,7 @@ private fun Route.getLatestWorks() {
         respondSuccess {
             GetJournalResponse(
                 count = journal.size,
-                offset = 0,
+                offset = offset ?: 0,
                 journal = journal
             )
         }
