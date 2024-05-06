@@ -167,7 +167,6 @@ private fun Route.addWork() {
 
         val disciplineId = parameters.getIntOrThrow("disciplineId")
         val studentId = parameters.getIntOrThrow("studentId")
-        val registrationDate = parameters.getIntOrThrow("registrationDate")
         val title = parameters.getString("title")
         val workTypeId = parameters.getIntOrThrow("workTypeId")
         val employeeId = parameters.getIntOrThrow("employeeId")
@@ -176,7 +175,7 @@ private fun Route.addWork() {
         val created = worksDao.addNewWork(
             disciplineId = disciplineId,
             studentId = studentId,
-            registrationDate = registrationDate * 1000L,
+            registrationDate = System.currentTimeMillis(),
             title = title,
             workTypeId = workTypeId,
             employeeId = employeeId,
