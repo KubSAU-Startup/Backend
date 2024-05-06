@@ -1,6 +1,6 @@
 package com.meloda.kubsau.database
 
-import com.meloda.kubsau.common.isInDocker
+import com.meloda.kubsau.CONFIG_FOLDER
 import com.meloda.kubsau.database.departments.Departments
 import com.meloda.kubsau.database.directivities.Directivities
 import com.meloda.kubsau.database.disciplines.Disciplines
@@ -22,8 +22,6 @@ import com.meloda.kubsau.database.worktypes.WorkTypes
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.StdOutSqlLogger
-import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
@@ -33,9 +31,7 @@ object DatabaseController {
     fun init() {
         val driverClassName = "org.sqlite.JDBC"
 
-        val userDir = if (isInDocker) "" else System.getProperty("user.dir")
-
-        val folderPath = "$userDir/config/db"
+        val folderPath = "$CONFIG_FOLDER/db"
         val filePath = "$folderPath/database.db"
 
         File(folderPath).apply {
@@ -47,7 +43,7 @@ object DatabaseController {
         val database = Database.connect(jdbcURL, driverClassName)
         transaction(database) {
             // TODO: 30/04/2024, Danil Nikolaev: enable/disable logger
-            addLogger(StdOutSqlLogger)
+            // addLogger(StdOutSqlLogger)
 
             SchemaUtils.create(
                 Departments, Directivities, Disciplines, Employees,

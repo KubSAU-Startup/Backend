@@ -1,9 +1,6 @@
 package com.meloda.kubsau
 
-import com.meloda.kubsau.common.Constants
-import com.meloda.kubsau.common.getEnvOrNull
-import com.meloda.kubsau.common.isInDocker
-import com.meloda.kubsau.common.toLogString
+import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.DatabaseController
 import com.meloda.kubsau.database.departments.DepartmentsDao
 import com.meloda.kubsau.database.directivities.DirectivitiesDao
@@ -38,68 +35,70 @@ import org.slf4j.event.Level
 import kotlin.random.Random
 import kotlin.system.measureTimeMillis
 
-val PORT = getEnvOrNull("PORT")?.toIntOrNull() ?: 8080
-
-var startTime = 0L
+val PROJECT_FOLDER: String = if (IS_IN_DOCKER) "" else System.getProperty("user.dir")
+val CONFIG_FOLDER: String = "$PROJECT_FOLDER/config"
+val PORT: Int = getEnvOrNull("PORT")?.toIntOrNull() ?: 8080
 
 fun main() {
-    startTime = System.currentTimeMillis()
+    val startTime = System.currentTimeMillis()
 
+    AuthController.init()
     DatabaseController.init()
-    configureServer()
+
+    configureServer(startTime).start(wait = true)
 }
 
-private fun configureServer() {
-    val server = embeddedServer(
-        factory = Netty,
-        port = PORT,
-        watchPaths = listOf("classes")
-    ) {
-        configureKoin()
-        prepopulateDB()
-
-        install(CallLogging) {
-            level = Level.INFO
-            filter { call ->
-                call.request.path().startsWith("/")
-            }
-            format { call ->
-                val requestLog = call.request.toLogString()
-                val responseLog = call.response.toLogString()
-                "$requestLog -> $responseLog"
-            }
-        }
-
-        install(AutoHeadResponse)
-        install(CORS) {
-            anyHost()
-
-            allowMethod(HttpMethod.Get)
-            allowMethod(HttpMethod.Post)
-            allowMethod(HttpMethod.Delete)
-            allowMethod(HttpMethod.Patch)
-
-            allowHeader(HttpHeaders.ContentType)
-            allowHeader(HttpHeaders.Accept)
-            allowHeader(HttpHeaders.Authorization)
-        }
-
-        configureAuthentication()
-        configureExceptions()
-        configureContentNegotiation()
-
-        routing()
-    }
-
+private fun configureServer(startTime: Long): NettyApplicationEngine = embeddedServer(
+    factory = Netty,
+    port = PORT,
+    watchPaths = listOf("classes")
+) {
     println("Server's version: ${Constants.BACKEND_VERSION}")
-    println("Is inside Docker: $isInDocker")
+    println("Is inside Docker: $IS_IN_DOCKER")
     println("Port: $PORT")
 
-    server.start(wait = true)
+    configureKoin()
+    prepopulateDB()
+
+    install(CallLogging) {
+        level = Level.INFO
+        filter { call -> call.request.path().startsWith("/") }
+        format { call ->
+            val requestLog = call.request.toLogString()
+            val responseLog = call.response.toLogString()
+            "$requestLog -> $responseLog"
+        }
+    }
+
+    install(AutoHeadResponse)
+    install(CORS) {
+        anyHost()
+
+        allowMethod(HttpMethod.Get)
+        allowMethod(HttpMethod.Post)
+        allowMethod(HttpMethod.Delete)
+        allowMethod(HttpMethod.Patch)
+
+        allowHeader(HttpHeaders.ContentType)
+        allowHeader(HttpHeaders.Accept)
+        allowHeader(HttpHeaders.Authorization)
+    }
+
+    configureAuthentication()
+    configureExceptions()
+    configureContentNegotiation()
+
+    routing()
+
+    println("Server is ready in ${System.currentTimeMillis().minus(startTime)}ms")
 }
 
 private fun Application.prepopulateDB() {
     // TODO: 10/04/2024, Danil Nikolaev: import data from json
+
+    val startTime = System.currentTimeMillis()
+
+    println("Pre-populating db...")
 
     createDummyUsers()
 
@@ -129,6 +128,8 @@ private fun Application.prepopulateDB() {
 
     createDummyPrograms()
     createDummyProgramsDisciplines()
+
+    println("Db pre-populated in ${System.currentTimeMillis().minus(startTime)}ms")
 }
 
 private fun Application.createDummyUsers() {

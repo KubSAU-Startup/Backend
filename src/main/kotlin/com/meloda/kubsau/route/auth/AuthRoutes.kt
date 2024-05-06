@@ -3,15 +3,15 @@ package com.meloda.kubsau.route.auth
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.meloda.kubsau.api.respondSuccess
+import com.meloda.kubsau.common.AuthController
+import com.meloda.kubsau.common.getOrThrow
 import com.meloda.kubsau.database.sessions.SessionsDao
 import com.meloda.kubsau.database.users.UsersDao
 import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.UnknownException
-import com.meloda.kubsau.errors.ValidationException
 import com.meloda.kubsau.model.User
 import com.meloda.kubsau.plugins.AUDIENCE
 import com.meloda.kubsau.plugins.ISSUER
-import com.meloda.kubsau.plugins.SECRET
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -22,7 +22,10 @@ import org.koin.ktor.ext.inject
 fun Route.authRoutes() {
     route("/auth") {
         addSession()
-        deleteSession()
+
+        authenticate {
+            deleteSession()
+        }
     }
 }
 
@@ -32,15 +35,16 @@ private fun Route.addSession() {
 
     post {
         val parameters = call.receiveParameters()
-        val login = parameters["login"]?.trim() ?: throw ValidationException("login is empty")
-        val password = parameters["password"]?.trim() ?: throw ValidationException("password is empty")
+
+        val login = parameters.getOrThrow("login")
+        val password = parameters.getOrThrow("password")
 
         val users = usersDao.allUsers()
 
         val logins = users.map(User::login)
         val passwords = users.map(User::password)
 
-        if (!logins.contains(login)) {
+        if (login !in logins) {
             throw WrongCredentialsException
         }
 
@@ -56,7 +60,7 @@ private fun Route.addSession() {
             .withAudience(AUDIENCE)
             .withIssuer(ISSUER)
             .withClaim("login", login)
-            .sign(Algorithm.HMAC256(SECRET))
+            .sign(Algorithm.HMAC256(AuthController.jwtSecret))
 
         sessionsDao.addNewSession(user.id, accessToken)
 
@@ -77,12 +81,14 @@ private fun Route.deleteSession() {
         val principal = call.principal<JWTPrincipal>()
 
         val login = principal?.payload?.getClaim("login")?.asString() ?: throw UnknownException
-
         val userId = usersDao.singleUser(login = login)?.id ?: throw UnknownException
-
         val session = sessionsDao.singleSession(userId = userId) ?: throw ContentNotFoundException
 
-        if (sessionsDao.deleteSession(userId = session.userId, accessToken = session.accessToken)) {
+        if (sessionsDao.deleteSession(
+                userId = session.userId,
+                accessToken = session.accessToken
+            )
+        ) {
             respondSuccess { 1 }
         } else {
             throw UnknownException

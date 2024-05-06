@@ -1,7 +1,7 @@
 plugins {
     application
-    kotlin("jvm") version "1.9.0"
-    id("io.ktor.plugin") version "2.3.7"
+    kotlin("jvm") version "1.9.22"
+    id("io.ktor.plugin") version "2.3.10"
 }
 
 application {
@@ -9,7 +9,7 @@ application {
 }
 
 group = "com.meloda.kubsau.backend"
-version = "0.2.2"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
