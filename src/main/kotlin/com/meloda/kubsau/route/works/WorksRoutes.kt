@@ -364,7 +364,7 @@ private fun Route.getLatestWorks() {
             employeeId = employeeId,
             departmentId = departmentId,
             workTypeId = workTypeId
-        )
+        ).sortedByDescending { item -> item.work.registrationDate }
 
         respondSuccess {
             GetJournalResponse(
