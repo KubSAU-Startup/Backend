@@ -472,8 +472,6 @@ private fun Application.createDummyEmployeesFaculties() {
 
                 val time = measureTimeMillis {
                     addNewReference(1, 12)
-                    addNewReference(1, 15)
-                    addNewReference(4, 11)
                     addNewReference(4, 14)
                 }
 

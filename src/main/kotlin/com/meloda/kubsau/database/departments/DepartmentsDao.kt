@@ -11,7 +11,7 @@ interface DepartmentsDao : FilterableDao<Department, JournalFilter> {
     suspend fun allDepartmentsByIds(departmentIds: List<Int>): List<Department>
     suspend fun singleDepartment(departmentId: Int): Department?
     suspend fun addNewDepartment(title: String, phone: String): Department?
-    suspend fun updateDepartment(departmentId: Int, title: String, phone: String): Int
+    suspend fun updateDepartment(departmentId: Int, title: String, phone: String): Boolean
     suspend fun deleteDepartment(departmentId: Int): Boolean
     suspend fun deleteDepartments(departmentIds: List<Int>): Boolean
 }

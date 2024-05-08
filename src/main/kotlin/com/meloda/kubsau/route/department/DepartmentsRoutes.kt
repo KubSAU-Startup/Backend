@@ -90,8 +90,8 @@ private fun Route.editDepartment() {
             departmentId = departmentId,
             title = title ?: currentDepartment.title,
             phone = phone ?: currentDepartment.phone
-        ).let { changedCount ->
-            if (changedCount == 1) {
+        ).let { success ->
+            if (success) {
                 respondSuccess { 1 }
             } else {
                 throw UnknownException
@@ -105,12 +105,12 @@ private fun Route.deleteDepartmentById() {
 
     delete("{id}") {
         val departmentId = call.parameters.getIntOrThrow("id")
+        departmentsDao.singleDepartment(departmentId) ?: throw ContentNotFoundException
 
-        val deleted = departmentsDao.deleteDepartment(departmentId)
-        if (deleted) {
+        if (departmentsDao.deleteDepartment(departmentId)) {
             respondSuccess { 1 }
         } else {
-            throw ContentNotFoundException
+            throw UnknownException
         }
     }
 }

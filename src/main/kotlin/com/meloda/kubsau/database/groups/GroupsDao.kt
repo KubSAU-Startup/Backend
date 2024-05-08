@@ -9,6 +9,7 @@ interface GroupsDao : FilterableDao<Group, JournalFilter> {
     suspend fun allGroups(): List<Group>
     suspend fun allGroupsAsFilters(): List<JournalFilter>
     suspend fun allGroupsByIds(groupIds: List<Int>): List<Group>
+    suspend fun allGroupsByDirectivity(directivityId: Int): List<Group>
     suspend fun singleGroup(groupId: Int): Group?
     suspend fun addNewGroup(title: String, directivityId: Int): Group?
     suspend fun updateGroup(groupId: Int, title: String, directivityId: Int): Int

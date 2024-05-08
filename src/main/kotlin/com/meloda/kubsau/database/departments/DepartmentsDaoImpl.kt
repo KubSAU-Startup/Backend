@@ -41,11 +41,11 @@ class DepartmentsDaoImpl : DepartmentsDao {
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 
-    override suspend fun updateDepartment(departmentId: Int, title: String, phone: String): Int = dbQuery {
+    override suspend fun updateDepartment(departmentId: Int, title: String, phone: String): Boolean = dbQuery {
         Departments.update(where = { Departments.id eq departmentId }) {
             it[Departments.title] = title
             it[Departments.phone] = phone
-        }
+        } > 0
     }
 
     override suspend fun deleteDepartment(departmentId: Int): Boolean = dbQuery {

@@ -4,6 +4,7 @@ import com.meloda.kubsau.api.respondSuccess
 import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.directivities.DirectivitiesDao
 import com.meloda.kubsau.database.grades.GradesDao
+import com.meloda.kubsau.database.groups.GroupsDao
 import com.meloda.kubsau.database.heads.HeadsDao
 import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.UnknownException
@@ -22,6 +23,7 @@ fun Route.directivitiesRoutes() {
         route("/directivities") {
             getDirectivities()
             getDirectivityById()
+            getGroups()
             addDirectivity()
             editDirectivity()
             deleteDirectivity()
@@ -122,6 +124,19 @@ private fun Route.getDirectivityById() {
                 )
             }
         }
+    }
+}
+
+private fun Route.getGroups() {
+    val directivitiesDao by inject<DirectivitiesDao>()
+    val groupsDao by inject<GroupsDao>()
+
+    get("{id}/groups") {
+        val directivityId = call.parameters.getIntOrThrow("id")
+        directivitiesDao.singleDirectivity(directivityId) ?: throw ContentNotFoundException
+
+        val groups = groupsDao.allGroupsByDirectivity(directivityId)
+        respondSuccess { groups }
     }
 }
 

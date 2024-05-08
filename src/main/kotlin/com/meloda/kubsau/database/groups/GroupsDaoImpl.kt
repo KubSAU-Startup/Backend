@@ -26,6 +26,13 @@ class GroupsDaoImpl : GroupsDao {
             .map(::mapResultRow)
     }
 
+    override suspend fun allGroupsByDirectivity(directivityId: Int): List<Group> = dbQuery {
+        Groups
+            .selectAll()
+            .where { Groups.directivityId eq directivityId }
+            .map(::mapResultRow)
+    }
+
     override suspend fun singleGroup(groupId: Int): Group? = dbQuery {
         Groups
             .selectAll()

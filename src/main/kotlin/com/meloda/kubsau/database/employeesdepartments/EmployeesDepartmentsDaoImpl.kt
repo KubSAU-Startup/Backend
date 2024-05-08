@@ -28,13 +28,12 @@ class EmployeesDepartmentsDaoImpl(
 
     override suspend fun allDepartments(): List<Department> = departmentsDao.allDepartments()
 
-    override suspend fun singleDepartmentByEmployeeId(employeeId: Int): Department? = dbQuery {
+    override suspend fun allDepartmentsByEmployee(employeeId: Int): List<Department> = dbQuery {
         EmployeesDepartments
             .innerJoin(Departments)
             .selectAll()
             .where { EmployeesDepartments.employeeId eq employeeId }
             .map(::mapSecondResultRow)
-            .singleOrNull()
     }
 
     override suspend fun addNewReference(employeeId: Int, departmentId: Int): Boolean = dbQuery {

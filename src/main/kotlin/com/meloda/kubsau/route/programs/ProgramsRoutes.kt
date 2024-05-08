@@ -36,6 +36,12 @@ fun Route.programsRoutes() {
     }
 }
 
+private data class ProgramWithDisciplineIds(
+    val program: Program,
+    val disciplineIds: List<Int>
+)
+
+
 private data class ProgramsWithDisciplines(
     val count: Int,
     val offset: Int,
@@ -393,8 +399,3 @@ private fun Route.deleteProgramsByIds() {
         }
     }
 }
-
-private data class ProgramWithDisciplineIds(
-    val program: Program,
-    val disciplineIds: List<Int>
-)
