@@ -2,7 +2,7 @@ package com.meloda.kubsau.database.departments
 
 import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.model.Department
-import com.meloda.kubsau.route.works.JournalFilter
+import com.meloda.kubsau.route.works.EntryFilter
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
@@ -13,7 +13,7 @@ class DepartmentsDaoImpl : DepartmentsDao {
         Departments.selectAll().map(::mapResultRow)
     }
 
-    override suspend fun allDepartmentsAsFilters(): List<JournalFilter> = dbQuery {
+    override suspend fun allDepartmentsAsFilters(): List<EntryFilter> = dbQuery {
         Departments
             .select(Departments.id, Departments.title)
             .map(::mapFilterResultRow)
@@ -58,7 +58,7 @@ class DepartmentsDaoImpl : DepartmentsDao {
 
     override fun mapResultRow(row: ResultRow): Department = Department.mapResultRow(row)
 
-    override fun mapFilterResultRow(row: ResultRow): JournalFilter = JournalFilter(
+    override fun mapFilterResultRow(row: ResultRow): EntryFilter = EntryFilter(
         id = row[Departments.id].value,
         title = row[Departments.title]
     )

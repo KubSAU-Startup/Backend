@@ -18,6 +18,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
+import java.util.stream.Collectors
 
 fun Route.worksRoutes() {
     authenticate {
@@ -271,6 +272,7 @@ private fun Route.latestWorksRoutes() {
     route("/latest") {
         latestWorksFiltersRoutes()
         getLatestWorks()
+        searchLatestWorks()
     }
 }
 
@@ -309,7 +311,7 @@ private fun Route.getEmployeesFilters() {
 
     get("/employees") {
         val employeeFilters = employeesDao.allTeachers().map { employee ->
-            JournalFilter(
+            EntryFilter(
                 id = employee.id,
                 title = employee.fullName
             )
@@ -355,7 +357,7 @@ private fun Route.getLatestWorks() {
         val groupId = parameters.getInt("groupId")
         val studentId = parameters.getInt("studentId")
 
-        val journal = worksDao.allWorksByFilters(
+        val entries = worksDao.allWorksByFilters(
             offset = offset,
             limit = limit,
             disciplineId = disciplineId,
@@ -367,30 +369,66 @@ private fun Route.getLatestWorks() {
         ).sortedByDescending { item -> item.work.registrationDate }
 
         respondSuccess {
-            GetJournalResponse(
-                count = journal.size,
+            LatestWorksResponse(
+                count = entries.size,
                 offset = offset ?: 0,
-                journal = journal
+                entries = entries
             )
         }
     }
 }
 
-data class GetJournalResponse(
+private fun Route.searchLatestWorks() {
+    val worksDao by inject<WorksDao>()
+
+    get("/search") {
+        val parameters = call.request.queryParameters
+
+        val offset = parameters.getInt("offset")
+        val limit = parameters.getInt("limit")
+        val query = parameters.getOrThrow("query").lowercase()
+
+        val entries = worksDao.allLatestWorks(null, null)
+            .filter { entry ->
+                entry.student.fullName.lowercase().contains(query) ||
+                        entry.group.title.lowercase().contains(query) ||
+                        entry.work.type.title.lowercase().contains(query) ||
+                        entry.discipline.title.lowercase().contains(query) ||
+                        entry.employee.fullName.lowercase().contains(query) ||
+                        entry.department.title.lowercase().contains(query) ||
+                        entry.work.title.orEmpty().lowercase().contains(query)
+            }
+            .sortedByDescending { item -> item.work.registrationDate }
+            .stream()
+            .skip((offset ?: 0).toLong())
+            .collect(Collectors.toList())
+            .let { list -> limit?.let { list.take(limit) } ?: list }
+
+        respondSuccess {
+            LatestWorksResponse(
+                count = entries.size,
+                offset = offset ?: 0,
+                entries = entries
+            )
+        }
+    }
+}
+
+private data class LatestWorksResponse(
     val count: Int,
     val offset: Int,
-    val journal: List<JournalItem>
+    val entries: List<Entry>
 )
 
-fun Student.mapToJournalStudent(status: StudentStatus): JournalStudent =
-    JournalStudent(
+fun Student.mapToEntryStudent(status: StudentStatus): EntryStudent =
+    EntryStudent(
         id = id,
         fullName = fullName,
         status = status
     )
 
-fun Work.mapToJournalWork(workType: WorkType): JournalWork =
-    JournalWork(
+fun Work.mapToEntryWork(workType: WorkType): EntryWork =
+    EntryWork(
         id = id,
         type = workType,
         registrationDate = registrationDate,
@@ -398,27 +436,27 @@ fun Work.mapToJournalWork(workType: WorkType): JournalWork =
         employeeId = employeeId
     )
 
-data class JournalFilter(
+data class EntryFilter(
     val id: Int,
     val title: String
 )
 
-data class JournalItem(
-    val student: JournalStudent,
+data class Entry(
+    val student: EntryStudent,
     val group: Group,
     val discipline: Discipline,
     val employee: Employee,
-    val work: JournalWork,
+    val work: EntryWork,
     val department: Department
 )
 
-data class JournalStudent(
+data class EntryStudent(
     val id: Int,
     val fullName: String,
     val status: StudentStatus
 )
 
-data class JournalWork(
+data class EntryWork(
     val id: Int,
     val type: WorkType,
     val registrationDate: Long,

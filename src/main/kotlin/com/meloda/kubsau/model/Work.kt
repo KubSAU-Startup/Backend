@@ -16,7 +16,7 @@ data class Work(
 
     companion object {
 
-        fun mapResultRow(row: ResultRow): Work = Work(
+        fun mapFromDb(row: ResultRow): Work = Work(
             id = row[Works.id].value,
             disciplineId = row[Works.disciplineId],
             studentId = row[Works.studentId],

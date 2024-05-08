@@ -2,12 +2,12 @@ package com.meloda.kubsau.database.departments
 
 import com.meloda.kubsau.database.FilterableDao
 import com.meloda.kubsau.model.Department
-import com.meloda.kubsau.route.works.JournalFilter
+import com.meloda.kubsau.route.works.EntryFilter
 
-interface DepartmentsDao : FilterableDao<Department, JournalFilter> {
+interface DepartmentsDao : FilterableDao<Department, EntryFilter> {
 
     suspend fun allDepartments(): List<Department>
-    suspend fun allDepartmentsAsFilters(): List<JournalFilter>
+    suspend fun allDepartmentsAsFilters(): List<EntryFilter>
     suspend fun allDepartmentsByIds(departmentIds: List<Int>): List<Department>
     suspend fun singleDepartment(departmentId: Int): Department?
     suspend fun addNewDepartment(title: String, phone: String): Department?

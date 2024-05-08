@@ -9,9 +9,9 @@ import com.meloda.kubsau.database.students.Students
 import com.meloda.kubsau.database.studentstatuses.StudentStatuses
 import com.meloda.kubsau.database.worktypes.WorkTypes
 import com.meloda.kubsau.model.*
-import com.meloda.kubsau.route.works.JournalItem
-import com.meloda.kubsau.route.works.mapToJournalStudent
-import com.meloda.kubsau.route.works.mapToJournalWork
+import com.meloda.kubsau.route.works.Entry
+import com.meloda.kubsau.route.works.mapToEntryStudent
+import com.meloda.kubsau.route.works.mapToEntryWork
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
@@ -32,6 +32,33 @@ class WorksDaoImpl : WorksDao {
             .map(::mapResultRow)
     }
 
+    override suspend fun allLatestWorks(offset: Int?, limit: Int?): List<Entry> = dbQuery {
+        Works
+            .innerJoin(Disciplines, { Works.disciplineId }, { Disciplines.id })
+            .innerJoin(Students, { Works.studentId }, { Students.id })
+            .innerJoin(StudentStatuses, { Students.statusId }, { StudentStatuses.id })
+            .innerJoin(WorkTypes, { Works.workTypeId }, { WorkTypes.id })
+            .innerJoin(Groups, { Students.groupId }, { Groups.id })
+            .innerJoin(Employees, { Works.employeeId }, { Employees.id })
+            .innerJoin(Departments, { Disciplines.departmentId }, { Departments.id })
+            .selectAll()
+            .apply {
+                if (limit != null) {
+                    limit(limit, (offset ?: 0).toLong())
+                }
+            }
+            .map { row ->
+                Entry(
+                    student = Student.mapResultRow(row).mapToEntryStudent(StudentStatus.mapResultRow(row)),
+                    group = Group.mapResultRow(row),
+                    discipline = Discipline.mapResultRow(row),
+                    employee = Employee.mapResultRow(row),
+                    work = mapResultRow(row).mapToEntryWork(WorkType.mapResultRow(row)),
+                    department = Department.mapResultRow(row)
+                )
+            }
+    }
+
     override suspend fun allWorksByFilters(
         offset: Int?,
         limit: Int?,
@@ -41,7 +68,7 @@ class WorksDaoImpl : WorksDao {
         employeeId: Int?,
         departmentId: Int?,
         workTypeId: Int?,
-    ): List<JournalItem> = dbQuery {
+    ): List<Entry> = dbQuery {
         val query =
             Works
                 .innerJoin(Disciplines, { Works.disciplineId }, { Disciplines.id })
@@ -66,12 +93,12 @@ class WorksDaoImpl : WorksDao {
         employeeId?.let { query.andWhere { Works.employeeId eq employeeId } }
 
         query.map { row ->
-            JournalItem(
-                student = Student.mapResultRow(row).mapToJournalStudent(StudentStatus.mapResultRow(row)),
+            Entry(
+                student = Student.mapResultRow(row).mapToEntryStudent(StudentStatus.mapResultRow(row)),
                 group = Group.mapResultRow(row),
                 discipline = Discipline.mapResultRow(row),
                 employee = Employee.mapResultRow(row),
-                work = mapResultRow(row).mapToJournalWork(WorkType.mapResultRow(row)),
+                work = mapResultRow(row).mapToEntryWork(WorkType.mapResultRow(row)),
                 department = Department.mapResultRow(row)
             )
         }
@@ -140,5 +167,5 @@ class WorksDaoImpl : WorksDao {
         Works.deleteWhere { Works.id inList workIds } > 0
     }
 
-    override fun mapResultRow(row: ResultRow): Work = Work.mapResultRow(row)
+    override fun mapResultRow(row: ResultRow): Work = Work.mapFromDb(row)
 }

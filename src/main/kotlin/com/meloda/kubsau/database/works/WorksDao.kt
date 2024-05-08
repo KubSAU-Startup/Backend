@@ -2,12 +2,13 @@ package com.meloda.kubsau.database.works
 
 import com.meloda.kubsau.database.Dao
 import com.meloda.kubsau.model.Work
-import com.meloda.kubsau.route.works.JournalItem
+import com.meloda.kubsau.route.works.Entry
 
 interface WorksDao : Dao<Work> {
 
     suspend fun allWorks(offset: Int?, limit: Int?): List<Work>
 
+    suspend fun allLatestWorks(offset: Int?, limit: Int?): List<Entry>
     suspend fun allWorksByFilters(
         offset: Int?,
         limit: Int?,
@@ -17,7 +18,7 @@ interface WorksDao : Dao<Work> {
         employeeId: Int?,
         departmentId: Int?,
         workTypeId: Int?
-    ): List<JournalItem>
+    ): List<Entry>
 
     suspend fun allWorksByIds(workIds: List<Int>): List<Work>
     suspend fun singleWork(workId: Int): Work?
