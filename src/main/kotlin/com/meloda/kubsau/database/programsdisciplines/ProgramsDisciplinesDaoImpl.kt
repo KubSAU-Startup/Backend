@@ -115,7 +115,7 @@ class ProgramsDisciplinesDaoImpl(
         ProgramsDisciplines.deleteWhere { ProgramsDisciplines.programId eq programId } > 0
     }
 
-    override fun mapFirstResultRow(row: ResultRow): Program = Program.mapResultRow(row)
+    override fun mapFirstResultRow(row: ResultRow): Program = Program.mapFromDb(row)
 
     override fun mapSecondResultRow(row: ResultRow): Discipline = Discipline.mapResultRow(row)
 }

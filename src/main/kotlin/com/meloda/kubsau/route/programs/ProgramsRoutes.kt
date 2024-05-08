@@ -26,6 +26,7 @@ fun Route.programsRoutes() {
             getPrograms()
             getProgramById()
             getDisciplines()
+            getFiltered()
             addProgram()
             addDisciplinesToProgram()
             editProgram()
@@ -40,7 +41,6 @@ private data class ProgramWithDisciplineIds(
     val program: Program,
     val disciplineIds: List<Int>
 )
-
 
 private data class ProgramsWithDisciplines(
     val count: Int,
@@ -90,7 +90,7 @@ private fun Route.getPrograms() {
         val programs = if (programIds.isEmpty()) {
             programsDao.allPrograms(offset, limit)
         } else {
-            programsDao.allProgramsByIds(programIds)
+            programsDao.allProgramsByIds(offset, limit, programIds)
         }.map { program ->
             ProgramWithDisciplineIds(
                 program = program,
@@ -216,6 +216,83 @@ private fun Route.getDisciplines() {
                 FullDisciplinesResponse(
                     disciplines = disciplines,
                     departments = departments
+                )
+            }
+        }
+    }
+}
+
+private fun Route.getFiltered() {
+    val programsDao by inject<ProgramsDao>()
+    val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
+    val disciplinesDao by inject<DisciplinesDao>()
+
+    get("/filtered") {
+        val parameters = call.request.queryParameters
+
+        val offset = parameters.getInt("offset")
+        val limit = parameters.getInt("limit")
+        val extended = parameters.getBoolean("extended", false)
+        val semester = parameters.getInt("semester")
+        val directivityId = parameters.getInt("directivityId")
+
+        val filteredPrograms = programsDao.allProgramsByFilters(
+            offset = offset,
+            limit = limit,
+            semester = semester,
+            directivityId = directivityId
+        )
+
+        val programIds = filteredPrograms.map(Program::id)
+
+        val disciplineIds = hashMapOf<Int, List<Int>>()
+
+        programIds
+            .ifEmpty {
+                programsDao.allPrograms(offset, limit).map(Program::id)
+            }.forEach { programId ->
+                disciplineIds[programId] = programsDisciplinesDao.allDisciplinesByProgramId(programId)
+                    .map(Discipline::id)
+            }
+
+        val programs = filteredPrograms.map { program ->
+            ProgramWithDisciplineIds(
+                program = program,
+                disciplineIds = disciplineIds[program.id].orEmpty()
+            )
+        }
+
+        val disciplines = mutableListOf<DisciplineWithWorkType>()
+
+        if (extended) {
+            programs.forEach { program ->
+                program.disciplineIds.forEach { disciplineId ->
+                    val workType = programsDisciplinesDao.workType(program.program.id, disciplineId)
+                    val discipline = disciplinesDao.singleDiscipline(disciplineId)
+
+                    if (workType != null && discipline != null) {
+                        disciplines += DisciplineWithWorkType(
+                            discipline = discipline,
+                            workType = workType
+                        )
+                    }
+                }
+            }
+        }
+
+        respondSuccess {
+            if (extended) {
+                ProgramsWithDisciplines(
+                    count = programs.size,
+                    offset = offset ?: 0,
+                    programs = programs,
+                    disciplines = disciplines
+                )
+            } else {
+                Programs(
+                    count = programs.size,
+                    offset = offset ?: 0,
+                    programs = programs
                 )
             }
         }
@@ -387,7 +464,7 @@ private fun Route.deleteProgramsByIds() {
             throw ValidationException("programIds is invalid")
         }
 
-        val currentPrograms = programsDao.allProgramsByIds(programIds)
+        val currentPrograms = programsDao.allProgramsByIds(null, null, programIds)
         if (currentPrograms.isEmpty()) {
             throw ContentNotFoundException
         }

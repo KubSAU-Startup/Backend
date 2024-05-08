@@ -18,11 +18,32 @@ class ProgramsDaoImpl : ProgramsDao {
             .map(::mapResultRow)
     }
 
-    override suspend fun allProgramsByIds(programIds: List<Int>): List<Program> = dbQuery {
+    override suspend fun allProgramsByIds(
+        offset: Int?,
+        limit: Int?,
+        programIds: List<Int>
+    ): List<Program> = dbQuery {
         Programs
             .selectAll()
+            .apply { if (limit != null) limit(limit, (offset ?: 0).toLong()) }
             .where { Programs.id inList programIds }
             .map(::mapResultRow)
+    }
+
+    override suspend fun allProgramsByFilters(
+        offset: Int?,
+        limit: Int?,
+        semester: Int?,
+        directivityId: Int?
+    ): List<Program> = dbQuery {
+        val query = Programs
+            .selectAll()
+            .apply { if (limit != null) limit(limit, (offset ?: 0).toLong()) }
+
+        semester?.let { query.andWhere { Programs.semester eq semester } }
+        directivityId?.let { query.andWhere { Programs.directivityId eq directivityId } }
+
+        query.map(::mapResultRow)
     }
 
     override suspend fun programsBySemester(semester: Int): List<Program> = dbQuery {
@@ -66,5 +87,5 @@ class ProgramsDaoImpl : ProgramsDao {
         Programs.deleteWhere { Programs.id inList programIds } > 0
     }
 
-    override fun mapResultRow(row: ResultRow): Program = Program.mapResultRow(row)
+    override fun mapResultRow(row: ResultRow): Program = Program.mapFromDb(row)
 }
