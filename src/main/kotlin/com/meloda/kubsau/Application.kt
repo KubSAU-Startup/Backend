@@ -42,6 +42,7 @@ val PORT: Int = getEnvOrNull("PORT")?.toIntOrNull() ?: 8080
 fun main() {
     val startTime = System.currentTimeMillis()
 
+    ConfigController.init()
     SecretsController.init()
     DatabaseController.init()
 

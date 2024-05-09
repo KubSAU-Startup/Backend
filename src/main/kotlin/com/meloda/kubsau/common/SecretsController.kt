@@ -19,12 +19,6 @@ object SecretsController {
         properties.getProperty("JWT_SECRET")
     }
 
-    val dbUrl: String by lazy {
-        getEnvOrElse("DB_URL") {
-            properties.getProperty("DB_URL", "localhost:5432")
-        }
-    }
-
     val dbName: String by lazy {
         getEnvOrElse("POSTGRES_DB") {
             properties.getProperty("POSTGRES_DB", "db")
@@ -45,10 +39,12 @@ object SecretsController {
 
     fun init() {
         println("JWT_SECRET: $jwtSecret")
-        println("DB_URL: $dbUrl")
-        println("POSTGRES_DB: $dbName")
-        println("POSTGRES_USER: $dbUser")
-        println("POSTGRES_PASSWORD: $dbPassword")
+
+        if (ConfigController.usePostgreSQL) {
+            println("POSTGRES_DB: $dbName")
+            println("POSTGRES_USER: $dbUser")
+            println("POSTGRES_PASSWORD: $dbPassword")
+        }
     }
 }
 
