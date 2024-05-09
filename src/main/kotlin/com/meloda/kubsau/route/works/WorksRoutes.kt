@@ -18,7 +18,6 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
-import java.util.stream.Collectors
 
 fun Route.worksRoutes() {
     authenticate {
@@ -386,23 +385,18 @@ private fun Route.searchLatestWorks() {
 
         val offset = parameters.getInt("offset")
         val limit = parameters.getInt("limit")
-        val query = parameters.getOrThrow("query").lowercase()
+        val query = parameters
+            .getOrThrow("query")
+            .lowercase()
+            .trim()
+            .ifEmpty { null }
+            ?: throw ValidationException("query must not be empty or blank")
 
-        val entries = worksDao.allLatestWorks(null, null)
-            .filter { entry ->
-                entry.student.fullName.lowercase().contains(query) ||
-                        entry.group.title.lowercase().contains(query) ||
-                        entry.work.type.title.lowercase().contains(query) ||
-                        entry.discipline.title.lowercase().contains(query) ||
-                        entry.employee.fullName.lowercase().contains(query) ||
-                        entry.department.title.lowercase().contains(query) ||
-                        entry.work.title.orEmpty().lowercase().contains(query)
-            }
-            .sortedByDescending { item -> item.work.registrationDate }
-            .stream()
-            .skip((offset ?: 0).toLong())
-            .collect(Collectors.toList())
-            .let { list -> limit?.let { list.take(limit) } ?: list }
+        val entries = worksDao.allLatestWorksByQuery(
+            offset = offset,
+            limit = limit,
+            query = query
+        )
 
         respondSuccess {
             LatestWorksResponse(

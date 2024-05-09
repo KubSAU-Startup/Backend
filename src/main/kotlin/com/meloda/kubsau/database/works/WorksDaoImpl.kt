@@ -59,6 +59,49 @@ class WorksDaoImpl : WorksDao {
             }
     }
 
+    override suspend fun allLatestWorksByQuery(offset: Int?, limit: Int?, query: String): List<Entry> = dbQuery {
+        val q = "%$query%"
+
+        Works
+            .innerJoin(Disciplines, { Works.disciplineId }, { Disciplines.id })
+            .innerJoin(Students, { Works.studentId }, { Students.id })
+            .innerJoin(StudentStatuses, { Students.statusId }, { StudentStatuses.id })
+            .innerJoin(WorkTypes, { Works.workTypeId }, { WorkTypes.id })
+            .innerJoin(Groups, { Students.groupId }, { Groups.id })
+            .innerJoin(Employees, { Works.employeeId }, { Employees.id })
+            .innerJoin(Departments, { Disciplines.departmentId }, { Departments.id })
+            .selectAll()
+            .where {
+                (Students.lastName.lowerCase() like q) or
+                        (Students.firstName.lowerCase() like q) or
+                        (Students.middleName.lowerCase() like q) or
+                        (Groups.title.lowerCase() like q) or
+                        (WorkTypes.title.lowerCase() like q) or
+                        (StudentStatuses.title.lowerCase() like q) or
+                        (Disciplines.title.lowerCase() like q) or
+                        (Employees.lastName.lowerCase() like q) or
+                        (Employees.firstName.lowerCase() like q) or
+                        (Employees.middleName.lowerCase() like q) or
+                        (Departments.title.lowerCase() like q) or
+                        (Works.title.lowerCase() like q)
+            }
+            .apply {
+                if (limit != null) {
+                    limit(limit, (offset ?: 0).toLong())
+                }
+            }
+            .map { row ->
+                Entry(
+                    student = Student.mapFromDb(row).mapToEntryStudent(StudentStatus.mapResultRow(row)),
+                    group = Group.mapResultRow(row),
+                    discipline = Discipline.mapResultRow(row),
+                    employee = Employee.mapResultRow(row),
+                    work = mapResultRow(row).mapToEntryWork(WorkType.mapResultRow(row)),
+                    department = Department.mapResultRow(row)
+                )
+            }
+    }
+
     override suspend fun allWorksByFilters(
         offset: Int?,
         limit: Int?,
