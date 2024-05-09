@@ -1,6 +1,7 @@
 package com.meloda.kubsau.database.programs
 
 import com.meloda.kubsau.database.DatabaseController.dbQuery
+import com.meloda.kubsau.database.directivities.Directivities
 import com.meloda.kubsau.model.Program
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -18,14 +19,9 @@ class ProgramsDaoImpl : ProgramsDao {
             .map(::mapResultRow)
     }
 
-    override suspend fun allProgramsByIds(
-        offset: Int?,
-        limit: Int?,
-        programIds: List<Int>
-    ): List<Program> = dbQuery {
+    override suspend fun allProgramsByIds(programIds: List<Int>): List<Program> = dbQuery {
         Programs
             .selectAll()
-            .apply { if (limit != null) limit(limit, (offset ?: 0).toLong()) }
             .where { Programs.id inList programIds }
             .map(::mapResultRow)
     }
@@ -50,6 +46,16 @@ class ProgramsDaoImpl : ProgramsDao {
         Programs
             .selectAll()
             .where { Programs.semester eq semester }
+            .map(::mapResultRow)
+    }
+
+    override suspend fun allProgramsByQuery(offset: Int?, limit: Int?, query: String): List<Program> = dbQuery {
+        Programs.innerJoin(Directivities)
+            .selectAll()
+            .where {
+                (Programs.semester eq (query.toIntOrNull() ?: 0)) or (Directivities.title.lowerCase() like "%$query%")
+            }
+            .apply { if (limit != null) limit(limit, (offset ?: 0).toLong()) }
             .map(::mapResultRow)
     }
 

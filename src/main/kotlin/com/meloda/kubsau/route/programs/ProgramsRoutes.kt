@@ -16,7 +16,6 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
-import java.util.stream.Collectors
 import kotlin.collections.set
 
 fun Route.programsRoutes() {
@@ -96,7 +95,7 @@ private fun Route.getPrograms() {
         val programs = if (programIds.isEmpty()) {
             programsDao.allPrograms(offset, limit)
         } else {
-            programsDao.allProgramsByIds(offset, limit, programIds)
+            programsDao.allProgramsByIds(programIds)
         }.map { program ->
             ProgramWithDisciplineIds(
                 program = program,
@@ -321,9 +320,18 @@ private fun Route.searchPrograms() {
 
         val offset = parameters.getInt("offset")
         val limit = parameters.getInt("limit")
-        val query = parameters.getOrThrow("query").lowercase()
+        val query = parameters
+            .getOrThrow("query")
+            .lowercase()
+            .trim()
+            .ifEmpty { null }
+            ?: throw ValidationException("query must not be empty or blank")
 
-        val allPrograms = programsDao.allPrograms(null, null)
+        val allPrograms = programsDao.allProgramsByQuery(
+            offset = offset,
+            limit = limit,
+            query = query
+        )
 
         val directivityIds = allPrograms.map(Program::directivityId)
         val directivities = directivitiesDao.allDirectivitiesByIds(directivityIds)
@@ -335,31 +343,13 @@ private fun Route.searchPrograms() {
             disciplines[programId] = programsDisciplinesDao.allDisciplinesByProgramId(programId)
         }
 
-        val preResultPrograms = mutableListOf<ProgramWithDirectivityAndDisciplines>()
-
-        allPrograms.forEach { program ->
-            if (
-                program.semester.toString().contains(query) ||
-                directivities.firstOrNull { directivity ->
-                    directivity.id == program.directivityId
-                }?.title.orEmpty().lowercase().contains(query) ||
-                disciplines[program.id].orEmpty().map { discipline ->
-                    discipline.title.lowercase()
-                }.any { title -> title.contains(query) }
-            ) {
-                preResultPrograms += ProgramWithDirectivityAndDisciplines(
-                    program = program,
-                    directivity = directivities.first { directivity -> directivity.id == program.directivityId },
-                    disciplines = disciplines[program.id].orEmpty()
-                )
-            }
+        val resultPrograms = allPrograms.map { program ->
+            ProgramWithDirectivityAndDisciplines(
+                program = program,
+                directivity = directivities.first { directivity -> directivity.id == program.directivityId },
+                disciplines = disciplines[program.id].orEmpty()
+            )
         }
-
-        val resultPrograms = preResultPrograms
-            .stream()
-            .skip((offset ?: 0).toLong())
-            .collect(Collectors.toList())
-            .let { list -> limit?.let { list.take(limit) } ?: list }
 
         respondSuccess {
             SearchResponse(
@@ -536,7 +526,7 @@ private fun Route.deleteProgramsByIds() {
             throw ValidationException("programIds is invalid")
         }
 
-        val currentPrograms = programsDao.allProgramsByIds(null, null, programIds)
+        val currentPrograms = programsDao.allProgramsByIds(programIds)
         if (currentPrograms.isEmpty()) {
             throw ContentNotFoundException
         }
