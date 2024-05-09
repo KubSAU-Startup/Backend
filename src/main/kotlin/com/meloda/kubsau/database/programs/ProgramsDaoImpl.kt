@@ -46,7 +46,7 @@ class ProgramsDaoImpl : ProgramsDao {
         query.map(::mapResultRow)
     }
 
-    override suspend fun programsBySemester(semester: Int): List<Program> = dbQuery {
+    override suspend fun allProgramsBySemester(semester: Int): List<Program> = dbQuery {
         Programs
             .selectAll()
             .where { Programs.semester eq semester }

@@ -3,21 +3,20 @@ package com.meloda.kubsau.route.programs
 import com.meloda.kubsau.api.respondSuccess
 import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.departments.DepartmentsDao
+import com.meloda.kubsau.database.directivities.DirectivitiesDao
 import com.meloda.kubsau.database.disciplines.DisciplinesDao
 import com.meloda.kubsau.database.programs.ProgramsDao
 import com.meloda.kubsau.database.programsdisciplines.ProgramsDisciplinesDao
 import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.UnknownException
 import com.meloda.kubsau.errors.ValidationException
-import com.meloda.kubsau.model.Department
-import com.meloda.kubsau.model.Discipline
-import com.meloda.kubsau.model.Program
-import com.meloda.kubsau.model.WorkType
+import com.meloda.kubsau.model.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
+import java.util.stream.Collectors
 import kotlin.collections.set
 
 fun Route.programsRoutes() {
@@ -27,6 +26,7 @@ fun Route.programsRoutes() {
             getProgramById()
             getDisciplines()
             getFiltered()
+            searchPrograms()
             addProgram()
             addDisciplinesToProgram()
             editProgram()
@@ -40,6 +40,12 @@ fun Route.programsRoutes() {
 private data class ProgramWithDisciplineIds(
     val program: Program,
     val disciplineIds: List<Int>
+)
+
+private data class ProgramWithDirectivityAndDisciplines(
+    val program: Program,
+    val directivity: Directivity,
+    val disciplines: List<Discipline>
 )
 
 private data class ProgramsWithDisciplines(
@@ -295,6 +301,72 @@ private fun Route.getFiltered() {
                     programs = programs
                 )
             }
+        }
+    }
+}
+
+private data class SearchResponse(
+    val count: Int,
+    val offset: Int,
+    val entries: List<ProgramWithDirectivityAndDisciplines>
+)
+
+private fun Route.searchPrograms() {
+    val programsDao by inject<ProgramsDao>()
+    val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
+    val directivitiesDao by inject<DirectivitiesDao>()
+
+    get("/search") {
+        val parameters = call.request.queryParameters
+
+        val offset = parameters.getInt("offset")
+        val limit = parameters.getInt("limit")
+        val query = parameters.getOrThrow("query").lowercase()
+
+        val allPrograms = programsDao.allPrograms(null, null)
+
+        val directivityIds = allPrograms.map(Program::directivityId)
+        val directivities = directivitiesDao.allDirectivitiesByIds(directivityIds)
+
+        val programIds = allPrograms.map(Program::id)
+        val disciplines = hashMapOf<Int, List<Discipline>>()
+
+        programIds.forEach { programId ->
+            disciplines[programId] = programsDisciplinesDao.allDisciplinesByProgramId(programId)
+        }
+
+        val preResultPrograms = mutableListOf<ProgramWithDirectivityAndDisciplines>()
+
+        allPrograms.forEach { program ->
+            if (
+                program.semester.toString().contains(query) ||
+                directivities.firstOrNull { directivity ->
+                    directivity.id == program.directivityId
+                }?.title.orEmpty().lowercase().contains(query) ||
+                disciplines[program.id].orEmpty().map { discipline ->
+                    discipline.title.lowercase()
+                }.any { title -> title.contains(query) }
+            ) {
+                preResultPrograms += ProgramWithDirectivityAndDisciplines(
+                    program = program,
+                    directivity = directivities.first { directivity -> directivity.id == program.directivityId },
+                    disciplines = disciplines[program.id].orEmpty()
+                )
+            }
+        }
+
+        val resultPrograms = preResultPrograms
+            .stream()
+            .skip((offset ?: 0).toLong())
+            .collect(Collectors.toList())
+            .let { list -> limit?.let { list.take(limit) } ?: list }
+
+        respondSuccess {
+            SearchResponse(
+                count = resultPrograms.size,
+                offset = offset ?: 0,
+                entries = resultPrograms
+            )
         }
     }
 }

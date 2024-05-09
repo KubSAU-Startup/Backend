@@ -12,7 +12,7 @@ data class Directivity(
 
     companion object {
 
-        fun mapResultRow(row: ResultRow): Directivity = Directivity(
+        fun mapFromDb(row: ResultRow): Directivity = Directivity(
             id = row[Directivities.id].value,
             title = row[Directivities.title],
             headId = row[Directivities.headId],

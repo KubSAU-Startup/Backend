@@ -66,5 +66,5 @@ class DirectivitiesDaoImpl : DirectivitiesDao {
         Directivities.deleteWhere { Directivities.id inList directivityIds } > 0
     }
 
-    override fun mapResultRow(row: ResultRow): Directivity = Directivity.mapResultRow(row)
+    override fun mapResultRow(row: ResultRow): Directivity = Directivity.mapFromDb(row)
 }
