@@ -51,6 +51,9 @@ dependencies {
 
     implementation("org.xerial:sqlite-jdbc:$sqliteJdbcVersion")
 
+    val postgreVersion = "42.7.3"
+    implementation("org.postgresql:postgresql:$postgreVersion")
+
     val logBackVersion = "1.5.6"
 
 //    implementation("ch.qos.logback:logback-classic:$logBackVersion")

@@ -1,6 +1,6 @@
 package com.meloda.kubsau.database
 
-import com.meloda.kubsau.CONFIG_FOLDER
+import com.meloda.kubsau.common.SecretsController
 import com.meloda.kubsau.database.departments.Departments
 import com.meloda.kubsau.database.directivities.Directivities
 import com.meloda.kubsau.database.disciplines.Disciplines
@@ -24,23 +24,16 @@ import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.io.File
 
 object DatabaseController {
 
     fun init() {
-        val driverClassName = "org.sqlite.JDBC"
-
-        val folderPath = "$CONFIG_FOLDER/db"
-        val filePath = "$folderPath/database.db"
-
-        File(folderPath).apply {
-            if (!exists()) mkdirs()
-        }
-
-        val jdbcURL = "jdbc:sqlite:$filePath"
-
-        val database = Database.connect(jdbcURL, driverClassName)
+        val database = Database.connect(
+            url = "jdbc:postgresql://${SecretsController.dbUrl}/${SecretsController.dbName}",
+            driver = "org.postgresql.Driver",
+            user = SecretsController.dbUser,
+            password = SecretsController.dbPassword
+        )
         transaction(database) {
             // TODO: 30/04/2024, Danil Nikolaev: enable/disable logger
             //addLogger(StdOutSqlLogger)

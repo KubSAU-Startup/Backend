@@ -20,7 +20,7 @@ data class Student(
 
     companion object {
 
-        fun mapResultRow(row: ResultRow): Student = Student(
+        fun mapFromDb(row: ResultRow): Student = Student(
             id = row[Students.id].value,
             firstName = row[Students.firstName],
             lastName = row[Students.lastName],

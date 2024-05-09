@@ -42,7 +42,7 @@ val PORT: Int = getEnvOrNull("PORT")?.toIntOrNull() ?: 8080
 fun main() {
     val startTime = System.currentTimeMillis()
 
-    AuthController.init()
+    SecretsController.init()
     DatabaseController.init()
 
     configureServer(startTime).start(wait = true)
@@ -100,11 +100,11 @@ private fun Application.prepopulateDB() {
 
     println("Pre-populating db...")
 
+    createDummyEmployees()
+
     createDummyUsers()
 
     createDummyGrades()
-
-    createDummyEmployees()
 
     createDummyDepartments()
     createDummyEmployeesDepartments()

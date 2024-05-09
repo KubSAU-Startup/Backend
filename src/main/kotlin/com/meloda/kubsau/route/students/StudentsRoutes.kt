@@ -14,7 +14,6 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
-import java.util.stream.Collectors
 
 fun Route.studentsRoutes() {
     authenticate {
@@ -126,14 +125,18 @@ private fun Route.searchStudents() {
 
         val offset = parameters.getInt("offset")
         val limit = parameters.getInt("limit")
-        val query = parameters.getOrThrow("query").lowercase()
+        val query = parameters
+            .getOrThrow("query")
+            .lowercase()
+            .trim()
+            .ifEmpty { null }
+            ?: throw ValidationException("query must not be empty or blank")
 
-        val students = studentsDao.allStudents(null, null)
-            .filter { student -> student.fullName.lowercase().contains(query) }
-            .stream()
-            .skip((offset ?: 0).toLong())
-            .collect(Collectors.toList())
-            .let { list -> limit?.let { list.take(limit) } ?: list }
+        val students = studentsDao.allStudentsByQuery(
+            offset = offset,
+            limit = limit,
+            query = query
+        )
 
         respondSuccess {
             StudentsResponse(

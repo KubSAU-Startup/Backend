@@ -43,6 +43,23 @@ class StudentsDaoImpl : StudentsDao {
             .map(::mapResultRow)
     }
 
+    override suspend fun allStudentsByQuery(offset: Int?, limit: Int?, query: String): List<Student> = dbQuery {
+        val q = "%$query%"
+        Students
+            .selectAll()
+            .where {
+                (Students.lastName.lowerCase() like q) or
+                        (Students.firstName.lowerCase() like q) or
+                        (Students.middleName.lowerCase() like q)
+            }
+            .apply {
+                if (limit != null) {
+                    limit(limit, ((offset ?: 0).toLong()))
+                }
+            }
+            .map(::mapResultRow)
+    }
+
     override suspend fun singleStudent(studentId: Int): Student? = dbQuery {
         Students
             .selectAll()
@@ -92,5 +109,5 @@ class StudentsDaoImpl : StudentsDao {
         Students.deleteWhere { Students.id inList studentIds } > 0
     }
 
-    override fun mapResultRow(row: ResultRow): Student = Student.mapResultRow(row)
+    override fun mapResultRow(row: ResultRow): Student = Student.mapFromDb(row)
 }

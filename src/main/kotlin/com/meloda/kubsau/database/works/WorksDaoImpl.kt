@@ -49,7 +49,7 @@ class WorksDaoImpl : WorksDao {
             }
             .map { row ->
                 Entry(
-                    student = Student.mapResultRow(row).mapToEntryStudent(StudentStatus.mapResultRow(row)),
+                    student = Student.mapFromDb(row).mapToEntryStudent(StudentStatus.mapResultRow(row)),
                     group = Group.mapResultRow(row),
                     discipline = Discipline.mapResultRow(row),
                     employee = Employee.mapResultRow(row),
@@ -94,7 +94,7 @@ class WorksDaoImpl : WorksDao {
 
         query.map { row ->
             Entry(
-                student = Student.mapResultRow(row).mapToEntryStudent(StudentStatus.mapResultRow(row)),
+                student = Student.mapFromDb(row).mapToEntryStudent(StudentStatus.mapResultRow(row)),
                 group = Group.mapResultRow(row),
                 discipline = Discipline.mapResultRow(row),
                 employee = Employee.mapResultRow(row),

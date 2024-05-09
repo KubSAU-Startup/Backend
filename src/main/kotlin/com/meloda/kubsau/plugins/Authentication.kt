@@ -3,7 +3,7 @@ package com.meloda.kubsau.plugins
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.meloda.kubsau.PORT
-import com.meloda.kubsau.common.AuthController
+import com.meloda.kubsau.common.SecretsController
 import com.meloda.kubsau.errors.SessionExpiredException
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -20,7 +20,7 @@ fun Application.configureAuthentication() {
 
             verifier(
                 JWT
-                    .require(Algorithm.HMAC256(AuthController.jwtSecret))
+                    .require(Algorithm.HMAC256(SecretsController.jwtSecret))
                     .withAudience(AUDIENCE)
                     .withIssuer(ISSUER)
                     .build()

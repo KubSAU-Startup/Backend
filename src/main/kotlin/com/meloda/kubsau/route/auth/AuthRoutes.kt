@@ -3,7 +3,7 @@ package com.meloda.kubsau.route.auth
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.meloda.kubsau.api.respondSuccess
-import com.meloda.kubsau.common.AuthController
+import com.meloda.kubsau.common.SecretsController
 import com.meloda.kubsau.common.getOrThrow
 import com.meloda.kubsau.database.sessions.SessionsDao
 import com.meloda.kubsau.database.users.UsersDao
@@ -60,7 +60,7 @@ private fun Route.addSession() {
             .withAudience(AUDIENCE)
             .withIssuer(ISSUER)
             .withClaim("login", login)
-            .sign(Algorithm.HMAC256(AuthController.jwtSecret))
+            .sign(Algorithm.HMAC256(SecretsController.jwtSecret))
 
         sessionsDao.addNewSession(user.id, accessToken)
 
