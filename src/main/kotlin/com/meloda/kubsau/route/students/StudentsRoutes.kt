@@ -14,12 +14,14 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
+import java.util.stream.Collectors
 
 fun Route.studentsRoutes() {
     authenticate {
         route("/students") {
             getStudents()
             getStudentById()
+            searchStudents()
             addStudent()
             editStudent()
             deleteStudent()
@@ -29,10 +31,14 @@ fun Route.studentsRoutes() {
 }
 
 private data class StudentsResponse(
+    val count: Int,
+    val offset: Int,
     val students: List<Student>
 )
 
 private data class FullStudentsResponse(
+    val count: Int,
+    val offset: Int,
     val students: List<Student>,
     val statuses: List<StudentStatus>
 )
@@ -61,7 +67,11 @@ private fun Route.getStudents() {
 
         if (!extended) {
             respondSuccess {
-                StudentsResponse(students = students)
+                StudentsResponse(
+                    count = students.size,
+                    offset = offset ?: 0,
+                    students = students
+                )
             }
         } else {
             val statusIds = students.map(Student::statusId)
@@ -69,6 +79,8 @@ private fun Route.getStudents() {
 
             respondSuccess {
                 FullStudentsResponse(
+                    count = students.size,
+                    offset = offset ?: 0,
                     students = students,
                     statuses = statuses
                 )
@@ -102,6 +114,33 @@ private fun Route.getStudentById() {
                     status = status
                 )
             }
+        }
+    }
+}
+
+private fun Route.searchStudents() {
+    val studentsDao by inject<StudentsDao>()
+
+    get("/search") {
+        val parameters = call.request.queryParameters
+
+        val offset = parameters.getInt("offset")
+        val limit = parameters.getInt("limit")
+        val query = parameters.getOrThrow("query").lowercase()
+
+        val students = studentsDao.allStudents(null, null)
+            .filter { student -> student.fullName.lowercase().contains(query) }
+            .stream()
+            .skip((offset ?: 0).toLong())
+            .collect(Collectors.toList())
+            .let { list -> limit?.let { list.take(limit) } ?: list }
+
+        respondSuccess {
+            StudentsResponse(
+                count = students.size,
+                offset = offset ?: 0,
+                students = students
+            )
         }
     }
 }
