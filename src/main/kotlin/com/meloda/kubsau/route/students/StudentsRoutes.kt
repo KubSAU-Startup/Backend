@@ -62,7 +62,7 @@ private fun Route.getStudents() {
             studentsDao.allStudents(offset, limit)
         } else {
             studentsDao.allStudentsByIds(studentIds)
-        }
+        }.sortedBy(Student::id)
 
         if (!extended) {
             respondSuccess {
