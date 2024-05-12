@@ -10,15 +10,15 @@ interface StudentsDao : Dao<Student> {
     suspend fun allStudentsByGroupId(groupId: Int): List<Student>
     suspend fun allStudentsByGroupIds(groupIds: List<Int>): List<Student>
 
-    suspend fun allStudentsByFilters(
+    suspend fun allStudentsBySearch(
         offset: Int?,
         limit: Int?,
         groupId: Int?,
         gradeId: Int?,
-        statusId: Int?
+        statusId: Int?,
+        query: String?
     ): List<Student>
 
-    suspend fun allStudentsByQuery(offset: Int?, limit: Int?, query: String): List<Student>
     suspend fun singleStudent(studentId: Int): Student?
 
     suspend fun addNewStudent(

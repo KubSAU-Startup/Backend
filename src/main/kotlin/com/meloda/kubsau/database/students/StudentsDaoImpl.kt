@@ -61,14 +61,15 @@ class StudentsDaoImpl : StudentsDao {
             .map(::mapResultRow)
     }
 
-    override suspend fun allStudentsByFilters(
+    override suspend fun allStudentsBySearch(
         offset: Int?,
         limit: Int?,
         groupId: Int?,
         gradeId: Int?,
-        statusId: Int?
+        statusId: Int?,
+        query: String?
     ): List<Student> = dbQuery {
-        val query = Students
+        val dbQuery = Students
             .innerJoin(Groups, { Students.groupId }, { Groups.id })
             .innerJoin(Directivities, { Groups.directivityId }, { Directivities.id })
             .select(Students.columns)
@@ -78,32 +79,19 @@ class StudentsDaoImpl : StudentsDao {
                 }
             }
 
-        groupId?.let { query.andWhere { Students.groupId eq groupId } }
-        gradeId?.let { query.andWhere { Directivities.gradeId eq gradeId } }
-        statusId?.let { query.andWhere { Students.statusId eq statusId } }
+        groupId?.let { dbQuery.andWhere { Students.groupId eq groupId } }
+        gradeId?.let { dbQuery.andWhere { Directivities.gradeId eq gradeId } }
+        statusId?.let { dbQuery.andWhere { Students.statusId eq statusId } }
 
-        query
-            .orderBy(
-                column = Students.id,
-                order = SortOrder.DESC
-            )
-            .map(::mapResultRow)
-    }
-
-    override suspend fun allStudentsByQuery(offset: Int?, limit: Int?, query: String): List<Student> = dbQuery {
-        val q = "%$query%"
-        Students
-            .selectAll()
-            .where {
+        query?.let { q -> "%$q%" }?.let { q ->
+            dbQuery.andWhere {
                 (Students.lastName.lowerCase() like q) or
                         (Students.firstName.lowerCase() like q) or
                         (Students.middleName.lowerCase() like q)
             }
-            .apply {
-                if (limit != null) {
-                    limit(limit, ((offset ?: 0).toLong()))
-                }
-            }
+        }
+
+        dbQuery
             .orderBy(
                 column = Students.id,
                 order = SortOrder.DESC

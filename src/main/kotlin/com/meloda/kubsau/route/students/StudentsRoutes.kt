@@ -20,7 +20,6 @@ fun Route.studentsRoutes() {
         route("/students") {
             getStudents()
             getStudentById()
-            getFilteredStudents()
             searchStudents()
             addStudent()
             editStudent()
@@ -118,36 +117,6 @@ private fun Route.getStudentById() {
     }
 }
 
-private fun Route.getFilteredStudents() {
-    val studentsDao by inject<StudentsDao>()
-
-    get("/filtered") {
-        val parameters = call.request.queryParameters
-
-        val offset = parameters.getInt("offset")
-        val limit = parameters.getInt("limit")
-        val groupId = parameters.getInt("groupId")
-        val gradeId = parameters.getInt("gradeId")
-        val statusId = parameters.getInt("statusId")
-
-        val filteredStudents = studentsDao.allStudentsByFilters(
-            offset = offset,
-            limit = limit,
-            groupId = groupId,
-            gradeId = gradeId,
-            statusId = statusId
-        )
-
-        respondSuccess {
-            StudentsResponse(
-                count = filteredStudents.size,
-                offset = offset ?: 0,
-                students = filteredStudents
-            )
-        }
-    }
-}
-
 private fun Route.searchStudents() {
     val studentsDao by inject<StudentsDao>()
 
@@ -156,16 +125,21 @@ private fun Route.searchStudents() {
 
         val offset = parameters.getInt("offset")
         val limit = parameters.getInt("limit")
-        val query = parameters
-            .getStringOrThrow("query")
-            .lowercase()
-            .trim()
-            .ifEmpty { null }
-            ?: throw ValidationException("query must not be empty or blank")
+        val groupId = parameters.getInt("groupId")
+        val gradeId = parameters.getInt("gradeId")
+        val statusId = parameters.getInt("statusId")
+        val query = parameters.getString("query")
+            ?.lowercase()
+            ?.trim()
+            ?.ifEmpty { null }
+            ?.ifBlank { null }
 
-        val students = studentsDao.allStudentsByQuery(
+        val students = studentsDao.allStudentsBySearch(
             offset = offset,
             limit = limit,
+            groupId = groupId,
+            gradeId = gradeId,
+            statusId = statusId,
             query = query
         )
 
