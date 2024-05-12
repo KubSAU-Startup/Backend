@@ -23,12 +23,12 @@ fun Parameters.getString(
 ): String = getString(key, trim) ?: defaultValue
 
 fun Parameters.getString(key: String, trim: Boolean = true): String? = try {
-    getOrThrow(key, trim)
+    getStringOrThrow(key, trim)
 } catch (ignored: ValidationException) {
     null
 }
 
-fun Parameters.getOrThrow(key: String, trim: Boolean = true): String = getOrThrow(key) { if (trim) it.trim() else it }
+fun Parameters.getStringOrThrow(key: String, trim: Boolean = true): String = getStringOrThrow(key) { if (trim) it.trim() else it }
 
 fun Parameters.getBoolean(key: String, defaultValue: Boolean): Boolean = getBoolean(key) ?: defaultValue
 
@@ -39,7 +39,7 @@ fun Parameters.getBoolean(key: String): Boolean? = try {
 }
 
 fun Parameters.getBooleanOrThrow(key: String): Boolean =
-    getOrThrow(
+    getStringOrThrow(
         key = key,
         mapper = { it.toBooleanStrictOrNull() ?: throw ValidationException("$key is invalid") }
     )
@@ -52,16 +52,16 @@ fun Parameters.getInt(key: String): Int? = try {
     null
 }
 
-fun Parameters.getIntOrThrow(key: String): Int = getOrThrow(
+fun Parameters.getIntOrThrow(key: String): Int = getStringOrThrow(
     key = key,
     mapper = { it.toIntOrNull() ?: throw ValidationException("$key is invalid") }
 )
 
-fun <T> Parameters.getOrThrow(key: String, mapper: (String) -> T): T = getOrThrow(
+fun <T> Parameters.getStringOrThrow(key: String, mapper: (String) -> T): T = getStringOrThrow(
     key = key,
     mapper = mapper,
     message = { "$key is empty" }
 )
 
-fun <T> Parameters.getOrThrow(key: String, mapper: (String) -> T, message: () -> String): T =
+fun <T> Parameters.getStringOrThrow(key: String, mapper: (String) -> T, message: () -> String): T =
     mapper(this[key] ?: throw ValidationException(message()))

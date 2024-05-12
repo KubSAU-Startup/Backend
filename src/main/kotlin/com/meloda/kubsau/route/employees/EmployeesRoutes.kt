@@ -3,7 +3,7 @@ package com.meloda.kubsau.route.employees
 import com.meloda.kubsau.api.respondSuccess
 import com.meloda.kubsau.common.getInt
 import com.meloda.kubsau.common.getIntOrThrow
-import com.meloda.kubsau.common.getOrThrow
+import com.meloda.kubsau.common.getStringOrThrow
 import com.meloda.kubsau.common.getString
 import com.meloda.kubsau.database.employees.EmployeesDao
 import com.meloda.kubsau.errors.ContentNotFoundException
@@ -65,10 +65,10 @@ private fun Route.addEmployee() {
     post {
         val parameters = call.receiveParameters()
 
-        val lastName = parameters.getOrThrow("lastName")
-        val firstName = parameters.getOrThrow("firstName")
-        val middleName = parameters.getOrThrow("middleName")
-        val email = parameters.getOrThrow("email")
+        val lastName = parameters.getStringOrThrow("lastName")
+        val firstName = parameters.getStringOrThrow("firstName")
+        val middleName = parameters.getStringOrThrow("middleName")
+        val email = parameters.getStringOrThrow("email")
         val type = parameters.getIntOrThrow("type")
 
         val created = employeesDao.addNewEmployee(
@@ -138,7 +138,7 @@ private fun Route.deleteEmployeesByIds() {
     val employeesDao by inject<EmployeesDao>()
 
     delete {
-        val employeeIds = call.request.queryParameters.getOrThrow("employeeIds")
+        val employeeIds = call.request.queryParameters.getStringOrThrow("employeeIds")
             .split(",")
             .map(String::trim)
             .mapNotNull(String::toIntOrNull)

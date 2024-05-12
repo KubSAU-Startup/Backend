@@ -3,7 +3,7 @@ package com.meloda.kubsau.route.disciplines
 import com.meloda.kubsau.api.respondSuccess
 import com.meloda.kubsau.common.getInt
 import com.meloda.kubsau.common.getIntOrThrow
-import com.meloda.kubsau.common.getOrThrow
+import com.meloda.kubsau.common.getStringOrThrow
 import com.meloda.kubsau.common.getString
 import com.meloda.kubsau.database.disciplines.DisciplinesDao
 import com.meloda.kubsau.errors.ContentNotFoundException
@@ -65,7 +65,7 @@ private fun Route.addDiscipline() {
     post {
         val parameters = call.receiveParameters()
 
-        val title = parameters.getOrThrow("title")
+        val title = parameters.getStringOrThrow("title")
         val departmentId = parameters.getIntOrThrow("departmentId")
 
         val created = disciplinesDao.addNewDiscipline(
@@ -126,7 +126,7 @@ private fun Route.deleteDisciplinesByIds() {
     val disciplinesDao by inject<DisciplinesDao>()
 
     delete {
-        val disciplineIds = call.request.queryParameters.getOrThrow("disciplineIds")
+        val disciplineIds = call.request.queryParameters.getStringOrThrow("disciplineIds")
             .split(",")
             .map(String::trim)
             .mapNotNull(String::toIntOrNull)

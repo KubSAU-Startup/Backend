@@ -2,7 +2,7 @@ package com.meloda.kubsau.route.qr
 
 import com.meloda.kubsau.api.respondSuccess
 import com.meloda.kubsau.common.getIntOrThrow
-import com.meloda.kubsau.common.getOrThrow
+import com.meloda.kubsau.common.getStringOrThrow
 import com.meloda.kubsau.database.students.StudentsDao
 import com.meloda.kubsau.errors.ValidationException
 import com.meloda.kubsau.model.Student
@@ -30,7 +30,7 @@ private fun Route.students() {
 
     get("/groups/students") {
         val params = call.request.queryParameters
-        val groupIds = params.getOrThrow("groupIds")
+        val groupIds = params.getStringOrThrow("groupIds")
             .split(",")
             .map(String::trim)
             .mapNotNull(String::toIntOrNull)

@@ -114,9 +114,9 @@ private fun Route.addHead() {
     post {
         val parameters = call.receiveParameters()
 
-        val code = parameters.getOrThrow("code")
-        val abbreviation = parameters.getOrThrow("abbreviation")
-        val title = parameters.getOrThrow("title")
+        val code = parameters.getStringOrThrow("code")
+        val abbreviation = parameters.getStringOrThrow("abbreviation")
+        val title = parameters.getStringOrThrow("title")
         val facultyId = parameters.getIntOrThrow("facultyId")
 
         val created = headsDao.addNewHead(
@@ -183,7 +183,7 @@ private fun Route.deleteHeads() {
     val headsDao by inject<HeadsDao>()
 
     delete {
-        val headIds = call.request.queryParameters.getOrThrow("headIds")
+        val headIds = call.request.queryParameters.getStringOrThrow("headIds")
             .split(",")
             .mapNotNull(String::toIntOrNull)
 

@@ -126,7 +126,7 @@ private fun Route.searchStudents() {
         val offset = parameters.getInt("offset")
         val limit = parameters.getInt("limit")
         val query = parameters
-            .getOrThrow("query")
+            .getStringOrThrow("query")
             .lowercase()
             .trim()
             .ifEmpty { null }
@@ -154,8 +154,8 @@ private fun Route.addStudent() {
     post {
         val parameters = call.receiveParameters()
 
-        val lastName = parameters.getOrThrow("lastName")
-        val firstName = parameters.getOrThrow("firstName")
+        val lastName = parameters.getStringOrThrow("lastName")
+        val firstName = parameters.getStringOrThrow("firstName")
         val middleName = parameters.getString("middleName")
         val groupId = parameters.getIntOrThrow("groupId")
         val statusId = parameters.getIntOrThrow("statusId")
@@ -227,7 +227,7 @@ private fun Route.deleteStudents() {
     val studentsDao by inject<StudentsDao>()
 
     delete {
-        val studentIds = call.request.queryParameters.getOrThrow("studentIds")
+        val studentIds = call.request.queryParameters.getStringOrThrow("studentIds")
             .split(",")
             .mapNotNull(String::toIntOrNull)
 

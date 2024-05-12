@@ -199,7 +199,7 @@ private fun Route.getDisciplines() {
     get("/disciplines") {
         val parameters = call.request.queryParameters
 
-        val programIds = parameters.getOrThrow("programIds")
+        val programIds = parameters.getStringOrThrow("programIds")
             .split(",")
             .mapNotNull(String::toIntOrNull)
 
@@ -321,7 +321,7 @@ private fun Route.searchPrograms() {
         val offset = parameters.getInt("offset")
         val limit = parameters.getInt("limit")
         val query = parameters
-            .getOrThrow("query")
+            .getStringOrThrow("query")
             .lowercase()
             .trim()
             .ifEmpty { null }
@@ -394,7 +394,7 @@ private fun Route.addDisciplinesToProgram() {
         val parameters = call.receiveParameters()
 
         val disciplineIds =
-            parameters.getOrThrow("disciplineIds")
+            parameters.getStringOrThrow("disciplineIds")
                 .split(",")
                 .mapNotNull(String::toIntOrNull)
 
@@ -403,7 +403,7 @@ private fun Route.addDisciplinesToProgram() {
         }
 
         val workTypeIds =
-            parameters.getOrThrow("workTypeIds")
+            parameters.getStringOrThrow("workTypeIds")
                 .split(",")
                 .mapNotNull(String::toIntOrNull)
 
@@ -467,7 +467,7 @@ private fun Route.editProgramDisciplines() {
         val parameters = call.receiveParameters()
 
         val disciplineIds =
-            parameters.getOrThrow("disciplineIds")
+            parameters.getStringOrThrow("disciplineIds")
                 .split(",")
                 .mapNotNull(String::toIntOrNull)
 
@@ -476,7 +476,7 @@ private fun Route.editProgramDisciplines() {
         }
 
         val workTypeIds =
-            parameters.getOrThrow("workTypeIds")
+            parameters.getStringOrThrow("workTypeIds")
                 .split(",")
                 .mapNotNull(String::toIntOrNull)
 
@@ -517,7 +517,7 @@ private fun Route.deleteProgramsByIds() {
     val programsDao by inject<ProgramsDao>()
 
     delete {
-        val programIds = call.request.queryParameters.getOrThrow("programIds")
+        val programIds = call.request.queryParameters.getStringOrThrow("programIds")
             .split(",")
             .map(String::trim)
             .mapNotNull(String::toIntOrNull)

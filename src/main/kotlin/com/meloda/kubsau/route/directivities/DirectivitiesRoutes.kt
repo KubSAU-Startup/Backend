@@ -146,7 +146,7 @@ private fun Route.addDirectivity() {
     post {
         val parameters = call.receiveParameters()
 
-        val title = parameters.getOrThrow("title")
+        val title = parameters.getStringOrThrow("title")
         val headId = parameters.getIntOrThrow("headId")
         val gradeId = parameters.getIntOrThrow("gradeId")
 
@@ -211,7 +211,7 @@ private fun Route.deleteDirectivities() {
     val directivitiesDao by inject<DirectivitiesDao>()
 
     delete {
-        val directivityIds = call.request.queryParameters.getOrThrow("directivityIds")
+        val directivityIds = call.request.queryParameters.getStringOrThrow("directivityIds")
             .split(",")
             .mapNotNull(String::toIntOrNull)
 

@@ -62,7 +62,7 @@ private fun Route.addWorkType() {
     post {
         val parameters = call.receiveParameters()
 
-        val title = parameters.getOrThrow("title")
+        val title = parameters.getStringOrThrow("title")
         val needTitle = parameters.getBooleanOrThrow("needTitle")
 
         val created = workTypesDao.addNewWorkType(
@@ -123,7 +123,7 @@ private fun Route.deleteWorkTypesByIds() {
     val workTypesDao by inject<WorkTypesDao>()
 
     delete {
-        val workTypeIds = call.request.queryParameters.getOrThrow("workTypeIds")
+        val workTypeIds = call.request.queryParameters.getStringOrThrow("workTypeIds")
             .split(",")
             .map(String::trim)
             .mapNotNull(String::toIntOrNull)

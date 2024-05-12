@@ -245,7 +245,7 @@ private fun Route.deleteWorksByIds() {
     val worksDao by inject<WorksDao>()
 
     delete {
-        val workIds = call.request.queryParameters.getOrThrow("workIds")
+        val workIds = call.request.queryParameters.getStringOrThrow("workIds")
             .split(",")
             .map(String::trim)
             .mapNotNull(String::toIntOrNull)
@@ -386,7 +386,7 @@ private fun Route.searchLatestWorks() {
         val offset = parameters.getInt("offset")
         val limit = parameters.getInt("limit")
         val query = parameters
-            .getOrThrow("query")
+            .getStringOrThrow("query")
             .lowercase()
             .trim()
             .ifEmpty { null }

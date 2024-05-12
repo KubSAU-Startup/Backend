@@ -7,6 +7,7 @@ import com.meloda.kubsau.route.department.departmentsRoutes
 import com.meloda.kubsau.route.directivities.directivitiesRoutes
 import com.meloda.kubsau.route.disciplines.disciplinesRoutes
 import com.meloda.kubsau.route.employees.employeesRoutes
+import com.meloda.kubsau.route.grades.gradesRoutes
 import com.meloda.kubsau.route.groups.groupsRoutes
 import com.meloda.kubsau.route.heads.majorsRoutes
 import com.meloda.kubsau.route.programs.programsRoutes
@@ -49,5 +50,6 @@ fun Application.routing() {
         employeesRoutes()
         directivitiesRoutes()
         majorsRoutes()
+        gradesRoutes()
     }
 }

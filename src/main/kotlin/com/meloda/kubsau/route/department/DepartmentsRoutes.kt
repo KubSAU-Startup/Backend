@@ -2,7 +2,7 @@ package com.meloda.kubsau.route.department
 
 import com.meloda.kubsau.api.respondSuccess
 import com.meloda.kubsau.common.getIntOrThrow
-import com.meloda.kubsau.common.getOrThrow
+import com.meloda.kubsau.common.getStringOrThrow
 import com.meloda.kubsau.database.departments.DepartmentsDao
 import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.UnknownException
@@ -61,8 +61,8 @@ private fun Route.addDepartment() {
 
     post {
         val parameters = call.receiveParameters()
-        val title = parameters.getOrThrow("title")
-        val phone = parameters.getOrThrow("phone")
+        val title = parameters.getStringOrThrow("title")
+        val phone = parameters.getStringOrThrow("phone")
 
         val created = departmentsDao.addNewDepartment(title, phone)
 
