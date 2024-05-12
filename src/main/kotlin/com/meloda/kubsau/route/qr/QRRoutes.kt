@@ -1,10 +1,9 @@
 package com.meloda.kubsau.route.qr
 
 import com.meloda.kubsau.api.respondSuccess
+import com.meloda.kubsau.common.getIntListOrThrow
 import com.meloda.kubsau.common.getIntOrThrow
-import com.meloda.kubsau.common.getStringOrThrow
 import com.meloda.kubsau.database.students.StudentsDao
-import com.meloda.kubsau.errors.ValidationException
 import com.meloda.kubsau.model.Student
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -30,14 +29,10 @@ private fun Route.students() {
 
     get("/groups/students") {
         val params = call.request.queryParameters
-        val groupIds = params.getStringOrThrow("groupIds")
-            .split(",")
-            .map(String::trim)
-            .mapNotNull(String::toIntOrNull)
-
-        if (groupIds.isEmpty()) {
-            throw ValidationException("groupId is invalid")
-        }
+        val groupIds = params.getIntListOrThrow(
+            key = "groupIds",
+            requiredNotEmpty = true
+        )
 
         val fullStudents = studentsDao.allStudentsByGroupIds(groupIds)
 

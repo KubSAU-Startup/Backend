@@ -22,13 +22,31 @@ fun Parameters.getString(
     trim: Boolean = true
 ): String = getString(key, trim) ?: defaultValue
 
-fun Parameters.getString(key: String, trim: Boolean = true): String? = try {
-    getStringOrThrow(key, trim)
+fun Parameters.getString(
+    key: String,
+    trim: Boolean = true
+): String? = try {
+    getStringOrThrow(
+        key = key,
+        trim = trim
+    )
 } catch (ignored: ValidationException) {
     null
 }
 
-fun Parameters.getStringOrThrow(key: String, trim: Boolean = true): String = getStringOrThrow(key) { if (trim) it.trim() else it }
+fun Parameters.getStringOrThrow(
+    key: String,
+    trim: Boolean = true,
+    requiredNotEmpty: Boolean = false
+): String = getOrThrow(key) {
+    val string = if (trim) it.trim() else it
+
+    if (requiredNotEmpty && (string.isEmpty() || string.isBlank())) {
+        throw ValidationException.EmptyOrBlankException(key)
+    }
+
+    string
+}
 
 fun Parameters.getBoolean(key: String, defaultValue: Boolean): Boolean = getBoolean(key) ?: defaultValue
 
@@ -38,30 +56,107 @@ fun Parameters.getBoolean(key: String): Boolean? = try {
     null
 }
 
-fun Parameters.getBooleanOrThrow(key: String): Boolean =
-    getStringOrThrow(
-        key = key,
-        mapper = { it.toBooleanStrictOrNull() ?: throw ValidationException("$key is invalid") }
-    )
-
-fun Parameters.getInt(key: String, defaultValue: Int): Int = getInt(key) ?: defaultValue
-
-fun Parameters.getInt(key: String): Int? = try {
-    getIntOrThrow(key)
-} catch (ignored: ValidationException) {
-    null
-}
-
-fun Parameters.getIntOrThrow(key: String): Int = getStringOrThrow(
+fun Parameters.getBooleanOrThrow(key: String): Boolean = getOrThrow(
     key = key,
-    mapper = { it.toIntOrNull() ?: throw ValidationException("$key is invalid") }
+    mapper = { it.toBooleanStrictOrNull() ?: throw ValidationException.InvalidValueException(key) }
 )
 
-fun <T> Parameters.getStringOrThrow(key: String, mapper: (String) -> T): T = getStringOrThrow(
+fun Parameters.getIntList(
+    key: String,
+    defaultValue: List<Int>,
+    maxSize: Int? = null,
+    requiredNotEmpty: Boolean = false
+): List<Int> = getIntList(
+    key = key,
+    maxSize = maxSize,
+    requiredNotEmpty = requiredNotEmpty
+) ?: defaultValue
+
+fun Parameters.getIntList(
+    key: String,
+    maxSize: Int? = null,
+    requiredNotEmpty: Boolean = false
+): List<Int>? = runCatching {
+    getIntListOrThrow(
+        key = key,
+        requiredNotEmpty = requiredNotEmpty
+    )
+}.fold(
+    onSuccess = { list ->
+        if (requiredNotEmpty && list.isEmpty()) {
+            throw ValidationException.EmptyItemException(key)
+        }
+
+        maxSize?.let {
+            if (list.size > maxSize) {
+                throw ValidationException.InvalidSizeException(key, maxSize, list.size)
+            }
+        }
+
+        list
+    },
+    onFailure = { exception ->
+        if (exception is ValidationException.InvalidValueException) {
+            throw exception
+        }
+
+        null
+    }
+)
+
+fun Parameters.getIntListOrThrow(key: String, requiredNotEmpty: Boolean = false): List<Int> = getOrThrow(
+    key = key,
+    mapper = { value ->
+        if (value.trim().isEmpty()) {
+            if (requiredNotEmpty) {
+                throw ValidationException.EmptyItemException(key)
+            }
+
+            emptyList()
+        } else {
+            val list = value.split(",").map(String::trim).mapNotNull(String::toIntOrNull)
+
+            if (list.isEmpty()) {
+                throw ValidationException.InvalidValueException(key)
+            }
+
+            list
+        }
+    }
+)
+
+fun Parameters.getInt(
+    key: String,
+    defaultValue: Int,
+    desiredRange: IntRange? = null
+): Int = getInt(key, desiredRange) ?: defaultValue
+
+fun Parameters.getInt(key: String, range: IntRange? = null): Int? =
+    runCatching {
+        getIntOrThrow(key)
+    }.fold(
+        onSuccess = { number ->
+            range?.let {
+                if (number !in range) {
+                    throw ValidationException.InvalidRangeException(key, range, number)
+                }
+            }
+
+            number
+        },
+        onFailure = { null }
+    )
+
+fun Parameters.getIntOrThrow(key: String): Int = getOrThrow(
+    key = key,
+    mapper = { it.toIntOrNull() ?: throw ValidationException.InvalidValueException(key) }
+)
+
+fun <T> Parameters.getOrThrow(key: String, mapper: (String) -> T): T = getOrThrow(
     key = key,
     mapper = mapper,
     message = { "$key is empty" }
 )
 
-fun <T> Parameters.getStringOrThrow(key: String, mapper: (String) -> T, message: () -> String): T =
-    mapper(this[key] ?: throw ValidationException(message()))
+fun <T> Parameters.getOrThrow(key: String, mapper: (String) -> T, message: () -> String): T =
+    mapper(this[key] ?: throw ValidationException.InvalidValueException(message()))

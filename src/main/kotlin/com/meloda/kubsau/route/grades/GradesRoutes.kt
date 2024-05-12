@@ -1,14 +1,10 @@
 package com.meloda.kubsau.route.grades
 
 import com.meloda.kubsau.api.respondSuccess
-import com.meloda.kubsau.common.getInt
-import com.meloda.kubsau.common.getIntOrThrow
-import com.meloda.kubsau.common.getString
-import com.meloda.kubsau.common.getStringOrThrow
+import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.grades.GradesDao
 import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.UnknownException
-import com.meloda.kubsau.errors.ValidationException
 import com.meloda.kubsau.model.Grade
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -41,16 +37,17 @@ private fun Route.getGrades() {
     get {
         val parameters = call.request.queryParameters
 
-        val gradeIds = parameters.getString("gradeIds")
-            ?.split(",")
-            ?.mapNotNull(String::toIntOrNull)
-            ?: emptyList()
+        val gradeIds = parameters.getIntList(
+            key = "gradeIds",
+            defaultValue = emptyList(),
+            maxSize = MAX_ITEMS_SIZE
+        )
 
         val offset = parameters.getInt("offset")
-        val limit = parameters.getInt("limit")
+        val limit = parameters.getInt(key = "limit", range = LimitRange)
 
         val grades = if (gradeIds.isEmpty()) {
-            gradesDao.allGrades(offset, limit)
+            gradesDao.allGrades(offset, limit ?: MAX_ITEMS_SIZE)
         } else {
             gradesDao.allGradesByIds(gradeIds)
         }.sortedBy(Grade::id)
@@ -132,13 +129,10 @@ private fun Route.deleteGradesByIds() {
     val gradesDao by inject<GradesDao>()
 
     delete {
-        val gradeIds = call.request.queryParameters.getStringOrThrow("gradeIds")
-            .split(",")
-            .mapNotNull(String::toIntOrNull)
-
-        if (gradeIds.isEmpty()) {
-            throw ValidationException("gradeIds is invalid")
-        }
+        val gradeIds = call.request.queryParameters.getIntListOrThrow(
+            key = "gradeIds",
+            requiredNotEmpty = true
+        )
 
         val currentGrades = gradesDao.allGradesByIds(gradeIds)
         if (currentGrades.isEmpty()) {

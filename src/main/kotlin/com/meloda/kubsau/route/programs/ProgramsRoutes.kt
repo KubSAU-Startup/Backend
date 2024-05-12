@@ -73,27 +73,28 @@ private fun Route.getPrograms() {
     get {
         val parameters = call.request.queryParameters
 
-        val programIds = parameters.getString("programIds")
-            ?.split(",")
-            ?.mapNotNull(String::toIntOrNull)
-            ?: emptyList()
+        val programIds = parameters.getIntList(
+            key = "programIds",
+            defaultValue = emptyList(),
+            maxSize = MAX_ITEMS_SIZE
+        )
 
         val offset = parameters.getInt("offset")
-        val limit = parameters.getInt("limit")
+        val limit = parameters.getInt(key = "limit", range = LimitRange)
         val extended = parameters.getBoolean("extended", false)
 
         val disciplineIds = hashMapOf<Int, List<Int>>()
 
         programIds
             .ifEmpty {
-                programsDao.allPrograms(offset, limit).map(Program::id)
+                programsDao.allPrograms(offset, limit ?: MAX_ITEMS_SIZE).map(Program::id)
             }.forEach { programId ->
                 disciplineIds[programId] = programsDisciplinesDao.allDisciplinesByProgramId(programId)
                     .map(Discipline::id)
             }
 
         val programs = if (programIds.isEmpty()) {
-            programsDao.allPrograms(offset, limit)
+            programsDao.allPrograms(offset, limit ?: MAX_ITEMS_SIZE)
         } else {
             programsDao.allProgramsByIds(programIds)
         }.map { program ->
@@ -199,13 +200,10 @@ private fun Route.getDisciplines() {
     get("/disciplines") {
         val parameters = call.request.queryParameters
 
-        val programIds = parameters.getStringOrThrow("programIds")
-            .split(",")
-            .mapNotNull(String::toIntOrNull)
-
-        if (programIds.isEmpty()) {
-            throw ValidationException("programIds is invalid")
-        }
+        val programIds = parameters.getIntListOrThrow(
+            key = "programIds",
+            requiredNotEmpty = true
+        )
 
         val extended = parameters.getBoolean("extended", false)
 
@@ -236,7 +234,7 @@ private fun Route.getFiltered() {
         val parameters = call.request.queryParameters
 
         val offset = parameters.getInt("offset")
-        val limit = parameters.getInt("limit")
+        val limit = parameters.getInt(key = "limit", range = LimitRange)
         val extended = parameters.getBoolean("extended", false)
         val semester = parameters.getInt("semester")
         val directivityId = parameters.getInt("directivityId")
@@ -319,13 +317,12 @@ private fun Route.searchPrograms() {
         val parameters = call.request.queryParameters
 
         val offset = parameters.getInt("offset")
-        val limit = parameters.getInt("limit")
-        val query = parameters
-            .getStringOrThrow("query")
-            .lowercase()
-            .trim()
-            .ifEmpty { null }
-            ?: throw ValidationException("query must not be empty or blank")
+        val limit = parameters.getInt(key = "limit", range = LimitRange)
+        val query = parameters.getStringOrThrow(
+            key = "query",
+            trim = true,
+            requiredNotEmpty = true
+        ).lowercase()
 
         val allPrograms = programsDao.allProgramsByQuery(
             offset = offset,
@@ -393,26 +390,20 @@ private fun Route.addDisciplinesToProgram() {
 
         val parameters = call.receiveParameters()
 
-        val disciplineIds =
-            parameters.getStringOrThrow("disciplineIds")
-                .split(",")
-                .mapNotNull(String::toIntOrNull)
+        val disciplineIds = parameters.getIntListOrThrow(
+            key = "disciplineIds",
+            requiredNotEmpty = true
+        )
 
-        if (disciplineIds.isEmpty()) {
-            throw ValidationException("disciplineIds is invalid")
-        }
-
-        val workTypeIds =
-            parameters.getStringOrThrow("workTypeIds")
-                .split(",")
-                .mapNotNull(String::toIntOrNull)
-
-        if (workTypeIds.isEmpty()) {
-            throw ValidationException("workTypeIds is invalid")
-        }
+        val workTypeIds = parameters.getIntListOrThrow(
+            key = "workTypeIds",
+            requiredNotEmpty = true
+        )
 
         if (disciplineIds.size != workTypeIds.size) {
-            throw ValidationException("different count of disciplines (${disciplineIds.size}) and work types (${workTypeIds.size}")
+            throw ValidationException.InvalidException(
+                message = "different count of disciplines (${disciplineIds.size}) and work types (${workTypeIds.size}"
+            )
         }
 
         disciplineIds.forEachIndexed { index, disciplineId ->
@@ -434,7 +425,7 @@ private fun Route.editProgram() {
     val programsDao by inject<ProgramsDao>()
 
     patch("{id}") {
-        val programId = call.parameters["id"]?.toIntOrNull() ?: throw ValidationException("id is empty")
+        val programId = call.parameters.getIntOrThrow("id")
         val currentProgram = programsDao.singleProgram(programId) ?: throw ContentNotFoundException
 
         val parameters = call.receiveParameters()
@@ -466,26 +457,20 @@ private fun Route.editProgramDisciplines() {
 
         val parameters = call.receiveParameters()
 
-        val disciplineIds =
-            parameters.getStringOrThrow("disciplineIds")
-                .split(",")
-                .mapNotNull(String::toIntOrNull)
+        val disciplineIds = parameters.getIntListOrThrow(
+            key = "disciplineIds",
+            requiredNotEmpty = true
+        )
 
-        if (disciplineIds.isEmpty()) {
-            throw ValidationException("disciplineIds is invalid")
-        }
-
-        val workTypeIds =
-            parameters.getStringOrThrow("workTypeIds")
-                .split(",")
-                .mapNotNull(String::toIntOrNull)
-
-        if (workTypeIds.isEmpty()) {
-            throw ValidationException("workTypeIds is invalid")
-        }
+        val workTypeIds = parameters.getIntListOrThrow(
+            key = "workTypeIds",
+            requiredNotEmpty = true
+        )
 
         if (disciplineIds.size != workTypeIds.size) {
-            throw ValidationException("disciplines size (${disciplineIds.size}) is different from work types size (${workTypeIds.size})")
+            throw ValidationException.InvalidException(
+                message = "disciplines size (${disciplineIds.size}) is different from work types size (${workTypeIds.size})"
+            )
         }
 
         programsDisciplinesDao.deleteReferencesByProgramId(program.id)
@@ -517,14 +502,10 @@ private fun Route.deleteProgramsByIds() {
     val programsDao by inject<ProgramsDao>()
 
     delete {
-        val programIds = call.request.queryParameters.getStringOrThrow("programIds")
-            .split(",")
-            .map(String::trim)
-            .mapNotNull(String::toIntOrNull)
-
-        if (programIds.isEmpty()) {
-            throw ValidationException("programIds is invalid")
-        }
+        val programIds = call.request.queryParameters.getIntListOrThrow(
+            key = "programIds",
+            requiredNotEmpty = true
+        )
 
         val currentPrograms = programsDao.allProgramsByIds(programIds)
         if (currentPrograms.isEmpty()) {

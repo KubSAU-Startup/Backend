@@ -16,5 +16,26 @@ object Errors {
 data object UnknownException : Throwable()
 data object NoAccessTokenException : Throwable()
 data object SessionExpiredException : Throwable()
-data class ValidationException(override val message: String) : Throwable()
+sealed class ValidationException(override val message: String) : Throwable() {
+    data class InvalidException(override val message: String) : ValidationException(message)
+    data class InvalidValueException(val key: String) : ValidationException("$key is invalid")
+    data class EmptyItemException(val key: String) : ValidationException("$key is invalid. Must not be empty")
+
+    data class EmptyOrBlankException(
+        val key: String
+    ) : ValidationException("$key is invalid. Must not be empty or blank")
+
+    data class InvalidRangeException(
+        val key: String,
+        val range: IntRange,
+        val number: Int
+    ) : ValidationException("$key is invalid. Required range: $range, current value: $number")
+
+    data class InvalidSizeException(
+        val key: String,
+        val maxSize: Int,
+        val actualSize: Int
+    ) : ValidationException("$key is invalid. Max size: $maxSize, actual size: $actualSize")
+}
+
 data object ContentNotFoundException : Throwable()

@@ -1,14 +1,10 @@
 package com.meloda.kubsau.route.employees
 
 import com.meloda.kubsau.api.respondSuccess
-import com.meloda.kubsau.common.getInt
-import com.meloda.kubsau.common.getIntOrThrow
-import com.meloda.kubsau.common.getStringOrThrow
-import com.meloda.kubsau.common.getString
+import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.employees.EmployeesDao
 import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.UnknownException
-import com.meloda.kubsau.errors.ValidationException
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -32,11 +28,10 @@ private fun Route.getEmployees() {
     val employeesDao by inject<EmployeesDao>()
 
     get {
-        val employeeIds = call.request.queryParameters["employeeIds"]
-            ?.split(",")
-            ?.map(String::trim)
-            ?.mapNotNull(String::toIntOrNull)
-            ?: emptyList()
+        val employeeIds = call.request.queryParameters.getIntList(
+            key = "employeeIds",
+            defaultValue = emptyList()
+        )
 
         val employees = if (employeeIds.isEmpty()) {
             employeesDao.allEmployees()
@@ -138,14 +133,10 @@ private fun Route.deleteEmployeesByIds() {
     val employeesDao by inject<EmployeesDao>()
 
     delete {
-        val employeeIds = call.request.queryParameters.getStringOrThrow("employeeIds")
-            .split(",")
-            .map(String::trim)
-            .mapNotNull(String::toIntOrNull)
-
-        if (employeeIds.isEmpty()) {
-            throw ValidationException("employeeIds is invalid")
-        }
+        val employeeIds = call.request.queryParameters.getIntListOrThrow(
+            key = "employeeIds",
+            requiredNotEmpty = true
+        )
 
         val currentEmployees = employeesDao.allEmployeesByIds(employeeIds)
         if (currentEmployees.isEmpty()) {

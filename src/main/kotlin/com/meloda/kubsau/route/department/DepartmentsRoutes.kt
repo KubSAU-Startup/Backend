@@ -1,12 +1,13 @@
 package com.meloda.kubsau.route.department
 
 import com.meloda.kubsau.api.respondSuccess
+import com.meloda.kubsau.common.getIntList
+import com.meloda.kubsau.common.getIntListOrThrow
 import com.meloda.kubsau.common.getIntOrThrow
 import com.meloda.kubsau.common.getStringOrThrow
 import com.meloda.kubsau.database.departments.DepartmentsDao
 import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.UnknownException
-import com.meloda.kubsau.errors.ValidationException
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -30,11 +31,10 @@ private fun Route.getAllDepartments() {
     val departmentsDao by inject<DepartmentsDao>()
 
     get {
-        val departmentIds = call.request.queryParameters["departmentIds"]
-            ?.split(",")
-            ?.map(String::trim)
-            ?.mapNotNull(String::toIntOrNull)
-            ?: emptyList()
+        val departmentIds = call.request.queryParameters.getIntList(
+            key = "departmentIds",
+            defaultValue = emptyList()
+        )
 
         val departments = if (departmentIds.isEmpty()) {
             departmentsDao.allDepartments()
@@ -119,11 +119,10 @@ private fun Route.deleteDepartments() {
     val departmentsDao by inject<DepartmentsDao>()
 
     delete {
-        val departmentIds = call.request.queryParameters["departmentIds"]
-            ?.split(",")
-            ?.map(String::trim)
-            ?.mapNotNull(String::toIntOrNull)
-            ?: throw ValidationException("departmentIds is empty")
+        val departmentIds = call.request.queryParameters.getIntListOrThrow(
+            key = "departmentIds",
+            requiredNotEmpty = true
+        )
 
         val currentDepartments = departmentsDao.allDepartmentsByIds(departmentIds)
         if (currentDepartments.isEmpty()) {

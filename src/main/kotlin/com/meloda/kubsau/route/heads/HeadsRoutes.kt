@@ -6,7 +6,6 @@ import com.meloda.kubsau.database.faculties.FacultiesDao
 import com.meloda.kubsau.database.heads.HeadsDao
 import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.UnknownException
-import com.meloda.kubsau.errors.ValidationException
 import com.meloda.kubsau.model.Faculty
 import com.meloda.kubsau.model.Head
 import io.ktor.server.application.*
@@ -42,18 +41,18 @@ private fun Route.getHeads() {
     get {
         val parameters = call.request.queryParameters
 
-        val headIds = parameters.getString("headIds")
-            ?.split(",")
-            ?.map(String::trim)
-            ?.mapNotNull(String::toIntOrNull)
-            ?: emptyList()
+        val headIds = parameters.getIntList(
+            key = "headIds",
+            defaultValue = emptyList(),
+            maxSize = MAX_ITEMS_SIZE
+        )
 
         val offset = parameters.getInt("offset")
-        val limit = parameters.getInt("limit")
+        val limit = parameters.getInt(key = "limit", range = LimitRange)
         val extended = parameters.getBoolean("extended", false)
 
         val heads = if (headIds.isEmpty()) {
-            headsDao.allHeads(offset, limit)
+            headsDao.allHeads(offset, limit ?: MAX_ITEMS_SIZE)
         } else {
             headsDao.allHeadsByIds(headIds)
         }
@@ -183,13 +182,10 @@ private fun Route.deleteHeads() {
     val headsDao by inject<HeadsDao>()
 
     delete {
-        val headIds = call.request.queryParameters.getStringOrThrow("headIds")
-            .split(",")
-            .mapNotNull(String::toIntOrNull)
-
-        if (headIds.isEmpty()) {
-            throw ValidationException("headIds is invalid")
-        }
+        val headIds = call.request.queryParameters.getIntListOrThrow(
+            key = "headIds",
+            requiredNotEmpty = true
+        )
 
         val currentHeads = headsDao.allHeadsByIds(headIds)
         if (currentHeads.isEmpty()) {

@@ -1,14 +1,10 @@
 package com.meloda.kubsau.route.disciplines
 
 import com.meloda.kubsau.api.respondSuccess
-import com.meloda.kubsau.common.getInt
-import com.meloda.kubsau.common.getIntOrThrow
-import com.meloda.kubsau.common.getStringOrThrow
-import com.meloda.kubsau.common.getString
+import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.disciplines.DisciplinesDao
 import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.UnknownException
-import com.meloda.kubsau.errors.ValidationException
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -32,11 +28,10 @@ private fun Route.getDisciplines() {
     val disciplinesDao by inject<DisciplinesDao>()
 
     get {
-        val disciplineIds = call.request.queryParameters["disciplineIds"]
-            ?.split(",")
-            ?.map(String::trim)
-            ?.mapNotNull(String::toIntOrNull)
-            ?: emptyList()
+        val disciplineIds = call.request.queryParameters.getIntList(
+            key = "disciplineIds",
+            defaultValue = emptyList()
+        )
 
         val disciplines = if (disciplineIds.isEmpty()) {
             disciplinesDao.allDisciplines()
@@ -126,14 +121,10 @@ private fun Route.deleteDisciplinesByIds() {
     val disciplinesDao by inject<DisciplinesDao>()
 
     delete {
-        val disciplineIds = call.request.queryParameters.getStringOrThrow("disciplineIds")
-            .split(",")
-            .map(String::trim)
-            .mapNotNull(String::toIntOrNull)
-
-        if (disciplineIds.isEmpty()) {
-            throw ValidationException("disciplineIds is invalid")
-        }
+        val disciplineIds = call.request.queryParameters.getIntListOrThrow(
+            key = "disciplineIds",
+            requiredNotEmpty = true
+        )
 
         val currentDisciplines = disciplinesDao.allDisciplinesByIds(disciplineIds)
         if (currentDisciplines.isEmpty()) {

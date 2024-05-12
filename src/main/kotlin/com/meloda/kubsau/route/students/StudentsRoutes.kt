@@ -6,7 +6,6 @@ import com.meloda.kubsau.database.students.StudentsDao
 import com.meloda.kubsau.database.studentstatuses.StudentStatusesDao
 import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.UnknownException
-import com.meloda.kubsau.errors.ValidationException
 import com.meloda.kubsau.model.Student
 import com.meloda.kubsau.model.StudentStatus
 import io.ktor.server.application.*
@@ -49,17 +48,18 @@ private fun Route.getStudents() {
     get {
         val parameters = call.request.queryParameters
 
-        val studentIds = parameters.getString("studentIds")
-            ?.split(",")
-            ?.mapNotNull(String::toIntOrNull)
-            ?: emptyList()
+        val studentIds = parameters.getIntList(
+            key = "studentIds",
+            defaultValue = emptyList(),
+            maxSize = MAX_ITEMS_SIZE
+        )
 
         val offset = parameters.getInt("offset")
-        val limit = parameters.getInt("limit")
+        val limit = parameters.getInt("limit", range = LimitRange)
         val extended = parameters.getBoolean("extended", false)
 
         val students = if (studentIds.isEmpty()) {
-            studentsDao.allStudents(offset, limit)
+            studentsDao.allStudents(offset, limit ?: MAX_ITEMS_SIZE)
         } else {
             studentsDao.allStudentsByIds(studentIds)
         }
@@ -124,15 +124,11 @@ private fun Route.searchStudents() {
         val parameters = call.request.queryParameters
 
         val offset = parameters.getInt("offset")
-        val limit = parameters.getInt("limit")
+        val limit = parameters.getInt(key = "limit", range = LimitRange)
         val groupId = parameters.getInt("groupId")
         val gradeId = parameters.getInt("gradeId")
         val statusId = parameters.getInt("statusId")
-        val query = parameters.getString("query")
-            ?.lowercase()
-            ?.trim()
-            ?.ifEmpty { null }
-            ?.ifBlank { null }
+        val query = parameters.getString(key = "query", trim = true)?.lowercase()
 
         val students = studentsDao.allStudentsBySearch(
             offset = offset,
@@ -232,13 +228,10 @@ private fun Route.deleteStudents() {
     val studentsDao by inject<StudentsDao>()
 
     delete {
-        val studentIds = call.request.queryParameters.getStringOrThrow("studentIds")
-            .split(",")
-            .mapNotNull(String::toIntOrNull)
-
-        if (studentIds.isEmpty()) {
-            throw ValidationException("studentIds is invalid")
-        }
+        val studentIds = call.request.queryParameters.getIntListOrThrow(
+            key = "studentIds",
+            requiredNotEmpty = true
+        )
 
         val currentStudents = studentsDao.allStudentsByIds(studentIds)
         if (currentStudents.isEmpty()) {

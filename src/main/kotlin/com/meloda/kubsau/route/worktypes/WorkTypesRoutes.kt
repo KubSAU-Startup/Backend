@@ -5,7 +5,6 @@ import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.worktypes.WorkTypesDao
 import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.UnknownException
-import com.meloda.kubsau.errors.ValidationException
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -29,11 +28,10 @@ private fun Route.getWorkTypes() {
     val workTypesDao by inject<WorkTypesDao>()
 
     get {
-        val workTypeIds = call.request.queryParameters["workTypeIds"]
-            ?.split(",")
-            ?.map(String::trim)
-            ?.mapNotNull(String::toIntOrNull)
-            ?: emptyList()
+        val workTypeIds = call.request.queryParameters.getIntList(
+            key = "workTypeIds",
+            defaultValue = emptyList()
+        )
 
         val workTypes = if (workTypeIds.isEmpty()) {
             workTypesDao.allWorkTypes()
@@ -49,7 +47,7 @@ private fun Route.getWorkTypeById() {
     val workTypesDao by inject<WorkTypesDao>()
 
     get("{id}") {
-        val workTypeId = call.parameters["id"]?.toIntOrNull() ?: throw ValidationException("id is empty")
+        val workTypeId = call.parameters.getIntOrThrow("id")
         val workType = workTypesDao.singleWorkType(workTypeId) ?: throw ContentNotFoundException
 
         respondSuccess { workType }
@@ -123,14 +121,10 @@ private fun Route.deleteWorkTypesByIds() {
     val workTypesDao by inject<WorkTypesDao>()
 
     delete {
-        val workTypeIds = call.request.queryParameters.getStringOrThrow("workTypeIds")
-            .split(",")
-            .map(String::trim)
-            .mapNotNull(String::toIntOrNull)
-
-        if (workTypeIds.isEmpty()) {
-            throw ValidationException("workTypeIds is invalid")
-        }
+        val workTypeIds = call.request.queryParameters.getIntListOrThrow(
+            key = "workTypeIds",
+            requiredNotEmpty = true
+        )
 
         val currentWorkTypes = workTypesDao.allWorkTypesByIds(workTypeIds)
         if (currentWorkTypes.isEmpty()) {

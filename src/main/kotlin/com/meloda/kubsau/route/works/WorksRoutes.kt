@@ -11,7 +11,6 @@ import com.meloda.kubsau.database.works.WorksDao
 import com.meloda.kubsau.database.worktypes.WorkTypesDao
 import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.UnknownException
-import com.meloda.kubsau.errors.ValidationException
 import com.meloda.kubsau.model.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -58,17 +57,18 @@ private fun Route.getWorks() {
     get {
         val parameters = call.request.queryParameters
 
-        val workIds = parameters.getString("workIds")
-            ?.split(",")
-            ?.mapNotNull(String::toIntOrNull)
-            ?: emptyList()
+        val workIds = parameters.getIntList(
+            key = "workIds",
+            defaultValue = emptyList(),
+            maxSize = MAX_ITEMS_SIZE
+        )
 
         val offset = parameters.getInt("offset")
-        val limit = parameters.getInt("limit")
+        val limit = parameters.getInt(key = "limit", range = LimitRange)
         val extended = parameters.getBoolean("extended", false)
 
         val works = if (workIds.isEmpty()) {
-            worksDao.allWorks(offset, limit)
+            worksDao.allWorks(offset, limit ?: MAX_ITEMS_SIZE)
         } else {
             worksDao.allWorksByIds(workIds)
         }
@@ -245,14 +245,10 @@ private fun Route.deleteWorksByIds() {
     val worksDao by inject<WorksDao>()
 
     delete {
-        val workIds = call.request.queryParameters.getStringOrThrow("workIds")
-            .split(",")
-            .map(String::trim)
-            .mapNotNull(String::toIntOrNull)
-
-        if (workIds.isEmpty()) {
-            throw ValidationException("workIds is invalid")
-        }
+        val workIds = call.request.queryParameters.getIntListOrThrow(
+            key = "workIds",
+            requiredNotEmpty = true
+        )
 
         val currentWorks = worksDao.allWorksByIds(workIds)
         if (currentWorks.isEmpty()) {
@@ -347,7 +343,7 @@ private fun Route.getLatestWorks() {
         val parameters = call.request.queryParameters
 
         val offset = parameters.getInt("offset")
-        val limit = parameters.getInt("limit")
+        val limit = parameters.getInt(key = "limit", range = LimitRange)
 
         val workTypeId = parameters.getInt("workTypeId")
         val disciplineId = parameters.getInt("disciplineId")
@@ -358,7 +354,7 @@ private fun Route.getLatestWorks() {
 
         val entries = worksDao.allWorksByFilters(
             offset = offset,
-            limit = limit,
+            limit = limit ?: MAX_ITEMS_SIZE,
             disciplineId = disciplineId,
             studentId = studentId,
             groupId = groupId,
@@ -384,13 +380,14 @@ private fun Route.searchLatestWorks() {
         val parameters = call.request.queryParameters
 
         val offset = parameters.getInt("offset")
-        val limit = parameters.getInt("limit")
+        val limit = parameters.getInt(key = "limit", range = LimitRange)
         val query = parameters
-            .getStringOrThrow("query")
+            .getStringOrThrow(
+                key = "query",
+                trim = true,
+                requiredNotEmpty = true
+            )
             .lowercase()
-            .trim()
-            .ifEmpty { null }
-            ?: throw ValidationException("query must not be empty or blank")
 
         val entries = worksDao.allLatestWorksByQuery(
             offset = offset,

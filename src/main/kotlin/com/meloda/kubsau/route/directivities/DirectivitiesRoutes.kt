@@ -8,7 +8,6 @@ import com.meloda.kubsau.database.groups.GroupsDao
 import com.meloda.kubsau.database.heads.HeadsDao
 import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.UnknownException
-import com.meloda.kubsau.errors.ValidationException
 import com.meloda.kubsau.model.Directivity
 import com.meloda.kubsau.model.Grade
 import com.meloda.kubsau.model.Head
@@ -50,17 +49,18 @@ private fun Route.getDirectivities() {
     get {
         val parameters = call.request.queryParameters
 
-        val directivityIds = parameters.getString("directivityIds")
-            ?.split(",")
-            ?.mapNotNull(String::toIntOrNull)
-            ?: emptyList()
+        val directivityIds = parameters.getIntList(
+            key = "directivityIds",
+            defaultValue = emptyList(),
+            maxSize = MAX_ITEMS_SIZE
+        )
 
         val offset = parameters.getInt("offset")
-        val limit = parameters.getInt("limit")
+        val limit = parameters.getInt(key = "limit", range = LimitRange)
         val extended = parameters.getBoolean("extended", false)
 
         val directivities = if (directivityIds.isEmpty()) {
-            directivitiesDao.allDirectivities(offset, limit)
+            directivitiesDao.allDirectivities(offset, limit ?: MAX_ITEMS_SIZE)
         } else {
             directivitiesDao.allDirectivitiesByIds(directivityIds)
         }
@@ -211,13 +211,10 @@ private fun Route.deleteDirectivities() {
     val directivitiesDao by inject<DirectivitiesDao>()
 
     delete {
-        val directivityIds = call.request.queryParameters.getStringOrThrow("directivityIds")
-            .split(",")
-            .mapNotNull(String::toIntOrNull)
-
-        if (directivityIds.isEmpty()) {
-            throw ValidationException("directivityIds is invalid")
-        }
+        val directivityIds = call.request.queryParameters.getIntListOrThrow(
+            key = "directivityIds",
+            requiredNotEmpty = true
+        )
 
         val currentDirectivities = directivitiesDao.allDirectivitiesByIds(directivityIds)
         if (currentDirectivities.isEmpty()) {
