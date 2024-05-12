@@ -19,6 +19,10 @@ class StudentsDaoImpl : StudentsDao {
                     limit(limit, ((offset ?: 0).toLong()))
                 }
             }
+            .orderBy(
+                column = Students.id,
+                order = SortOrder.DESC
+            )
             .map(::mapResultRow)
     }
 
@@ -26,6 +30,10 @@ class StudentsDaoImpl : StudentsDao {
         Students
             .selectAll()
             .where { Students.id inList studentIds }
+            .orderBy(
+                column = Students.id,
+                order = SortOrder.DESC
+            )
             .map(::mapResultRow)
     }
 
@@ -33,6 +41,10 @@ class StudentsDaoImpl : StudentsDao {
         Students
             .selectAll()
             .where { Students.groupId eq groupId }
+            .orderBy(
+                column = Students.id,
+                order = SortOrder.DESC
+            )
             .map(::mapResultRow)
     }
 
@@ -40,6 +52,10 @@ class StudentsDaoImpl : StudentsDao {
         Students
             .selectAll()
             .where { Students.groupId inList groupIds }
+            .orderBy(
+                column = Students.id,
+                order = SortOrder.DESC
+            )
             .map(::mapResultRow)
     }
 
@@ -57,6 +73,10 @@ class StudentsDaoImpl : StudentsDao {
                     limit(limit, ((offset ?: 0).toLong()))
                 }
             }
+            .orderBy(
+                column = Students.id,
+                order = SortOrder.DESC
+            )
             .map(::mapResultRow)
     }
 
