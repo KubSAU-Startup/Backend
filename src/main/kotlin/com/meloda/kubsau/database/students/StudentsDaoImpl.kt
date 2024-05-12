@@ -1,6 +1,8 @@
 package com.meloda.kubsau.database.students
 
 import com.meloda.kubsau.database.DatabaseController.dbQuery
+import com.meloda.kubsau.database.directivities.Directivities
+import com.meloda.kubsau.database.groups.Groups
 import com.meloda.kubsau.model.Student
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -52,6 +54,35 @@ class StudentsDaoImpl : StudentsDao {
         Students
             .selectAll()
             .where { Students.groupId inList groupIds }
+            .orderBy(
+                column = Students.id,
+                order = SortOrder.DESC
+            )
+            .map(::mapResultRow)
+    }
+
+    override suspend fun allStudentsByFilters(
+        offset: Int?,
+        limit: Int?,
+        groupId: Int?,
+        gradeId: Int?,
+        statusId: Int?
+    ): List<Student> = dbQuery {
+        val query = Students
+            .innerJoin(Groups, { Students.groupId }, { Groups.id })
+            .innerJoin(Directivities, { Groups.directivityId }, { Directivities.id })
+            .select(Students.columns)
+            .apply {
+                if (limit != null) {
+                    limit(limit, ((offset ?: 0).toLong()))
+                }
+            }
+
+        groupId?.let { query.andWhere { Students.groupId eq groupId } }
+        gradeId?.let { query.andWhere { Directivities.gradeId eq gradeId } }
+        statusId?.let { query.andWhere { Students.statusId eq statusId } }
+
+        query
             .orderBy(
                 column = Students.id,
                 order = SortOrder.DESC

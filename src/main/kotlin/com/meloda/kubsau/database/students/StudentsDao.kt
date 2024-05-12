@@ -9,6 +9,15 @@ interface StudentsDao : Dao<Student> {
     suspend fun allStudentsByIds(studentIds: List<Int>): List<Student>
     suspend fun allStudentsByGroupId(groupId: Int): List<Student>
     suspend fun allStudentsByGroupIds(groupIds: List<Int>): List<Student>
+
+    suspend fun allStudentsByFilters(
+        offset: Int?,
+        limit: Int?,
+        groupId: Int?,
+        gradeId: Int?,
+        statusId: Int?
+    ): List<Student>
+
     suspend fun allStudentsByQuery(offset: Int?, limit: Int?, query: String): List<Student>
     suspend fun singleStudent(studentId: Int): Student?
 
