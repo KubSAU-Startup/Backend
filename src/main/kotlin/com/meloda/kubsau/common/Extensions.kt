@@ -159,4 +159,4 @@ fun <T> Parameters.getOrThrow(key: String, mapper: (String) -> T): T = getOrThro
 )
 
 fun <T> Parameters.getOrThrow(key: String, mapper: (String) -> T, message: () -> String): T =
-    mapper(this[key] ?: throw ValidationException.InvalidValueException(message()))
+    mapper(this[key] ?: throw ValidationException.InvalidException(message()))
