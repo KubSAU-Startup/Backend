@@ -24,12 +24,20 @@ class EmployeesFacultiesDaoImpl(
             .map(::mapBothResultRow)
     }
 
-    override suspend fun singleFacultyByEmplyeeId(employeeId: Int): Faculty? = dbQuery {
+    override suspend fun singleFacultyByEmployeeId(employeeId: Int): Faculty? = dbQuery {
         EmployeesFaculties
             .innerJoin(Faculties)
-            .selectAll()
+            .select(Faculties.columns)
             .where { EmployeesFaculties.employeeId eq employeeId }
             .map(::mapSecondResultRow)
+            .singleOrNull()
+    }
+
+    override suspend fun singleFacultyIdByEmployeeId(employeeId: Int): Int? = dbQuery {
+        EmployeesFaculties
+            .select(EmployeesFaculties.facultyId)
+            .where { EmployeesFaculties.employeeId eq employeeId }
+            .map { row -> row[EmployeesFaculties.facultyId] }
             .singleOrNull()
     }
 

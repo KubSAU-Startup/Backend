@@ -4,17 +4,20 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.meloda.kubsau.api.respondSuccess
 import com.meloda.kubsau.common.SecretsController
+import com.meloda.kubsau.common.getIntOrThrow
 import com.meloda.kubsau.common.getStringOrThrow
-import com.meloda.kubsau.database.sessions.SessionsDao
+import com.meloda.kubsau.database.employees.EmployeesDao
+import com.meloda.kubsau.database.employeesdepartments.EmployeesDepartmentsDao
+import com.meloda.kubsau.database.employeesfaculties.EmployeesFacultiesDao
 import com.meloda.kubsau.database.users.UsersDao
 import com.meloda.kubsau.errors.ContentNotFoundException
-import com.meloda.kubsau.errors.UnknownException
+import com.meloda.kubsau.errors.SessionExpiredException
 import com.meloda.kubsau.model.User
 import com.meloda.kubsau.plugins.AUDIENCE
 import com.meloda.kubsau.plugins.ISSUER
+import com.meloda.kubsau.plugins.UserPrincipal
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -24,14 +27,17 @@ fun Route.authRoutes() {
         addSession()
 
         authenticate {
-            deleteSession()
+            modifySession()
         }
     }
 }
 
+
 private fun Route.addSession() {
     val usersDao by inject<UsersDao>()
-    val sessionsDao by inject<SessionsDao>()
+    val employeesDao by inject<EmployeesDao>()
+    val employeesFacultiesDao by inject<EmployeesFacultiesDao>()
+    val employeesDepartmentsDao by inject<EmployeesDepartmentsDao>()
 
     post {
         val parameters = call.receiveParameters()
@@ -56,49 +62,65 @@ private fun Route.addSession() {
 
         val user = users[loginIndex]
 
+        val employee = employeesDao.singleEmployee(user.employeeId) ?: throw ContentNotFoundException
+        val facultyId: Int? = if (employee.isAdmin()) {
+            employeesFacultiesDao.singleFacultyIdByEmployeeId(employee.id)
+        } else null
+        val departmentIds: List<Int> = employeesDepartmentsDao.allDepartmentIdsByEmployeeId(employee.id)
+
         val accessToken = JWT.create()
             .withAudience(AUDIENCE)
             .withIssuer(ISSUER)
-            .withClaim("login", login)
+            .withClaim("id", user.id)
             .sign(Algorithm.HMAC256(SecretsController.jwtSecret))
-
-        sessionsDao.addNewSession(user.id, accessToken)
 
         respondSuccess {
             AuthResponse(
                 userId = user.id,
-                accessToken = accessToken
+                accessToken = accessToken,
+                facultyId = facultyId,
+                departmentIds = departmentIds
             )
         }
     }
 }
 
-private fun Route.deleteSession() {
+private fun Route.modifySession() {
     val usersDao by inject<UsersDao>()
-    val sessionsDao by inject<SessionsDao>()
 
-    delete {
-        val principal = call.principal<JWTPrincipal>()
+    patch {
+        val departmentId = call.request.queryParameters.getIntOrThrow("departmentId")
 
-        val login = principal?.payload?.getClaim("login")?.asString() ?: throw UnknownException
-        val userId = usersDao.singleUser(login = login)?.id ?: throw UnknownException
-        val session = sessionsDao.singleSession(userId = userId) ?: throw ContentNotFoundException
+        val principal = call.principal<UserPrincipal>() ?: throw SessionExpiredException
+        val user = principal.user
+        usersDao.singleUser(user.id) ?: throw ContentNotFoundException
 
-        if (sessionsDao.deleteSession(
-                userId = session.userId,
-                accessToken = session.accessToken
+        val modifiedToken = JWT.create()
+            .withAudience(AUDIENCE)
+            .withIssuer(ISSUER)
+            .withClaim("id", user.id)
+            .withClaim("departmentId", departmentId)
+            .sign(Algorithm.HMAC256(SecretsController.jwtSecret))
+
+        respondSuccess {
+            ModifyTokenResponse(
+                departmentId = departmentId,
+                modifiedToken = modifiedToken
             )
-        ) {
-            respondSuccess { 1 }
-        } else {
-            throw UnknownException
         }
     }
 }
 
 private data class AuthResponse(
     val userId: Int,
-    val accessToken: String
+    val accessToken: String,
+    val facultyId: Int?,
+    val departmentIds: List<Int>
+)
+
+private data class ModifyTokenResponse(
+    val departmentId: Int,
+    val modifiedToken: String
 )
 
 data object WrongCredentialsException : Throwable()

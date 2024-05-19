@@ -24,8 +24,6 @@ import com.meloda.kubsau.database.programs.ProgramsDao
 import com.meloda.kubsau.database.programs.ProgramsDaoImpl
 import com.meloda.kubsau.database.programsdisciplines.ProgramsDisciplinesDao
 import com.meloda.kubsau.database.programsdisciplines.ProgramsDisciplinesDaoImpl
-import com.meloda.kubsau.database.sessions.SessionsDao
-import com.meloda.kubsau.database.sessions.SessionsDaoImpl
 import com.meloda.kubsau.database.students.StudentsDao
 import com.meloda.kubsau.database.students.StudentsDaoImpl
 import com.meloda.kubsau.database.studentstatuses.StudentStatusesDao
@@ -53,7 +51,6 @@ val databaseModule = module {
     singleOf(::HeadsDaoImpl) bind HeadsDao::class
     singleOf(::ProgramsDaoImpl) bind ProgramsDao::class
     singleOf(::ProgramsDisciplinesDaoImpl) bind ProgramsDisciplinesDao::class
-    singleOf(::SessionsDaoImpl) bind SessionsDao::class
     singleOf(::StudentsDaoImpl) bind StudentsDao::class
     singleOf(::StudentStatusesDaoImpl) bind StudentStatusesDao::class
     singleOf(::UsersDaoImpl) bind UsersDao::class

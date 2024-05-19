@@ -15,7 +15,6 @@ import com.meloda.kubsau.database.groups.Groups
 import com.meloda.kubsau.database.heads.Heads
 import com.meloda.kubsau.database.programs.Programs
 import com.meloda.kubsau.database.programsdisciplines.ProgramsDisciplines
-import com.meloda.kubsau.database.sessions.Sessions
 import com.meloda.kubsau.database.students.Students
 import com.meloda.kubsau.database.studentstatuses.StudentStatuses
 import com.meloda.kubsau.database.users.Users
@@ -57,7 +56,7 @@ object DatabaseController {
             SchemaUtils.create(
                 Departments, Directivities, Disciplines, Employees,
                 Faculties, Grades, Groups, Heads,
-                Programs, Sessions, Students, StudentStatuses,
+                Programs, Students, StudentStatuses,
                 Users, Works, WorkTypes
             )
             SchemaUtils.create(
