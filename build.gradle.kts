@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    val ktorVersion = "2.3.10"
+    val ktorVersion = "2.3.11"
 
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
@@ -30,7 +30,7 @@ dependencies {
     implementation("io.ktor:ktor-server-call-logging:$ktorVersion")
     implementation("io.ktor:ktor-server-swagger:$ktorVersion")
 
-    val exposedVersion = "0.49.0"
+    val exposedVersion = "0.50.1"
 
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
@@ -40,7 +40,7 @@ dependencies {
 
     implementation("com.h2database:h2:$h2Version")
 
-    val koinVersion = "3.5.3"
+    val koinVersion = "3.5.6"
 
     implementation(platform("io.insert-koin:koin-bom:$koinVersion"))
     implementation("io.insert-koin:koin-core")
@@ -56,7 +56,7 @@ dependencies {
 
     val logBackVersion = "1.5.6"
 
-//    implementation("ch.qos.logback:logback-classic:$logBackVersion")
+    implementation("ch.qos.logback:logback-classic:$logBackVersion")
 
     val kotlinxHtmlVersion = "0.11.0"
 
