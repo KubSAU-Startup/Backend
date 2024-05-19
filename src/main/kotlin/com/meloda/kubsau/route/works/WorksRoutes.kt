@@ -343,7 +343,7 @@ private fun Route.getLatestWorks() {
         val parameters = call.request.queryParameters
 
         val offset = parameters.getInt("offset")
-        val limit = parameters.getInt(key = "limit", range = LimitRange)
+        val limit = parameters.getInt(key = "limit", range = LatestWorksRange)
 
         val workTypeId = parameters.getInt("workTypeId")
         val disciplineId = parameters.getInt("disciplineId")
@@ -354,7 +354,7 @@ private fun Route.getLatestWorks() {
 
         val entries = worksDao.allWorksByFilters(
             offset = offset,
-            limit = limit ?: MAX_ITEMS_SIZE,
+            limit = limit ?: MAX_LATEST_WORKS,
             disciplineId = disciplineId,
             studentId = studentId,
             groupId = groupId,
@@ -380,7 +380,7 @@ private fun Route.searchLatestWorks() {
         val parameters = call.request.queryParameters
 
         val offset = parameters.getInt("offset")
-        val limit = parameters.getInt(key = "limit", range = LimitRange)
+        val limit = parameters.getInt(key = "limit", range = LatestWorksRange)
         val query = parameters
             .getStringOrThrow(
                 key = "query",
@@ -391,7 +391,7 @@ private fun Route.searchLatestWorks() {
 
         val entries = worksDao.allLatestWorksByQuery(
             offset = offset,
-            limit = limit,
+            limit = limit ?: MAX_LATEST_WORKS,
             query = query
         )
 

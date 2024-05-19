@@ -1,5 +1,6 @@
 package com.meloda.kubsau.database.programsdisciplines
 
+import com.meloda.kubsau.common.IdTitle
 import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.database.disciplines.Disciplines
 import com.meloda.kubsau.database.disciplines.DisciplinesDao
@@ -9,6 +10,8 @@ import com.meloda.kubsau.database.worktypes.WorkTypes
 import com.meloda.kubsau.model.Discipline
 import com.meloda.kubsau.model.Program
 import com.meloda.kubsau.model.WorkType
+import com.meloda.kubsau.route.programs.SearchDiscipline
+import com.meloda.kubsau.route.programs.SearchDisciplineWithProgramId
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
@@ -60,11 +63,55 @@ class ProgramsDisciplinesDaoImpl(
             .map(::mapSecondResultRow)
     }
 
+    override suspend fun allDisciplinesByProgramIdShortened(programId: Int): List<IdTitle> = dbQuery {
+        ProgramsDisciplines.innerJoin(Disciplines)
+            .selectAll()
+            .where { ProgramsDisciplines.programId eq programId }
+            .map { row ->
+                IdTitle(
+                    id = row[Disciplines.id].value,
+                    title = row[Disciplines.title]
+                )
+            }
+    }
+
     override suspend fun allDisciplinesByProgramIds(programIds: List<Int>): List<Discipline> = dbQuery {
         ProgramsDisciplines.innerJoin(Disciplines)
             .selectAll()
             .where { ProgramsDisciplines.programId inList programIds }
             .map(::mapSecondResultRow)
+    }
+
+    override suspend fun allSearchDisciplinesByProgramIds(
+        programIds: List<Int>
+    ): List<SearchDisciplineWithProgramId> = dbQuery {
+        ProgramsDisciplines.innerJoin(Disciplines)
+            .select(
+                Disciplines.id,
+                Disciplines.title,
+                Disciplines.departmentId,
+                ProgramsDisciplines.workTypeId,
+                ProgramsDisciplines.programId
+            )
+            .where { ProgramsDisciplines.programId inList programIds }
+            .map { row ->
+                SearchDisciplineWithProgramId(
+                    programId = row[ProgramsDisciplines.programId],
+                    discipline = SearchDiscipline(
+                        id = row[Disciplines.id].value,
+                        title = row[Disciplines.title],
+                        workTypeId = row[ProgramsDisciplines.workTypeId],
+                        departmentId = row[Disciplines.departmentId]
+                    )
+                )
+            }
+    }
+
+    override suspend fun allDisciplineIdsByProgramId(programId: Int): List<Int> = dbQuery {
+        ProgramsDisciplines
+            .select(ProgramsDisciplines.disciplineId)
+            .where { ProgramsDisciplines.programId eq programId }
+            .map { row -> row[ProgramsDisciplines.disciplineId] }
     }
 
     override suspend fun programByDisciplineId(disciplineId: Int): Program? = dbQuery {
@@ -80,6 +127,14 @@ class ProgramsDisciplinesDaoImpl(
             .selectAll()
             .where { (ProgramsDisciplines.programId eq programId) and (ProgramsDisciplines.disciplineId eq disciplineId) }
             .map(WorkType.Companion::mapResultRow)
+            .singleOrNull()
+    }
+
+    override suspend fun workTypeId(programId: Int, disciplineId: Int): Int? = dbQuery {
+        ProgramsDisciplines.innerJoin(WorkTypes)
+            .select(WorkTypes.id)
+            .where { (ProgramsDisciplines.programId eq programId) and (ProgramsDisciplines.disciplineId eq disciplineId) }
+            .map { row -> row[WorkTypes.id].value }
             .singleOrNull()
     }
 

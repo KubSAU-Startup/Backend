@@ -3,8 +3,6 @@ package com.meloda.kubsau.route.programs
 import com.meloda.kubsau.api.respondSuccess
 import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.departments.DepartmentsDao
-import com.meloda.kubsau.database.directivities.DirectivitiesDao
-import com.meloda.kubsau.database.disciplines.DisciplinesDao
 import com.meloda.kubsau.database.programs.ProgramsDao
 import com.meloda.kubsau.database.programsdisciplines.ProgramsDisciplinesDao
 import com.meloda.kubsau.errors.ContentNotFoundException
@@ -16,7 +14,6 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
-import kotlin.collections.set
 
 fun Route.programsRoutes() {
     authenticate {
@@ -24,7 +21,6 @@ fun Route.programsRoutes() {
             getPrograms()
             getProgramById()
             getDisciplines()
-            getFiltered()
             searchPrograms()
             addProgram()
             addDisciplinesToProgram()
@@ -41,102 +37,42 @@ private data class ProgramWithDisciplineIds(
     val disciplineIds: List<Int>
 )
 
-private data class ProgramWithDirectivityAndDisciplines(
-    val program: Program,
-    val directivity: Directivity,
-    val disciplines: List<Discipline>
-)
-
-private data class ProgramsWithDisciplines(
-    val count: Int,
-    val offset: Int,
-    val programs: List<ProgramWithDisciplineIds>,
-    val disciplines: List<DisciplineWithWorkType>?
-)
-
-private data class Programs(
-    val count: Int,
-    val offset: Int,
-    val programs: List<ProgramWithDisciplineIds>
-)
-
-private data class DisciplineWithWorkType(
-    val discipline: Discipline,
-    val workType: WorkType
-)
-
 private fun Route.getPrograms() {
     val programsDao by inject<ProgramsDao>()
     val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
-    val disciplinesDao by inject<DisciplinesDao>()
 
     get {
         val parameters = call.request.queryParameters
 
         val programIds = parameters.getIntList(
             key = "programIds",
-            defaultValue = emptyList(),
-            maxSize = MAX_ITEMS_SIZE
+            maxSize = MAX_PROGRAMS
         )
 
         val offset = parameters.getInt("offset")
-        val limit = parameters.getInt(key = "limit", range = LimitRange)
-        val extended = parameters.getBoolean("extended", false)
+        val limit = parameters.getInt(key = "limit", range = ProgramRange)
 
-        val disciplineIds = hashMapOf<Int, List<Int>>()
+        val entries = programsDao.allProgramsBySearch(
+            programIds = programIds,
+            offset = offset,
+            limit = limit ?: MAX_PROGRAMS,
+            semester = null,
+            directivityId = null,
+            query = null
+        )
 
-        programIds
-            .ifEmpty {
-                programsDao.allPrograms(offset, limit ?: MAX_ITEMS_SIZE).map(Program::id)
-            }.forEach { programId ->
-                disciplineIds[programId] = programsDisciplinesDao.allDisciplinesByProgramId(programId)
-                    .map(Discipline::id)
-            }
-
-        val programs = if (programIds.isEmpty()) {
-            programsDao.allPrograms(offset, limit ?: MAX_ITEMS_SIZE)
-        } else {
-            programsDao.allProgramsByIds(programIds)
-        }.map { program ->
-            ProgramWithDisciplineIds(
-                program = program,
-                disciplineIds = disciplineIds[program.id].orEmpty()
-            )
-        }
-
-        val disciplines = mutableListOf<DisciplineWithWorkType>()
-
-        if (extended) {
-            programs.forEach { program ->
-                program.disciplineIds.forEach { disciplineId ->
-                    val workType = programsDisciplinesDao.workType(program.program.id, disciplineId)
-                    val discipline = disciplinesDao.singleDiscipline(disciplineId)
-
-                    if (workType != null && discipline != null) {
-                        disciplines += DisciplineWithWorkType(
-                            discipline = discipline,
-                            workType = workType
-                        )
-                    }
-                }
-            }
-        }
+        val disciplines = programsDisciplinesDao.allSearchDisciplinesByProgramIds(entries.map { it.program.id })
 
         respondSuccess {
-            if (extended) {
-                ProgramsWithDisciplines(
-                    count = programs.size,
-                    offset = offset ?: 0,
-                    programs = programs,
-                    disciplines = disciplines
-                )
-            } else {
-                Programs(
-                    count = programs.size,
-                    offset = offset ?: 0,
-                    programs = programs
-                )
-            }
+            SearchResponse(
+                count = entries.size,
+                offset = offset ?: 0,
+                entries = entries.map { entry ->
+                    entry.copy(
+                        disciplines = disciplines.filter { it.programId == entry.program.id }.map { it.discipline }
+                    )
+                }
+            )
         }
     }
 }
@@ -225,134 +161,70 @@ private fun Route.getDisciplines() {
     }
 }
 
-private fun Route.getFiltered() {
-    val programsDao by inject<ProgramsDao>()
-    val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
-    val disciplinesDao by inject<DisciplinesDao>()
-
-    get("/filtered") {
-        val parameters = call.request.queryParameters
-
-        val offset = parameters.getInt("offset")
-        val limit = parameters.getInt(key = "limit", range = LimitRange)
-        val extended = parameters.getBoolean("extended", false)
-        val semester = parameters.getInt("semester")
-        val directivityId = parameters.getInt("directivityId")
-
-        val filteredPrograms = programsDao.allProgramsByFilters(
-            offset = offset,
-            limit = limit,
-            semester = semester,
-            directivityId = directivityId
-        )
-
-        val programIds = filteredPrograms.map(Program::id)
-
-        val disciplineIds = hashMapOf<Int, List<Int>>()
-
-        programIds
-            .ifEmpty {
-                programsDao.allPrograms(offset, limit).map(Program::id)
-            }.forEach { programId ->
-                disciplineIds[programId] = programsDisciplinesDao.allDisciplinesByProgramId(programId)
-                    .map(Discipline::id)
-            }
-
-        val programs = filteredPrograms.map { program ->
-            ProgramWithDisciplineIds(
-                program = program,
-                disciplineIds = disciplineIds[program.id].orEmpty()
-            )
-        }
-
-        val disciplines = mutableListOf<DisciplineWithWorkType>()
-
-        if (extended) {
-            programs.forEach { program ->
-                program.disciplineIds.forEach { disciplineId ->
-                    val workType = programsDisciplinesDao.workType(program.program.id, disciplineId)
-                    val discipline = disciplinesDao.singleDiscipline(disciplineId)
-
-                    if (workType != null && discipline != null) {
-                        disciplines += DisciplineWithWorkType(
-                            discipline = discipline,
-                            workType = workType
-                        )
-                    }
-                }
-            }
-        }
-
-        respondSuccess {
-            if (extended) {
-                ProgramsWithDisciplines(
-                    count = programs.size,
-                    offset = offset ?: 0,
-                    programs = programs,
-                    disciplines = disciplines
-                )
-            } else {
-                Programs(
-                    count = programs.size,
-                    offset = offset ?: 0,
-                    programs = programs
-                )
-            }
-        }
-    }
-}
-
 private data class SearchResponse(
     val count: Int,
     val offset: Int,
-    val entries: List<ProgramWithDirectivityAndDisciplines>
+    val entries: List<SearchEntry>
+)
+
+data class SearchEntry(
+    val program: SearchProgram,
+    val directivity: IdTitle,
+    val grade: IdTitle,
+    val disciplines: List<SearchDiscipline>
+)
+
+data class SearchProgram(
+    val id: Int,
+    val semester: Int
+)
+
+data class SearchDiscipline(
+    val id: Int,
+    val title: String,
+    val workTypeId: Int,
+    val departmentId: Int
+)
+
+data class SearchDisciplineWithProgramId(
+    val programId: Int,
+    val discipline: SearchDiscipline
 )
 
 private fun Route.searchPrograms() {
     val programsDao by inject<ProgramsDao>()
     val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
-    val directivitiesDao by inject<DirectivitiesDao>()
 
     get("/search") {
         val parameters = call.request.queryParameters
 
         val offset = parameters.getInt("offset")
-        val limit = parameters.getInt(key = "limit", range = LimitRange)
-        val query = parameters.getStringOrThrow(
-            key = "query",
-            trim = true,
-            requiredNotEmpty = true
-        ).lowercase()
+        val limit = parameters.getInt(key = "limit", range = ProgramRange)
+        val semester = parameters.getInt("semester")
+        val directivityId = parameters.getInt("directivityId")
+        val query = parameters.getString(key = "query", trim = true)?.lowercase()
 
-        val allPrograms = programsDao.allProgramsByQuery(
+        val entries = programsDao.allProgramsBySearch(
+            programIds = null,
             offset = offset,
-            limit = limit,
+            limit = limit ?: MAX_PROGRAMS,
+            semester = semester,
+            directivityId = directivityId,
             query = query
         )
 
-        val directivityIds = allPrograms.map(Program::directivityId)
-        val directivities = directivitiesDao.allDirectivitiesByIds(directivityIds)
-
-        val programIds = allPrograms.map(Program::id)
-        val disciplines = hashMapOf<Int, List<Discipline>>()
-
-        programIds.forEach { programId ->
-            disciplines[programId] = programsDisciplinesDao.allDisciplinesByProgramId(programId)
-        }
-
-        val resultPrograms = allPrograms.map { program ->
-            ProgramWithDirectivityAndDisciplines(
-                program = program,
-                directivity = directivities.first { directivity -> directivity.id == program.directivityId },
-                disciplines = disciplines[program.id].orEmpty()
-            )
-        }
+        val programIds = entries.map { it.program.id }
+        val disciplines = programsDisciplinesDao.allSearchDisciplinesByProgramIds(programIds)
 
         respondSuccess {
             SearchResponse(
-                count = resultPrograms.size,
+                count = entries.size,
                 offset = offset ?: 0,
-                entries = resultPrograms
+                entries = entries.map { entry ->
+                    entry.copy(
+                        disciplines = disciplines.filter { it.programId == entry.program.id }.map { it.discipline }
+                    )
+                }
             )
         }
     }
