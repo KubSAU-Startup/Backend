@@ -267,7 +267,6 @@ private fun Route.latestWorksRoutes() {
     route("/latest") {
         latestWorksFiltersRoutes()
         getLatestWorks()
-        searchLatestWorks()
     }
 }
 
@@ -351,8 +350,12 @@ private fun Route.getLatestWorks() {
         val departmentId = parameters.getInt("departmentId")
         val groupId = parameters.getInt("groupId")
         val studentId = parameters.getInt("studentId")
+        val query = parameters.getString(
+            key = "query",
+            trim = true,
+        )?.lowercase()
 
-        val entries = worksDao.allWorksByFilters(
+        val entries = worksDao.allWorksBySearch(
             offset = offset,
             limit = limit ?: MAX_LATEST_WORKS,
             disciplineId = disciplineId,
@@ -360,38 +363,7 @@ private fun Route.getLatestWorks() {
             groupId = groupId,
             employeeId = employeeId,
             departmentId = departmentId,
-            workTypeId = workTypeId
-        ).sortedByDescending { item -> item.work.registrationDate }
-
-        respondSuccess {
-            LatestWorksResponse(
-                count = entries.size,
-                offset = offset ?: 0,
-                entries = entries
-            )
-        }
-    }
-}
-
-private fun Route.searchLatestWorks() {
-    val worksDao by inject<WorksDao>()
-
-    get("/search") {
-        val parameters = call.request.queryParameters
-
-        val offset = parameters.getInt("offset")
-        val limit = parameters.getInt(key = "limit", range = LatestWorksRange)
-        val query = parameters
-            .getStringOrThrow(
-                key = "query",
-                trim = true,
-                requiredNotEmpty = true
-            )
-            .lowercase()
-
-        val entries = worksDao.allLatestWorksByQuery(
-            offset = offset,
-            limit = limit ?: MAX_LATEST_WORKS,
+            workTypeId = workTypeId,
             query = query
         )
 

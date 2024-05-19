@@ -102,7 +102,7 @@ class WorksDaoImpl : WorksDao {
             }
     }
 
-    override suspend fun allWorksByFilters(
+    override suspend fun allWorksBySearch(
         offset: Int?,
         limit: Int?,
         disciplineId: Int?,
@@ -111,8 +111,9 @@ class WorksDaoImpl : WorksDao {
         employeeId: Int?,
         departmentId: Int?,
         workTypeId: Int?,
+        query: String?
     ): List<Entry> = dbQuery {
-        val query =
+        val dbQuery =
             Works
                 .innerJoin(Disciplines, { Works.disciplineId }, { Disciplines.id })
                 .innerJoin(Students, { Works.studentId }, { Students.id })
@@ -127,15 +128,33 @@ class WorksDaoImpl : WorksDao {
                         limit(limit, (offset ?: 0).toLong())
                     }
                 }
+                .orderBy(Works.registrationDate, order = SortOrder.DESC)
 
-        studentId?.let { query.andWhere { Works.studentId eq studentId } }
-        groupId?.let { query.andWhere { Students.groupId eq groupId } }
-        disciplineId?.let { query.andWhere { Works.disciplineId eq disciplineId } }
-        departmentId?.let { query.andWhere { Works.departmentId eq departmentId } }
-        workTypeId?.let { query.andWhere { Works.workTypeId eq workTypeId } }
-        employeeId?.let { query.andWhere { Works.employeeId eq employeeId } }
 
-        query.map { row ->
+        studentId?.let { dbQuery.andWhere { Works.studentId eq studentId } }
+        groupId?.let { dbQuery.andWhere { Students.groupId eq groupId } }
+        disciplineId?.let { dbQuery.andWhere { Works.disciplineId eq disciplineId } }
+        departmentId?.let { dbQuery.andWhere { Works.departmentId eq departmentId } }
+        workTypeId?.let { dbQuery.andWhere { Works.workTypeId eq workTypeId } }
+        employeeId?.let { dbQuery.andWhere { Works.employeeId eq employeeId } }
+        query?.let { "%$it%" }?.let { q ->
+            dbQuery.andWhere {
+                (Students.lastName.lowerCase() like q) or
+                        (Students.firstName.lowerCase() like q) or
+                        (Students.middleName.lowerCase() like q) or
+                        (Groups.title.lowerCase() like q) or
+                        (WorkTypes.title.lowerCase() like q) or
+                        (StudentStatuses.title.lowerCase() like q) or
+                        (Disciplines.title.lowerCase() like q) or
+                        (Employees.lastName.lowerCase() like q) or
+                        (Employees.firstName.lowerCase() like q) or
+                        (Employees.middleName.lowerCase() like q) or
+                        (Departments.title.lowerCase() like q) or
+                        (Works.title.lowerCase() like q)
+            }
+        }
+
+        dbQuery.map { row ->
             Entry(
                 student = Student.mapFromDb(row).mapToEntryStudent(StudentStatus.mapResultRow(row)),
                 group = Group.mapResultRow(row),
