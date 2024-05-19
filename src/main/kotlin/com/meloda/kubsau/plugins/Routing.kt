@@ -1,6 +1,8 @@
 package com.meloda.kubsau.plugins
 
+import com.meloda.kubsau.CONFIG_FOLDER
 import com.meloda.kubsau.common.Constants
+import com.meloda.kubsau.common.IS_IN_DOCKER
 import com.meloda.kubsau.route.account.accountRoutes
 import com.meloda.kubsau.route.auth.authRoutes
 import com.meloda.kubsau.route.department.departmentsRoutes
@@ -30,7 +32,10 @@ fun Application.routing() {
             }
         }
 
-        swaggerUI(path = "/api/docs", swaggerFile = "docs/openapi.yml")
+        swaggerUI(
+            path = "/api/docs",
+            swaggerFile = if (IS_IN_DOCKER) "$CONFIG_FOLDER/docs/openapi.yml" else "docs/openapi.yml"
+        )
 
         authenticate {
             get("/alldata") {
