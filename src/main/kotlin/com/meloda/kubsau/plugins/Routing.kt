@@ -18,6 +18,7 @@ import com.meloda.kubsau.route.works.worksRoutes
 import com.meloda.kubsau.route.worktypes.workTypesRoutes
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.plugins.swagger.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
@@ -28,6 +29,8 @@ fun Application.routing() {
                 "Server is working.\nVersion: ${Constants.BACKEND_VERSION}"
             }
         }
+
+        swaggerUI(path = "/api/docs", swaggerFile = "docs/openapi.yml")
 
         authenticate {
             get("/alldata") {
