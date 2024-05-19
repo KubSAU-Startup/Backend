@@ -9,6 +9,14 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 
 class DepartmentsDaoImpl : DepartmentsDao {
 
+    override suspend fun isExist(departmentId: Int): Boolean = dbQuery {
+        Departments
+            .select(Departments.id)
+            .where { Departments.id eq departmentId }
+            .map { row -> row[Departments.id] }
+            .singleOrNull() != null
+    }
+
     override suspend fun allDepartments(): List<Department> = dbQuery {
         Departments.selectAll().map(::mapResultRow)
     }

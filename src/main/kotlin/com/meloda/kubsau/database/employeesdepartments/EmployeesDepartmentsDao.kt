@@ -8,6 +8,7 @@ interface EmployeesDepartmentsDao : RefDao<Employee, Department> {
 
     suspend fun allReferences(): List<Pair<Employee, Department>>
     suspend fun allEmployees(): List<Employee>
+    suspend fun allTeachersByDepartmentId(departmentId: Int): List<Employee>
     suspend fun allDepartments(): List<Department>
     suspend fun allDepartmentsByEmployeeId(employeeId: Int): List<Department>
     suspend fun allDepartmentIdsByEmployeeId(employeeId: Int): List<Int>

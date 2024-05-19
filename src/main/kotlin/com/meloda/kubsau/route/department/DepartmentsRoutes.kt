@@ -6,6 +6,7 @@ import com.meloda.kubsau.common.getIntListOrThrow
 import com.meloda.kubsau.common.getIntOrThrow
 import com.meloda.kubsau.common.getStringOrThrow
 import com.meloda.kubsau.database.departments.DepartmentsDao
+import com.meloda.kubsau.database.employeesdepartments.EmployeesDepartmentsDao
 import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.UnknownException
 import io.ktor.server.application.*
@@ -19,6 +20,7 @@ fun Route.departmentsRoutes() {
         route("/departments") {
             getAllDepartments()
             getDepartmentById()
+            getEmployees()
             addDepartment()
             editDepartment()
             deleteDepartmentById()
@@ -53,6 +55,19 @@ private fun Route.getDepartmentById() {
         val department = departmentsDao.singleDepartment(departmentId) ?: throw ContentNotFoundException
 
         respondSuccess { department }
+    }
+}
+
+private fun Route.getEmployees() {
+    val departmentsDao by inject<DepartmentsDao>()
+    val employeesDepartmentsDao by inject<EmployeesDepartmentsDao>()
+
+    get("{id}/teachers") {
+        val departmentId = call.parameters.getIntOrThrow("id")
+        if (!departmentsDao.isExist(departmentId)) throw ContentNotFoundException
+
+        val teachers = employeesDepartmentsDao.allTeachersByDepartmentId(departmentId)
+        respondSuccess { teachers }
     }
 }
 

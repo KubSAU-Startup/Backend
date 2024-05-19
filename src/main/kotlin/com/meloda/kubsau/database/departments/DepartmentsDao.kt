@@ -6,6 +6,7 @@ import com.meloda.kubsau.route.works.EntryFilter
 
 interface DepartmentsDao : FilterableDao<Department, EntryFilter> {
 
+    suspend fun isExist(departmentId: Int): Boolean
     suspend fun allDepartments(): List<Department>
     suspend fun allDepartmentsAsFilters(): List<EntryFilter>
     suspend fun allDepartmentsByIds(departmentIds: List<Int>): List<Department>

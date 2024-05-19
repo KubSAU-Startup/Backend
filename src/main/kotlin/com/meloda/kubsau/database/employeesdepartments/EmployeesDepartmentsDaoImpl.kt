@@ -8,6 +8,7 @@ import com.meloda.kubsau.database.employees.EmployeesDao
 import com.meloda.kubsau.model.Department
 import com.meloda.kubsau.model.Employee
 import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 
@@ -25,6 +26,14 @@ class EmployeesDepartmentsDaoImpl(
     }
 
     override suspend fun allEmployees(): List<Employee> = employeesDao.allEmployees()
+
+    override suspend fun allTeachersByDepartmentId(departmentId: Int): List<Employee> = dbQuery {
+        EmployeesDepartments
+            .innerJoin(Employees)
+            .select(Employees.columns)
+            .where { (EmployeesDepartments.departmentId eq departmentId) and (Employees.type eq Employee.TYPE_TEACHER) }
+            .map(::mapFirstResultRow)
+    }
 
     override suspend fun allDepartments(): List<Department> = departmentsDao.allDepartments()
 
