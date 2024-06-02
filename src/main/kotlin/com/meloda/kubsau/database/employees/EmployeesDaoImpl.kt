@@ -9,12 +9,13 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 class EmployeesDaoImpl : EmployeesDao {
 
     override suspend fun allEmployees(): List<Employee> = dbQuery {
-        Employees.selectAll().map(::mapResultRow)
+        Employees.selectAll().orderBy(Employees.id, order = SortOrder.DESC).map(::mapResultRow)
     }
 
     override suspend fun allTeachers(): List<Employee> = dbQuery {
         Employees
             .selectAll()
+            .orderBy(Employees.id, order = SortOrder.DESC)
             .where { Employees.type eq Employee.TYPE_TEACHER }
             .map(::mapResultRow)
     }
@@ -22,6 +23,7 @@ class EmployeesDaoImpl : EmployeesDao {
     override suspend fun allEmployeesByIds(employeeIds: List<Int>): List<Employee> = dbQuery {
         Employees
             .selectAll()
+            .orderBy(Employees.id, order = SortOrder.DESC)
             .where { Employees.id inList employeeIds }
             .map(::mapResultRow)
     }
