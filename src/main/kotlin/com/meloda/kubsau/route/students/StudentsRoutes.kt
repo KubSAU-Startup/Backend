@@ -130,7 +130,7 @@ private fun Route.searchStudents() {
         val statusId = parameters.getInt("statusId")
         val query = parameters.getString(key = "query", trim = true)?.lowercase()
 
-        val students = studentsDao.allStudentsBySearch(
+        val studentsStatuses = studentsDao.allStudentsBySearch(
             offset = offset,
             limit = limit,
             groupId = groupId,
@@ -139,13 +139,15 @@ private fun Route.searchStudents() {
             query = query
         )
 
-        // TODO: 28/05/2024, Danil Nikolaev: return full statuses
+        val students = studentsStatuses.keys.toList()
+        val statuses = studentsStatuses.values.toList().distinctBy(StudentStatus::id)
 
         respondSuccess {
-            StudentsResponse(
-                count = students.size,
+            FullStudentsResponse(
                 offset = offset ?: 0,
-                students = students
+                count = studentsStatuses.size,
+                students = students,
+                statuses = statuses
             )
         }
     }

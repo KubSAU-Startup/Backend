@@ -33,5 +33,5 @@ class StudentStatusesDaoImpl : StudentStatusesDao {
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 
-    override fun mapResultRow(row: ResultRow): StudentStatus = StudentStatus.mapResultRow(row)
+    override fun mapResultRow(row: ResultRow): StudentStatus = StudentStatus.mapFromDb(row)
 }

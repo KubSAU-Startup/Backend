@@ -2,6 +2,7 @@ package com.meloda.kubsau.database.students
 
 import com.meloda.kubsau.database.Dao
 import com.meloda.kubsau.model.Student
+import com.meloda.kubsau.model.StudentStatus
 
 interface StudentsDao : Dao<Student> {
 
@@ -18,7 +19,7 @@ interface StudentsDao : Dao<Student> {
         gradeId: Int?,
         statusId: Int?,
         query: String?
-    ): List<Student>
+    ): Map<Student, StudentStatus>
 
     suspend fun singleStudent(studentId: Int): Student?
 

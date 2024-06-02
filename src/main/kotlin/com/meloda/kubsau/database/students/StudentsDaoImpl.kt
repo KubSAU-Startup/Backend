@@ -3,7 +3,9 @@ package com.meloda.kubsau.database.students
 import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.database.directivities.Directivities
 import com.meloda.kubsau.database.groups.Groups
+import com.meloda.kubsau.database.studentstatuses.StudentStatuses
 import com.meloda.kubsau.model.Student
+import com.meloda.kubsau.model.StudentStatus
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
@@ -89,11 +91,12 @@ class StudentsDaoImpl : StudentsDao {
         gradeId: Int?,
         statusId: Int?,
         query: String?
-    ): List<Student> = dbQuery {
+    ): Map<Student, StudentStatus> = dbQuery {
         val dbQuery = Students
+            .innerJoin(StudentStatuses, { Students.statusId }, { StudentStatuses.id })
             .innerJoin(Groups, { Students.groupId }, { Groups.id })
             .innerJoin(Directivities, { Groups.directivityId }, { Directivities.id })
-            .select(Students.columns)
+            .select(Students.columns.plus(StudentStatuses.columns))
             .apply {
                 if (limit != null) {
                     limit(limit, ((offset ?: 0).toLong()))
@@ -116,8 +119,7 @@ class StudentsDaoImpl : StudentsDao {
             .orderBy(
                 column = Students.id,
                 order = SortOrder.DESC
-            )
-            .map(::mapResultRow)
+            ).associate { row -> Student.mapFromDb(row) to StudentStatus.mapFromDb(row) }
     }
 
     override suspend fun singleStudent(studentId: Int): Student? = dbQuery {
