@@ -85,7 +85,7 @@ private fun Route.getWorks() {
             val workTypeIds = works.map(Work::workTypeId)
             val workTypes = workTypesDao.allWorkTypesByIds(workTypeIds)
 
-            val departmentIds = works.map(Work::departmentId)
+            val departmentIds = disciplines.map(Discipline::departmentId)
             val departments = departmentsDao.allDepartmentsByIds(departmentIds)
 
             val employeeIds = works.map(Work::employeeId)
@@ -135,13 +135,13 @@ private fun Route.getWorkById() {
         if (!extended) {
             respondSuccess { WorkResponse(work = work) }
         } else {
-            val discipline = disciplinesDao.singleDiscipline(work.disciplineId)
+            val discipline = disciplinesDao.singleDiscipline(work.disciplineId) ?: throw ContentNotFoundException
             val student = studentsDao.singleStudent(work.studentId)
             val workType = workTypesDao.singleWorkType(work.workTypeId)
-            val department = departmentsDao.singleDepartment(work.departmentId)
+            val department = departmentsDao.singleDepartment(discipline.departmentId)
             val employee = employeesDao.singleEmployee(work.employeeId)
 
-            if (discipline == null || student == null || workType == null || employee == null || department == null) {
+            if (student == null || workType == null || employee == null || department == null) {
                 throw ContentNotFoundException
             }
 
@@ -170,7 +170,6 @@ private fun Route.addWork() {
         val title = parameters.getString("title")
         val workTypeId = parameters.getIntOrThrow("workTypeId")
         val employeeId = parameters.getIntOrThrow("employeeId")
-        val departmentId = parameters.getIntOrThrow("departmentId")
 
         val created = worksDao.addNewWork(
             disciplineId = disciplineId,
@@ -178,8 +177,7 @@ private fun Route.addWork() {
             registrationDate = System.currentTimeMillis(),
             title = title,
             workTypeId = workTypeId,
-            employeeId = employeeId,
-            departmentId = departmentId
+            employeeId = employeeId
         )
 
         if (created != null) {
@@ -201,21 +199,19 @@ private fun Route.editWork() {
 
         val disciplineId = parameters.getInt("disciplineId")
         val studentId = parameters.getInt("studentId")
-        val registrationDate = parameters.getInt("registrationDate")
+        val registrationDate = parameters.getLong("registrationDate")
         val title = parameters.getString("title")
         val workTypeId = parameters.getInt("workTypeId")
         val employeeId = parameters.getInt("employeeId")
-        val departmentId = parameters.getInt("departmentId")
 
         worksDao.updateWork(
             workId = workId,
             disciplineId = disciplineId ?: currentWork.disciplineId,
             studentId = studentId ?: currentWork.studentId,
-            registrationDate = registrationDate?.let { it * 1000L } ?: currentWork.registrationDate,
+            registrationDate = registrationDate ?: currentWork.registrationDate,
             title = if ("title" in parameters) title else currentWork.title,
             workTypeId = workTypeId ?: currentWork.workTypeId,
-            employeeId = employeeId ?: currentWork.employeeId,
-            departmentId = departmentId ?: currentWork.departmentId
+            employeeId = employeeId ?: currentWork.employeeId
         ).let { success ->
             if (success) {
                 respondSuccess { 1 }

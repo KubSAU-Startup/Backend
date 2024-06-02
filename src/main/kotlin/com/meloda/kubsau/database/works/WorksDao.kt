@@ -31,8 +31,7 @@ interface WorksDao : Dao<Work> {
         registrationDate: Long,
         title: String?,
         workTypeId: Int,
-        employeeId: Int,
-        departmentId: Int
+        employeeId: Int
     ): Work?
 
     suspend fun updateWork(
@@ -42,8 +41,7 @@ interface WorksDao : Dao<Work> {
         registrationDate: Long,
         title: String?,
         workTypeId: Int,
-        employeeId: Int,
-        departmentId: Int
+        employeeId: Int
     ): Boolean
 
     suspend fun deleteWork(workId: Int): Boolean

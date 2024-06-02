@@ -27,9 +27,10 @@ sealed class ValidationException(override val message: String) : Throwable() {
 
     data class InvalidRangeException(
         val key: String,
-        val range: IntRange,
-        val number: Int
-    ) : ValidationException("$key is invalid. Required range: $range, current value: $number")
+        val min: Number,
+        val max: Number,
+        val number: Number
+    ) : ValidationException("$key is invalid. Required range: $min...$max, current value: $number")
 
     data class InvalidSizeException(
         val key: String,

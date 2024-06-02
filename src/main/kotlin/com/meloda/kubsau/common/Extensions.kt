@@ -125,6 +125,38 @@ fun Parameters.getIntListOrThrow(key: String, requiredNotEmpty: Boolean = false)
     }
 )
 
+fun Parameters.getLong(
+    key: String,
+    defaultValue: Long,
+    desiredRange: LongRange? = null
+): Long = getLong(key, desiredRange) ?: defaultValue
+
+fun Parameters.getLong(key: String, range: LongRange? = null): Long? =
+    runCatching {
+        getLongOrThrow(key)
+    }.fold(
+        onSuccess = { number ->
+            range?.let {
+                if (number !in range) {
+                    throw ValidationException.InvalidRangeException(
+                        key = key,
+                        min = range.first,
+                        max = range.last,
+                        number = number
+                    )
+                }
+            }
+
+            number
+        },
+        onFailure = { null }
+    )
+
+fun Parameters.getLongOrThrow(key: String): Long = getOrThrow(
+    key = key,
+    mapper = { it.toLongOrNull() ?: throw ValidationException.InvalidValueException(key) }
+)
+
 fun Parameters.getInt(
     key: String,
     defaultValue: Int,
@@ -138,7 +170,12 @@ fun Parameters.getInt(key: String, range: IntRange? = null): Int? =
         onSuccess = { number ->
             range?.let {
                 if (number !in range) {
-                    throw ValidationException.InvalidRangeException(key, range, number)
+                    throw ValidationException.InvalidRangeException(
+                        key = key,
+                        min = range.first,
+                        max = range.last,
+                        number = number
+                    )
                 }
             }
 

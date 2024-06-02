@@ -760,7 +760,7 @@ private fun Application.createDummyStudents() {
             "Погуляйло Вадим Андреевич\n" +
             "Рябов Алексей Алексеевич\n" +
             "Шепетило Константин Валерьевич\n" +
-            "Яценко Никита Алексеевич" +
+            "Яценко Никита Алексеевич\n" +
             "Крюков Егор Богданович\n" +
             "Филиппов Марк Фёдорович\n" +
             "Михайлов Андрей Андреевич\n" +
@@ -884,8 +884,7 @@ private fun Application.createDummyWorks() {
                         registrationDate = getRandomUnixTime(),
                         title = "Work #${index + 1}",
                         workTypeId = workTypeIds.random(),
-                        employeeId = employeeIds.random(),
-                        departmentId = discipline.departmentId
+                        employeeId = employeeIds.random()
                     )
                 }
             }
@@ -960,5 +959,5 @@ private fun Application.createDummyProgramsDisciplines() {
 private fun getRandomUnixTime(): Long {
     val (startTime, endTime) = 1609459200L to 1708775961L
     require(startTime < endTime) { "Start time must be before end time" }
-    return Random.nextLong(startTime, endTime)
+    return Random.nextLong(startTime, endTime) * 1000
 }

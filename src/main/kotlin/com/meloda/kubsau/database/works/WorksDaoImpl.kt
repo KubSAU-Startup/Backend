@@ -1,5 +1,6 @@
 package com.meloda.kubsau.database.works
 
+import com.meloda.kubsau.database.DatabaseConfig.dbQuery
 import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.database.departments.Departments
 import com.meloda.kubsau.database.disciplines.Disciplines
@@ -134,7 +135,7 @@ class WorksDaoImpl : WorksDao {
         studentId?.let { dbQuery.andWhere { Works.studentId eq studentId } }
         groupId?.let { dbQuery.andWhere { Students.groupId eq groupId } }
         disciplineId?.let { dbQuery.andWhere { Works.disciplineId eq disciplineId } }
-        departmentId?.let { dbQuery.andWhere { Works.departmentId eq departmentId } }
+        departmentId?.let { dbQuery.andWhere { Disciplines.departmentId eq departmentId } }
         workTypeId?.let { dbQuery.andWhere { Works.workTypeId eq workTypeId } }
         employeeId?.let { dbQuery.andWhere { Works.employeeId eq employeeId } }
         query?.let { "%$it%" }?.let { q ->
@@ -188,7 +189,6 @@ class WorksDaoImpl : WorksDao {
         title: String?,
         workTypeId: Int,
         employeeId: Int,
-        departmentId: Int
     ): Work? = dbQuery {
         Works.insert {
             it[Works.disciplineId] = disciplineId
@@ -197,7 +197,6 @@ class WorksDaoImpl : WorksDao {
             it[Works.title] = title
             it[Works.workTypeId] = workTypeId
             it[Works.employeeId] = employeeId
-            it[Works.departmentId] = departmentId
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 
@@ -209,7 +208,6 @@ class WorksDaoImpl : WorksDao {
         title: String?,
         workTypeId: Int,
         employeeId: Int,
-        departmentId: Int
     ): Boolean = dbQuery {
         Works.update(where = { Works.id eq workId }) {
             it[Works.disciplineId] = disciplineId
@@ -217,7 +215,6 @@ class WorksDaoImpl : WorksDao {
             it[Works.registrationDate] = registrationDate
             it[Works.title] = title
             it[Works.workTypeId] = workTypeId
-            it[Works.departmentId] = departmentId
         } > 0
     }
 
