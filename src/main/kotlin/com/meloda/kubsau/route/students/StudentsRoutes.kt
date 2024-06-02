@@ -139,6 +139,8 @@ private fun Route.searchStudents() {
             query = query
         )
 
+        // TODO: 28/05/2024, Danil Nikolaev: return full statuses
+
         respondSuccess {
             StudentsResponse(
                 count = students.size,

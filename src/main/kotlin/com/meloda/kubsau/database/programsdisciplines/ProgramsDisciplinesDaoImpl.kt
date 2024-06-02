@@ -3,22 +3,18 @@ package com.meloda.kubsau.database.programsdisciplines
 import com.meloda.kubsau.common.IdTitle
 import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.database.disciplines.Disciplines
-import com.meloda.kubsau.database.disciplines.DisciplinesDao
 import com.meloda.kubsau.database.programs.Programs
-import com.meloda.kubsau.database.programs.ProgramsDao
 import com.meloda.kubsau.database.worktypes.WorkTypes
 import com.meloda.kubsau.model.Discipline
 import com.meloda.kubsau.model.Program
 import com.meloda.kubsau.model.WorkType
+import com.meloda.kubsau.route.programs.FullDisciplineIds
 import com.meloda.kubsau.route.programs.SearchDiscipline
 import com.meloda.kubsau.route.programs.SearchDisciplineWithProgramId
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
-class ProgramsDisciplinesDaoImpl(
-    private val programsDao: ProgramsDao,
-    private val disciplinesDao: DisciplinesDao
-) : ProgramsDisciplinesDao {
+class ProgramsDisciplinesDaoImpl : ProgramsDisciplinesDao {
 
     override suspend fun allReferences(
         offset: Int?,
@@ -112,6 +108,50 @@ class ProgramsDisciplinesDaoImpl(
             .select(ProgramsDisciplines.disciplineId)
             .where { ProgramsDisciplines.programId eq programId }
             .map { row -> row[ProgramsDisciplines.disciplineId] }
+    }
+
+    override suspend fun allDisciplineIdsByProgramIdAsMap(programId: Int): List<FullDisciplineIds> = dbQuery {
+        ProgramsDisciplines
+            .innerJoin(Disciplines)
+            .select(ProgramsDisciplines.columns.plus(listOf(Disciplines.departmentId, Disciplines.title)))
+            .where { ProgramsDisciplines.programId eq programId }
+            .map { row ->
+                FullDisciplineIds(
+                    disciplineId = row[ProgramsDisciplines.disciplineId],
+                    programId = row[ProgramsDisciplines.programId],
+                    workTypeId = row[ProgramsDisciplines.workTypeId],
+                    departmentId = row[Disciplines.departmentId],
+                    title = row[Disciplines.title]
+                )
+            }
+    }
+
+    override suspend fun allDisciplineIdsByProgramIdsAsMap(
+        programIds: List<Int>
+    ): Map<Int, List<FullDisciplineIds>> = dbQuery {
+        val disciplinesMap = hashMapOf<Int, List<FullDisciplineIds>>()
+
+        val allDisciplines = ProgramsDisciplines
+            .innerJoin(Disciplines)
+            .select(ProgramsDisciplines.columns.plus(listOf(Disciplines.departmentId, Disciplines.title)))
+            .where { ProgramsDisciplines.programId inList programIds }
+            .map { row ->
+                FullDisciplineIds(
+                    disciplineId = row[ProgramsDisciplines.disciplineId],
+                    programId = row[ProgramsDisciplines.programId],
+                    workTypeId = row[ProgramsDisciplines.workTypeId],
+                    departmentId = row[Disciplines.departmentId],
+                    title = row[Disciplines.title]
+                )
+            }
+
+        programIds.forEach { programId ->
+            allDisciplines
+                .filter { discipline -> discipline.programId == programId }
+                .let { disciplines -> disciplinesMap[programId] = disciplines }
+        }
+
+        disciplinesMap
     }
 
     override suspend fun programByDisciplineId(disciplineId: Int): Program? = dbQuery {

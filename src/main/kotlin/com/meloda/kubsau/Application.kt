@@ -36,6 +36,7 @@ import kotlin.random.Random
 import kotlin.system.measureTimeMillis
 
 val PROJECT_FOLDER: String = if (IS_IN_DOCKER) "" else System.getProperty("user.dir")
+val DATA_FOLDER: String = "$PROJECT_FOLDER/data"
 val CONFIG_FOLDER: String = "$PROJECT_FOLDER/config"
 val PORT: Int = getEnvOrNull("PORT")?.toIntOrNull() ?: 8080
 

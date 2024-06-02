@@ -61,6 +61,27 @@ class StudentsDaoImpl : StudentsDao {
             .map(::mapResultRow)
     }
 
+    override suspend fun allStudentsByGroupIdsAsMap(groupIds: List<Int>): HashMap<Int, List<Student>> = dbQuery {
+        val studentsMap = hashMapOf<Int, List<Student>>()
+
+        val allStudents = Students
+            .selectAll()
+            .where { Students.groupId inList groupIds }
+            .orderBy(
+                column = Students.id,
+                order = SortOrder.DESC
+            )
+            .map(::mapResultRow)
+
+        groupIds.forEach { groupId ->
+            allStudents
+                .filter { student -> student.groupId == groupId }
+                .let { students -> studentsMap[groupId] = students }
+        }
+
+        studentsMap
+    }
+
     override suspend fun allStudentsBySearch(
         offset: Int?,
         limit: Int?,

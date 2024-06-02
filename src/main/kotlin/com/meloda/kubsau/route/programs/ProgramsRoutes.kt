@@ -1,19 +1,37 @@
 package com.meloda.kubsau.route.programs
 
+import com.meloda.kubsau.DATA_FOLDER
 import com.meloda.kubsau.api.respondSuccess
 import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.departments.DepartmentsDao
+import com.meloda.kubsau.database.groups.GroupsDao
 import com.meloda.kubsau.database.programs.ProgramsDao
 import com.meloda.kubsau.database.programsdisciplines.ProgramsDisciplinesDao
+import com.meloda.kubsau.database.students.StudentsDao
 import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.UnknownException
 import com.meloda.kubsau.errors.ValidationException
-import com.meloda.kubsau.model.*
+import com.meloda.kubsau.model.Department
+import com.meloda.kubsau.model.Discipline
+import com.meloda.kubsau.model.Program
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
+import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.*
 import org.koin.ktor.ext.inject
+import qrcode.QRCode
+import qrcode.color.Colors
+import java.awt.image.BufferedImage
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
+import javax.imageio.IIOImage
+import javax.imageio.ImageIO
+import javax.imageio.ImageWriteParam
 
 fun Route.programsRoutes() {
     authenticate {
@@ -21,6 +39,7 @@ fun Route.programsRoutes() {
             getPrograms()
             getProgramById()
             getDisciplines()
+            generateQRCodes()
             searchPrograms()
             addProgram()
             addDisciplinesToProgram()
@@ -161,6 +180,139 @@ private fun Route.getDisciplines() {
     }
 }
 
+private fun Route.generateQRCodes() {
+    val programsDao by inject<ProgramsDao>()
+    val groupsDao by inject<GroupsDao>()
+    val studentsDao by inject<StudentsDao>()
+    val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
+
+    get("{id}/qr") {
+        val programId = call.parameters.getIntOrThrow("id")
+        programsDao.singleProgram(programId) ?: throw ContentNotFoundException
+
+        val groupIds = call.request.queryParameters.getIntListOrThrow(
+            key = "groupIds",
+            requiredNotEmpty = true
+        )
+
+        val groups = groupsDao.allGroupsByIds(groupIds)
+        if (groups.isEmpty()) {
+            throw ContentNotFoundException
+        }
+
+        val students = studentsDao.allStudentsByGroupIdsAsMap(groupIds)
+        val disciplines = programsDisciplinesDao.allDisciplineIdsByProgramIdAsMap(programId)
+
+        val jobList = mutableListOf<Job>()
+
+        val limitedDispatcher = Dispatchers.IO.limitedParallelism(2)
+
+        for (group in groups) {
+            val groupFolder = File("$DATA_FOLDER/QRs/${group.title}")
+
+            val job = async(limitedDispatcher) {
+                for (student in students[group.id].orEmpty()) {
+                    val studentFolder = File("${groupFolder.path}/${student.fullName}").also { it.mkdirs() }
+
+                    val innerJobs = disciplines.map { discipline ->
+                        async(limitedDispatcher) {
+                            generateQRCode(
+                                dispatcher = limitedDispatcher,
+                                qrValue = "%d,%d,%d,%d".format(
+                                    discipline.departmentId,
+                                    discipline.disciplineId,
+                                    student.id,
+                                    discipline.workTypeId
+                                ),
+                                rootPath = studentFolder.path,
+                                fileName = discipline.title
+                            )
+                        }
+                    }
+                    innerJobs.awaitAll()
+                }
+            }
+            jobList.add(job)
+        }
+
+        jobList.joinAll()
+
+        val qrFolder = File("$DATA_FOLDER/QRs")
+        val fileToExtract = File("$DATA_FOLDER/temp.zip")
+
+        zipDirectory(qrFolder, fileToExtract)
+
+        call.respondFile(fileToExtract)
+
+        qrFolder.deleteRecursively()
+        fileToExtract.delete()
+    }
+}
+
+private suspend fun generateQRCode(
+    dispatcher: CoroutineDispatcher,
+    qrValue: String,
+    rootPath: String,
+    fileName: String
+): File = withContext(dispatcher) {
+    val qrCodeBuilder = QRCode
+        .ofRoundedSquares()
+        .withSize(10)
+        .withRadius(5)
+        .withBackgroundColor(Colors.WHITE)
+        .withColor(Colors.BLACK)
+        .build(qrValue)
+
+    val qrCode = qrCodeBuilder.render()
+    val file = File("$rootPath/$fileName.jpg")
+    qrCode.writeImage(file.outputStream())
+
+    val oldImage = ImageIO.read(file)
+    val image = BufferedImage(oldImage.width, oldImage.height, BufferedImage.TYPE_INT_RGB)
+    val g = image.createGraphics()
+    g.fillRect(0, 0, oldImage.width, oldImage.height)
+    g.drawImage(oldImage, 0, 0, null)
+    g.dispose()
+
+    val writers = ImageIO.getImageWritersByFormatName("jpg")
+    val writer = writers.next()
+
+    ImageIO.createImageOutputStream(file.outputStream()).let(writer::setOutput)
+
+    val param = writer.defaultWriteParam
+    param.compressionMode = ImageWriteParam.MODE_EXPLICIT
+    param.compressionQuality = 0.9f
+    writer.write(null, IIOImage(image, null, null), param)
+
+    writer.dispose()
+    file
+}
+
+fun zipDirectory(directory: File, zipFile: File) {
+    ZipOutputStream(FileOutputStream(zipFile)).use { zipOut ->
+        zipDirectory(directory, directory, zipOut)
+    }
+}
+
+private fun zipDirectory(baseDirectory: File, directoryToZip: File, zipOut: ZipOutputStream) {
+    val files = directoryToZip.listFiles() ?: return
+
+    for (file in files) {
+        if (file.isDirectory) {
+            zipDirectory(baseDirectory, file, zipOut)
+        } else {
+            val relativePath = baseDirectory.toURI().relativize(file.toURI()).path
+            val entry = ZipEntry(relativePath)
+            zipOut.putNextEntry(entry)
+
+            FileInputStream(file).use { inputStream ->
+                inputStream.copyTo(zipOut)
+            }
+            zipOut.closeEntry()
+        }
+    }
+}
+
 private data class SearchResponse(
     val count: Int,
     val offset: Int,
@@ -189,6 +341,14 @@ data class SearchDiscipline(
 data class SearchDisciplineWithProgramId(
     val programId: Int,
     val discipline: SearchDiscipline
+)
+
+data class FullDisciplineIds(
+    val disciplineId: Int,
+    val programId: Int,
+    val workTypeId: Int,
+    val departmentId: Int,
+    val title: String
 )
 
 private fun Route.searchPrograms() {

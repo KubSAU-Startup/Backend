@@ -1,6 +1,5 @@
 package com.meloda.kubsau.database.works
 
-import com.meloda.kubsau.database.DatabaseConfig.dbQuery
 import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.database.departments.Departments
 import com.meloda.kubsau.database.disciplines.Disciplines

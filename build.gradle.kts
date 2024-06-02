@@ -6,6 +6,12 @@ plugins {
 
 application {
     mainClass.set("com.meloda.kubsau.ApplicationKt")
+
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+        kotlinOptions {
+            freeCompilerArgs = freeCompilerArgs + "-Xcontext-receivers"
+        }
+    }
 }
 
 group = "com.meloda.kubsau.backend"
@@ -62,6 +68,11 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:$kotlinxHtmlVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-html:$kotlinxHtmlVersion")
+
+    val qrCodeVersion = "4.2.0"
+
+    implementation("io.github.g0dkar:qrcode-kotlin-jvm:$qrCodeVersion")
+    implementation("io.github.g0dkar:qrcode-kotlin:$qrCodeVersion")
 }
 
 kotlin {
