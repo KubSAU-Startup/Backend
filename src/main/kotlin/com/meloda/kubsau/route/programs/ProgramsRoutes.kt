@@ -23,15 +23,11 @@ import kotlinx.coroutines.*
 import org.koin.ktor.ext.inject
 import qrcode.QRCode
 import qrcode.color.Colors
-import java.awt.image.BufferedImage
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
-import javax.imageio.IIOImage
-import javax.imageio.ImageIO
-import javax.imageio.ImageWriteParam
 
 fun Route.programsRoutes() {
     authenticate {
@@ -264,27 +260,9 @@ private suspend fun generateQRCode(
         .build(qrValue)
 
     val qrCode = qrCodeBuilder.render()
-    val file = File("$rootPath/$fileName.jpg")
+    val file = File("$rootPath/$fileName.png")
+
     qrCode.writeImage(file.outputStream())
-
-    val oldImage = ImageIO.read(file)
-    val image = BufferedImage(oldImage.width, oldImage.height, BufferedImage.TYPE_INT_RGB)
-    val g = image.createGraphics()
-    g.fillRect(0, 0, oldImage.width, oldImage.height)
-    g.drawImage(oldImage, 0, 0, null)
-    g.dispose()
-
-    val writers = ImageIO.getImageWritersByFormatName("jpg")
-    val writer = writers.next()
-
-    ImageIO.createImageOutputStream(file.outputStream()).let(writer::setOutput)
-
-    val param = writer.defaultWriteParam
-    param.compressionMode = ImageWriteParam.MODE_EXPLICIT
-    param.compressionQuality = 0.9f
-    writer.write(null, IIOImage(image, null, null), param)
-
-    writer.dispose()
     file
 }
 
