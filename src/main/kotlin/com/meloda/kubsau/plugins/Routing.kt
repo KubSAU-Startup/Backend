@@ -18,8 +18,8 @@ import com.meloda.kubsau.route.students.studentsRoutes
 import com.meloda.kubsau.route.users.usersRoutes
 import com.meloda.kubsau.route.works.worksRoutes
 import com.meloda.kubsau.route.worktypes.workTypesRoutes
+import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.auth.*
 import io.ktor.server.plugins.swagger.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -27,22 +27,18 @@ import io.ktor.server.routing.*
 fun Application.routing() {
     routing {
         get("/") {
-            call.respondText {
-                "Server is working.\nVersion: ${Constants.BACKEND_VERSION}"
-            }
+            call.respond(
+                status = HttpStatusCode.OK,
+                message = ServerInfo(
+                    version = Constants.BACKEND_VERSION,
+                )
+            )
         }
 
         swaggerUI(
             path = "/api/docs",
             swaggerFile = if (IS_IN_DOCKER) "$CONFIG_FOLDER/docs/openapi.yml" else "docs/openapi.yml"
         )
-
-        authenticate {
-            get("/alldata") {
-                // TODO: 30/04/2024, Danil Nikolaev: implement
-                call.respondText { "Ne rabotaet" }
-            }
-        }
 
         authRoutes()
         accountRoutes()
@@ -61,3 +57,5 @@ fun Application.routing() {
         gradesRoutes()
     }
 }
+
+private data class ServerInfo(val version: String)
