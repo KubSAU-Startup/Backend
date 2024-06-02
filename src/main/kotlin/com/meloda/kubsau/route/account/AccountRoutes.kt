@@ -1,13 +1,16 @@
 package com.meloda.kubsau.route.account
 
 import com.meloda.kubsau.api.respondSuccess
-import com.meloda.kubsau.database.sessions.SessionsDao
-import com.meloda.kubsau.database.users.UsersDao
+import com.meloda.kubsau.database.employees.EmployeesDao
+import com.meloda.kubsau.database.employeesdepartments.EmployeesDepartmentsDao
+import com.meloda.kubsau.database.employeesfaculties.EmployeesFacultiesDao
+import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.SessionExpiredException
-import com.meloda.kubsau.errors.UnknownException
+import com.meloda.kubsau.model.Department
+import com.meloda.kubsau.model.Faculty
+import com.meloda.kubsau.plugins.UserPrincipal
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
@@ -20,25 +23,31 @@ fun Route.accountRoutes() {
 }
 
 private fun Route.getAccountInfoRoute() {
-    val usersDao by inject<UsersDao>()
-    val sessionsDao by inject<SessionsDao>()
+    val employeesDao by inject<EmployeesDao>()
+    val employeesDepartmentsDao by inject<EmployeesDepartmentsDao>()
+    val employeesFacultiesDao by inject<EmployeesFacultiesDao>()
 
     get {
-        val principal = call.principal<JWTPrincipal>()
+        val principal = call.principal<UserPrincipal>() ?: throw SessionExpiredException
+        val user = principal.user
 
-        val login = principal?.payload?.getClaim("login")?.asString() ?: throw UnknownException
+        val employee = employeesDao.singleEmployee(user.employeeId) ?: throw ContentNotFoundException
 
-        val userId = usersDao.singleUser(login = login)?.id ?: throw UnknownException
+        val departments = employeesDepartmentsDao.allDepartmentsByEmployeeId(employee.id)
 
-        val session = sessionsDao.singleSession(userId = userId) ?: throw SessionExpiredException
-        val user = usersDao.singleUser(userId = session.userId) ?: throw UnknownException
+        val faculty = if (employee.isAdmin()) {
+            employeesFacultiesDao.singleFacultyByEmployeeId(employee.id)
+        } else {
+            null
+        }
 
         respondSuccess {
             AccountInfo(
                 id = user.id,
-                type = user.type,
+                type = employee.type,
                 login = user.login,
-                departmentId = user.departmentId
+                faculty = faculty,
+                departments = departments
             )
         }
     }
@@ -48,5 +57,6 @@ private data class AccountInfo(
     val id: Int,
     val type: Int,
     val login: String,
-    val departmentId: Int
+    val faculty: Faculty?,
+    val departments: List<Department>
 )

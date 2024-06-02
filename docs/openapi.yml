@@ -1,0 +1,1684 @@
+openapi: 3.0.3
+info:
+  title: Документация API
+  description: 'TODO: заполнить описание и дофиксить косяки'
+  version: 0.2.9
+servers:
+  - url: https://kubsau-testbackend.melod1n.dedyn.io
+  - url: https://kubsau-backend.melod1n.dedyn.io
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
+tags:
+  - name: account
+  - name: auth
+  - name: departments
+  - name: directivities
+  - name: disciplines
+  - name: employees
+  - name: grades
+  - name: groups
+  - name: heads
+  - name: programs
+  - name: qr
+    description: shithole
+  - name: qr > students
+  - name: students
+  - name: works
+  - name: works > latest
+  - name: works > latest > filters
+  - name: worktypes
+paths:
+  /account:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - account
+      summary: get account information
+      responses:
+        '200':
+          description: ''
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                response:
+                  id: 1
+                  type: 1
+                  login: lischenkodev@gmail.com
+                  faculty:
+                    id: 12
+                    title: Прикладной информатики
+                  departments:
+                    - id: 1
+                      title: Агрохимии
+                      phone: +7 (800) 555-35-35
+                    - id: 4
+                      title: Архитектуры
+                      phone: +7 (800) 555-35-35
+                error: null
+                success: true
+  /auth:
+    post:
+      tags:
+        - auth
+      summary: create session
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                login:
+                  type: string
+                  example: lischenkodev@gmail.com
+                password:
+                  type: integer
+                  example: '123456'
+      responses:
+        '200':
+          description: ''
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+          content:
+            application/json:
+              schema:
+                type: object
+              examples:
+                example-0:
+                  summary: success admin session
+                  value:
+                    response:
+                      userId: 2
+                      accessToken: >-
+                        eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vMC4wLjAuMDo4MDgwL2F1dGgiLCJpc3MiOiJodHRwOi8vMC4wLjAuMDo4MDgwLyIsImlkIjoyfQ.6WzSuObhNmw4V-OqBp9awgGMfJl11iynRF4dhOzpRDM
+                      facultyId: 1
+                      departmentIds:
+                        - 2
+                        - 5
+                    error: null
+                    success: true
+                example-1:
+                  summary: success not admin session
+                  value:
+                    response:
+                      userId: 2
+                      accessToken: >-
+                        eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vMC4wLjAuMDo4MDgwL2F1dGgiLCJpc3MiOiJodHRwOi8vMC4wLjAuMDo4MDgwLyIsImlkIjoyfQ.6WzSuObhNmw4V-OqBp9awgGMfJl11iynRF4dhOzpRDM
+                      facultyId: null
+                      departmentIds:
+                        - 2
+                        - 5
+                    error: null
+                    success: true
+    patch:
+      tags:
+        - auth
+      summary: modify session
+      requestBody:
+        content: {}
+      parameters:
+        - name: departmentId
+          in: query
+          schema:
+            type: integer
+          example: '1'
+      responses:
+        '200':
+          description: ''
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                response:
+                  departmentId: 1
+                  modifiedToken: >-
+                    eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwOi8vMC4wLjAuMDo4MDgwL2F1dGgiLCJpc3MiOiJodHRwOi8vMC4wLjAuMDo4MDgwLyIsImlkIjoxLCJkZXBhcnRtZW50SWQiOjF9.vIUbCCqkWH-tTXaAfCVH4U2PYCoIrw8u5L9bqfm-ID4
+                error: null
+                success: true
+  /departments:
+    get:
+      tags:
+        - departments
+      summary: get departments by ids
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: departmentIds
+          in: query
+          schema:
+            type: string
+          example: 1,2
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    post:
+      tags:
+        - departments
+      summary: add new department
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Title
+                phone:
+                  type: integer
+                  example: '78005553535'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - departments
+      summary: delete departments by ids
+      parameters:
+        - name: departmentIds
+          in: query
+          schema:
+            type: integer
+          example: '81'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /departments/80:
+    get:
+      tags:
+        - departments
+      summary: get department by id
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - departments
+      summary: delete department by id
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /departments/3/teachers:
+    get:
+      tags:
+        - departments
+      summary: get teachers
+      responses:
+        '200':
+          description: ''
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                response:
+                  - id: 3
+                    lastName: Абросимов
+                    firstName: Ярослав
+                    middleName: Валерьевич
+                    email: ya.abros@gmail.com
+                    type: 3
+                error: null
+                success: true
+  /departments/79:
+    patch:
+      tags:
+        - departments
+      summary: edit department
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Title
+                phone:
+                  type: integer
+                  example: '78005553535'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /directivities:
+    get:
+      tags:
+        - directivities
+      summary: get directivities by ids
+      parameters:
+        - name: directivityIds
+          in: query
+          schema:
+            type: string
+          example: 1,2
+        - name: extended
+          in: query
+          schema:
+            type: boolean
+          example: 'true'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    post:
+      tags:
+        - directivities
+      summary: add new directivity
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: title
+                headId:
+                  type: integer
+                  example: '1'
+                gradeId:
+                  type: integer
+                  example: '1'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - directivities
+      summary: delete directivities by ids
+      parameters:
+        - name: directivityIds
+          in: query
+          schema:
+            type: integer
+          example: '28'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /directivities/28:
+    get:
+      tags:
+        - directivities
+      summary: get directivity by id
+      parameters:
+        - name: extended
+          in: query
+          schema:
+            type: boolean
+          example: 'true'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    patch:
+      tags:
+        - directivities
+      summary: edit directivity
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: title2
+                headId:
+                  type: integer
+                  example: '2'
+                gradeId:
+                  type: integer
+                  example: '2'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - directivities
+      summary: delete directivity by id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /directivities/1/groups:
+    get:
+      tags:
+        - directivities
+      summary: get groups
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /disciplines:
+    get:
+      tags:
+        - disciplines
+      summary: get disciplines by ids
+      parameters:
+        - name: disciplineIds
+          in: query
+          schema:
+            type: string
+          example: 40,41
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    post:
+      tags:
+        - disciplines
+      summary: add new discipline
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Disciplinenn
+                departmentId:
+                  type: integer
+                  example: '1'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - disciplines
+      summary: delete disciplines by ids
+      parameters:
+        - name: disciplineIds
+          in: query
+          schema:
+            type: string
+          example: 40,41
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /disciplines/1:
+    get:
+      tags:
+        - disciplines
+      summary: get discipline by id
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /disciplines/40:
+    patch:
+      tags:
+        - disciplines
+      summary: edit discipline
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Discipline#2
+                departmentId:
+                  type: integer
+                  example: '3'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - disciplines
+      summary: delete discipline by id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /employees:
+    get:
+      tags:
+        - employees
+      summary: get employees by ids
+      parameters:
+        - name: employeeIds
+          in: query
+          schema:
+            type: string
+          example: 1,2
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    post:
+      tags:
+        - employees
+      summary: add new employee
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                  example: firstName
+                lastName:
+                  type: string
+                  example: lastName
+                middleName:
+                  type: string
+                  example: middleName
+                email:
+                  type: string
+                  description: nullable
+                employeeTypeId:
+                  type: integer
+                  example: '1'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - employees
+      summary: delete employee by ids
+      parameters:
+        - name: employees
+          in: query
+          schema:
+            type: string
+          example: 12,13
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /employees/1:
+    get:
+      tags:
+        - employees
+      summary: get employee by id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /employees/11:
+    patch:
+      tags:
+        - employees
+      summary: edit employee
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                  example: firstName1
+                lastName:
+                  type: string
+                  example: lastName1
+                middleName:
+                  type: string
+                  example: middleName1
+                email:
+                  type: string
+                employeeTypeId:
+                  type: integer
+                  example: '1'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - employees
+      summary: delete employee by id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /grades:
+    get:
+      tags:
+        - grades
+      summary: get grades by ids
+      parameters:
+        - name: gradeIds
+          in: query
+          schema:
+            type: string
+          example: 1,2
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    post:
+      tags:
+        - grades
+      summary: add new grade
+      requestBody:
+        content: {}
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - grades
+      summary: delete grades by ids
+      parameters:
+        - name: gradeIds
+          in: query
+          schema:
+            type: integer
+          example: '6'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /grades/1:
+    get:
+      tags:
+        - grades
+      summary: get grade by id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /grades/6:
+    patch:
+      tags:
+        - grades
+      summary: edit grade
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: grade229
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - grades
+      summary: delete grade by id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /groups:
+    get:
+      tags:
+        - groups
+      summary: get groups by ids
+      parameters:
+        - name: groupIds
+          in: query
+          schema:
+            type: string
+          example: 1,2
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    post:
+      tags:
+        - groups
+      summary: add new group
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Title
+                directivityId:
+                  type: integer
+                  example: '1'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - groups
+      summary: delete groups by ids
+      parameters:
+        - name: groupIds
+          in: query
+          schema:
+            type: string
+          example: 1,2
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /groups/6:
+    get:
+      tags:
+        - groups
+      summary: get group by id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /groups/61:
+    patch:
+      tags:
+        - groups
+      summary: edit group
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Title2
+                directivityId:
+                  type: integer
+                  example: '2'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - groups
+      summary: delete group by id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /heads:
+    get:
+      tags:
+        - heads
+      summary: get heads by ids
+      parameters:
+        - name: headIds
+          in: query
+          schema:
+            type: string
+          example: 1,2
+        - name: extended
+          in: query
+          schema:
+            type: boolean
+          example: 'true'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    post:
+      tags:
+        - heads
+      summary: add new head
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: 02.32.12
+                abbreviation:
+                  type: string
+                  example: jopa
+                title:
+                  type: string
+                  example: title
+                facultyId:
+                  type: integer
+                  example: '1'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - heads
+      summary: New Request
+      parameters:
+        - name: headIds
+          in: query
+          schema:
+            type: integer
+          example: '21'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /heads/21:
+    get:
+      tags:
+        - heads
+      summary: get head by id
+      parameters:
+        - name: extended
+          in: query
+          schema:
+            type: boolean
+          example: 'true'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    patch:
+      tags:
+        - heads
+      summary: edit head
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: integer
+                  example: '2123'
+                abbreviation:
+                  type: string
+                  example: jopa2
+                title:
+                  type: string
+                  example: title2
+                facultyId:
+                  type: integer
+                  example: '2'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - heads
+      summary: delete head by id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /programs:
+    get:
+      tags:
+        - programs
+      summary: get programs by ids
+      parameters:
+        - name: programIds
+          in: query
+          schema:
+            type: string
+          example: 4,8
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    post:
+      tags:
+        - programs
+      summary: add new program
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Title
+                semester:
+                  type: integer
+                  example: '1'
+                directivityId:
+                  type: integer
+                  example: '1'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - programs
+      summary: delete programs by ids
+      parameters:
+        - name: programIds
+          in: query
+          schema:
+            type: string
+          example: 240,239
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /programs/1:
+    get:
+      tags:
+        - programs
+      summary: get program by id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /programs/1/disciplines:
+    get:
+      tags:
+        - programs
+      summary: get disciplines by program id
+      parameters:
+        - name: extended
+          in: query
+          schema:
+            type: boolean
+          example: 'true'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    patch:
+      tags:
+        - programs
+      summary: edit disciplines in program
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                disciplineIds:
+                  type: integer
+                  example: '25'
+                workTypeIds:
+                  type: integer
+                  example: '2'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /programs/disciplines:
+    get:
+      tags:
+        - programs
+      summary: get disciplines by programs
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: programIds
+          in: query
+          schema:
+            type: integer
+          example: '1'
+        - name: extended
+          in: query
+          schema:
+            type: boolean
+          example: 'true'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /programs/search:
+    get:
+      tags:
+        - programs
+      summary: search
+      parameters:
+        - name: offset
+          in: query
+          schema:
+            type: integer
+          example: '0'
+        - name: extended
+          in: query
+          schema:
+            type: boolean
+          example: 'true'
+        - name: query
+          in: query
+          schema:
+            type: string
+          example: э
+      responses:
+        '200':
+          description: ''
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                response:
+                  count: 1
+                  offset: 0
+                  entries:
+                    - program:
+                        id: 1
+                        semester: 5
+                      directivity:
+                        id: 1
+                        title: Экология и природопользование
+                      grade:
+                        id: 1
+                        title: Бакалавр
+                      disciplines:
+                        - id: 21
+                          title: Культурология
+                          workTypeId: 1
+                          departmentId: 34
+                        - id: 7
+                          title: Иностранный язык
+                          workTypeId: 3
+                          departmentId: 11
+                        - id: 2
+                          title: Физика
+                          workTypeId: 4
+                          departmentId: 22
+                        - id: 17
+                          title: Маркетинг
+                          workTypeId: 2
+                          departmentId: 42
+                        - id: 36
+                          title: Анатомия
+                          workTypeId: 3
+                          departmentId: 1
+                        - id: 31
+                          title: Журналистика
+                          workTypeId: 4
+                          departmentId: 20
+                        - id: 5
+                          title: История
+                          workTypeId: 4
+                          departmentId: 12
+                        - id: 25
+                          title: Информационные технологии
+                          workTypeId: 3
+                          departmentId: 18
+                        - id: 16
+                          title: Финансы
+                          workTypeId: 1
+                          departmentId: 8
+                error: null
+                success: true
+  /programs/2/disciplines:
+    post:
+      tags:
+        - programs
+      summary: add disciplines to program
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                disciplineIds:
+                  type: string
+                  example: 1,2
+                workTypeIds:
+                  type: string
+                  example: 1,2
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /programs/483:
+    patch:
+      tags:
+        - programs
+      summary: edit program
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Title2
+                semester:
+                  type: integer
+                  example: '2'
+                directivityId:
+                  type: integer
+                  example: '1'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /programs/241:
+    delete:
+      tags:
+        - programs
+      summary: delete program by id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /qr/students:
+    get:
+      tags:
+        - qr > students
+      summary: get shrunken students
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /qr/groups/1/students:
+    get:
+      tags:
+        - qr > students
+      summary: get shrunken students by group
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /qr/groups/students:
+    get:
+      tags:
+        - qr > students
+      summary: get shrunken students by groups
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: groupIds
+          in: query
+          schema:
+            type: string
+          example: 1,2,3
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /students:
+    get:
+      tags:
+        - students
+      summary: get students
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: studentIds
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    post:
+      tags:
+        - students
+      summary: add new student
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                  example: Danil
+                lastName:
+                  type: string
+                  example: Nikolaev
+                middleName:
+                  type: string
+                  example: Middle
+                groupId:
+                  type: integer
+                  example: '1'
+                statusId:
+                  type: integer
+                  example: '1'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - students
+      summary: delete students by ids
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: studentIds
+          in: query
+          schema:
+            type: string
+          example: 1501,1502
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /students/1000:
+    get:
+      tags:
+        - students
+      summary: get student by id
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: extended
+          in: query
+          schema:
+            type: boolean
+          example: 'true'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /students/search:
+    get:
+      tags:
+        - students
+      summary: search students
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /students/2:
+    patch:
+      tags:
+        - students
+      summary: edit student
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                  description: nullable
+                  example: Danill
+                lastName:
+                  type: string
+                  description: nullable
+                  example: Nikolaev
+                middleName:
+                  type: string
+                  description: nullable
+                  example: Middle
+                groupId:
+                  type: integer
+                  description: nullable
+                  example: '1'
+                statusId:
+                  type: integer
+                  description: nullable
+                  example: '1'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /students/1501:
+    delete:
+      tags:
+        - students
+      summary: delete student by id
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /works/latest/filters/worktypes:
+    get:
+      tags:
+        - works > latest > filters
+      summary: get all work types as filters
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /works/latest/filters/disciplines:
+    get:
+      tags:
+        - works > latest > filters
+      summary: get all disciplines as filters
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /works/latest/filters/employees:
+    get:
+      tags:
+        - works > latest > filters
+      summary: get all employees as filters
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /works/latest/filters/groups:
+    get:
+      tags:
+        - works > latest > filters
+      summary: get all groups as filters
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /works/latest/filters/departments:
+    get:
+      tags:
+        - works > latest > filters
+      summary: get all departments as filters
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /works/latest:
+    get:
+      tags:
+        - works > latest
+      summary: get latest works
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          description: nullable
+          example: '1'
+      responses:
+        '200':
+          description: ''
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/json
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                response:
+                  count: 1
+                  offset: 0
+                  entries:
+                    - student:
+                        id: 478
+                        fullName: Медведева Наталья Лукинична
+                        status:
+                          id: 2
+                          title: Отчислен
+                      group:
+                        id: 20
+                        title: ПиВ2001
+                        directivityId: 8
+                      discipline:
+                        id: 24
+                        title: Театральное искусство
+                        departmentId: 15
+                      employee:
+                        id: 21
+                        lastName: Ульянов
+                        firstName: Дмитрий
+                        middleName: Матвеевич
+                        email: test@test.test
+                        type: 3
+                      work:
+                        id: 53
+                        type:
+                          id: 3
+                          title: Рассчётно-графическая
+                          needTitle: true
+                        registrationDate: 1706661802
+                        title: 'Work #53'
+                        employeeId: 21
+                      department:
+                        id: 15
+                        title: Государственного и муниципального управления
+                        phone: +7 (800) 555-35-35
+                error: null
+                success: true
+  /works:
+    get:
+      tags:
+        - works
+      summary: get works by ids
+      parameters:
+        - name: workIds
+          in: query
+          schema:
+            type: string
+          example: 1,2
+        - name: extended
+          in: query
+          schema:
+            type: boolean
+          example: 'true'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    post:
+      tags:
+        - works
+      summary: add new work
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                disciplineId:
+                  type: integer
+                  example: '1'
+                studentId:
+                  type: integer
+                  example: '1'
+                title:
+                  type: string
+                  description: nullable
+                workTypeId:
+                  type: integer
+                  example: '1'
+                departmentId:
+                  type: integer
+                  example: '1'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - works
+      summary: delete works by ids
+      parameters:
+        - name: workIds
+          in: query
+          schema:
+            type: integer
+          example: '17'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /works/1:
+    get:
+      tags:
+        - works
+      summary: get work by id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /works/11:
+    patch:
+      tags:
+        - works
+      summary: edit work
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                disciplineId:
+                  type: integer
+                  example: '1'
+                studentId:
+                  type: integer
+                  example: '1'
+                registrationDate:
+                  type: integer
+                  example: '1'
+                title:
+                  type: string
+                  description: nullable
+                  example: title
+                workTypeId:
+                  type: integer
+                  example: '3'
+                departmentId:
+                  type: integer
+                  example: '1'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /works/17:
+    delete:
+      tags:
+        - works
+      summary: delete work by id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /worktypes:
+    get:
+      tags:
+        - worktypes
+      summary: get work types by ids
+      parameters:
+        - name: workTypeIds
+          in: query
+          schema:
+            type: string
+          example: 1,2
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    post:
+      tags:
+        - worktypes
+      summary: add new work type
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: WorkType
+                needTitle:
+                  type: boolean
+                  example: 'false'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - worktypes
+      summary: delete work types by ids
+      parameters:
+        - name: workTypeIds
+          in: query
+          schema:
+            type: string
+          example: 1,2
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /worktypes/1:
+    get:
+      tags:
+        - worktypes
+      summary: get work type by id
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /worktypes/4:
+    patch:
+      tags:
+        - worktypes
+      summary: edit work type
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Worktype2
+                needTitle:
+                  type: boolean
+                  example: 'true'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - worktypes
+      summary: delete work type by id
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}

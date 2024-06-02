@@ -1,10 +1,10 @@
 package com.meloda.kubsau.route.disciplines
 
 import com.meloda.kubsau.api.respondSuccess
+import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.disciplines.DisciplinesDao
 import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.UnknownException
-import com.meloda.kubsau.errors.ValidationException
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -28,11 +28,10 @@ private fun Route.getDisciplines() {
     val disciplinesDao by inject<DisciplinesDao>()
 
     get {
-        val disciplineIds = call.request.queryParameters["disciplineIds"]
-            ?.split(",")
-            ?.map(String::trim)
-            ?.mapNotNull(String::toIntOrNull)
-            ?: emptyList()
+        val disciplineIds = call.request.queryParameters.getIntList(
+            key = "disciplineIds",
+            defaultValue = emptyList()
+        )
 
         val disciplines = if (disciplineIds.isEmpty()) {
             disciplinesDao.allDisciplines()
@@ -48,7 +47,7 @@ private fun Route.getDisciplineById() {
     val disciplinesDao by inject<DisciplinesDao>()
 
     get("{id}") {
-        val disciplineId = call.parameters["id"]?.toIntOrNull() ?: throw ValidationException("id is empty")
+        val disciplineId = call.parameters.getIntOrThrow("id")
         val discipline = disciplinesDao.singleDiscipline(disciplineId) ?: throw ContentNotFoundException
 
         respondSuccess { discipline }
@@ -61,12 +60,12 @@ private fun Route.addDiscipline() {
     post {
         val parameters = call.receiveParameters()
 
-        val title = parameters["title"]?.trim() ?: throw ValidationException("title is empty")
-        val workTypeId = parameters["workTypeId"]?.toIntOrNull() ?: throw ValidationException("workTypeId is empty")
+        val title = parameters.getStringOrThrow("title")
+        val departmentId = parameters.getIntOrThrow("departmentId")
 
         val created = disciplinesDao.addNewDiscipline(
             title = title,
-            workTypeId = workTypeId
+            departmentId = departmentId
         )
 
         if (created != null) {
@@ -81,18 +80,18 @@ private fun Route.editDiscipline() {
     val disciplinesDao by inject<DisciplinesDao>()
 
     patch("{id}") {
-        val disciplineId = call.parameters["id"]?.toIntOrNull() ?: throw ValidationException("id is empty")
+        val disciplineId = call.parameters.getIntOrThrow("id")
         val currentDiscipline = disciplinesDao.singleDiscipline(disciplineId) ?: throw ContentNotFoundException
 
         val parameters = call.receiveParameters()
 
-        val title = parameters["title"]?.trim()
-        val workTypeId = parameters["workTypeId"]?.toIntOrNull()
+        val title = parameters.getString("title")
+        val departmentId = parameters.getInt("departmentId")
 
         disciplinesDao.updateDiscipline(
             disciplineId = disciplineId,
             title = title ?: currentDiscipline.title,
-            workTypeId = workTypeId ?: currentDiscipline.workTypeId
+            departmentId = departmentId ?: currentDiscipline.departmentId
         ).let { changedCount ->
             if (changedCount == 1) {
                 respondSuccess { 1 }
@@ -107,7 +106,7 @@ private fun Route.deleteDisciplineById() {
     val disciplinesDao by inject<DisciplinesDao>()
 
     delete("{id}") {
-        val disciplineId = call.parameters["id"]?.toIntOrNull() ?: throw ValidationException("id is empty")
+        val disciplineId = call.parameters.getIntOrThrow("id")
         disciplinesDao.singleDiscipline(disciplineId) ?: throw ContentNotFoundException
 
         if (disciplinesDao.deleteDiscipline(disciplineId)) {
@@ -122,11 +121,10 @@ private fun Route.deleteDisciplinesByIds() {
     val disciplinesDao by inject<DisciplinesDao>()
 
     delete {
-        val disciplineIds = call.request.queryParameters["disciplineIds"]
-            ?.split(",")
-            ?.map(String::trim)
-            ?.mapNotNull(String::toIntOrNull)
-            ?: throw ValidationException("disciplineIds is empty")
+        val disciplineIds = call.request.queryParameters.getIntListOrThrow(
+            key = "disciplineIds",
+            requiredNotEmpty = true
+        )
 
         val currentDisciplines = disciplinesDao.allDisciplinesByIds(disciplineIds)
         if (currentDisciplines.isEmpty()) {

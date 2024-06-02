@@ -3,47 +3,45 @@ package com.meloda.kubsau.plugins
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.meloda.kubsau.PORT
+import com.meloda.kubsau.common.SecretsController
+import com.meloda.kubsau.database.users.UsersDao
 import com.meloda.kubsau.errors.SessionExpiredException
-import com.meloda.kubsau.startTime
+import com.meloda.kubsau.model.User
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
+import org.koin.ktor.ext.inject
 
-// TODO: 14/03/2024, Danil Nikolaev: extract to environment variables
-const val SECRET = "bdb979c8ff03d1e206b33c81206b72d54edd627f26dfe98d93aab1b202b92817"
 val ISSUER = "http://0.0.0.0:$PORT/"
 val AUDIENCE = "http://0.0.0.0:$PORT/auth"
 const val REALM = "Access to data"
 
 fun Application.configureAuthentication() {
-    println("SECRET: $SECRET")
+    val usersDao by inject<UsersDao>()
+
     install(Authentication) {
         jwt {
             realm = REALM
 
             verifier(
                 JWT
-                    .require(Algorithm.HMAC256(SECRET))
+                    .require(Algorithm.HMAC256(SecretsController.jwtSecret))
                     .withAudience(AUDIENCE)
                     .withIssuer(ISSUER)
                     .build()
             )
 
             validate { credential ->
-                if (credential.payload.getClaim("login").asString() != "") {
-                    JWTPrincipal(credential.payload)
-                } else {
-                    null
+                credential.payload.getClaim("id").asInt()?.let { userId ->
+                    usersDao.singleUser(userId)?.let {
+                        UserPrincipal(it, credential.payload.getClaim("departmentId").asInt())
+                    }
                 }
             }
 
             challenge { _, _ -> throw SessionExpiredException }
         }
     }
-
-    val endTime = System.currentTimeMillis()
-    val difference = endTime - startTime
-
-
-    println("Server is ready in ${difference}ms")
 }
+
+data class UserPrincipal(val user: User, val departmentId: Int?) : Principal

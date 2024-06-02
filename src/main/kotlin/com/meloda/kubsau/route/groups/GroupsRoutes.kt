@@ -1,10 +1,13 @@
 package com.meloda.kubsau.route.groups
 
 import com.meloda.kubsau.api.respondSuccess
+import com.meloda.kubsau.common.getIntList
+import com.meloda.kubsau.common.getIntListOrThrow
+import com.meloda.kubsau.common.getIntOrThrow
+import com.meloda.kubsau.common.getStringOrThrow
 import com.meloda.kubsau.database.groups.GroupsDao
 import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.UnknownException
-import com.meloda.kubsau.errors.ValidationException
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -28,11 +31,10 @@ private fun Route.getGroups() {
     val groupsDao by inject<GroupsDao>()
 
     get {
-        val groupIds = call.request.queryParameters["groupIds"]
-            ?.split(",")
-            ?.map(String::trim)
-            ?.mapNotNull(String::toIntOrNull)
-            ?: emptyList()
+        val groupIds = call.request.queryParameters.getIntList(
+            key = "groupIds",
+            defaultValue = emptyList()
+        )
 
         val groups = if (groupIds.isEmpty()) {
             groupsDao.allGroups()
@@ -48,7 +50,7 @@ private fun Route.getGroupById() {
     val groupsDao by inject<GroupsDao>()
 
     get("{id}") {
-        val groupId = call.parameters["id"]?.toIntOrNull() ?: throw ValidationException("id is empty")
+        val groupId = call.parameters.getIntOrThrow("id")
         val group = groupsDao.singleGroup(groupId) ?: throw ContentNotFoundException
 
         respondSuccess { group }
@@ -61,12 +63,12 @@ private fun Route.addGroup() {
     post {
         val parameters = call.receiveParameters()
 
-        val title = parameters["title"]?.trim() ?: throw ValidationException("title is empty")
-        val majorId = parameters["majorId"]?.toIntOrNull() ?: throw ValidationException("majorId is empty")
+        val title = parameters.getStringOrThrow("title")
+        val directivityId = parameters.getIntOrThrow("directivityId")
 
         val created = groupsDao.addNewGroup(
             title = title,
-            majorId = majorId
+            directivityId = directivityId
         )
 
         if (created != null) {
@@ -81,18 +83,18 @@ private fun Route.editGroup() {
     val groupsDao by inject<GroupsDao>()
 
     patch("{id}") {
-        val groupId = call.parameters["id"]?.toIntOrNull() ?: throw ValidationException("id is empty")
+        val groupId = call.parameters.getIntOrThrow("id")
         val currentGroup = groupsDao.singleGroup(groupId) ?: throw ContentNotFoundException
 
         val parameters = call.receiveParameters()
 
         val title = parameters["title"]?.trim()
-        val majorId = parameters["majorId"]?.toIntOrNull()
+        val directivityId = parameters["directivityId"]?.toIntOrNull()
 
         groupsDao.updateGroup(
             groupId = groupId,
             title = title ?: currentGroup.title,
-            majorId = majorId ?: currentGroup.majorId
+            directivityId = directivityId ?: currentGroup.directivityId
         ).let { changedCount ->
             if (changedCount == 1) {
                 respondSuccess { 1 }
@@ -107,7 +109,7 @@ private fun Route.deleteGroupById() {
     val groupsDao by inject<GroupsDao>()
 
     delete("{id}") {
-        val groupId = call.parameters["id"]?.toIntOrNull() ?: throw ValidationException("id is empty")
+        val groupId = call.parameters.getIntOrThrow("id")
         groupsDao.singleGroup(groupId) ?: throw ContentNotFoundException
 
         if (groupsDao.deleteGroup(groupId)) {
@@ -122,11 +124,10 @@ private fun Route.deleteGroupsByIds() {
     val groupsDao by inject<GroupsDao>()
 
     delete {
-        val groupIds = call.request.queryParameters["groupIds"]
-            ?.split(",")
-            ?.map(String::trim)
-            ?.mapNotNull(String::toIntOrNull)
-            ?: throw ValidationException("groupIds is empty")
+        val groupIds = call.request.queryParameters.getIntListOrThrow(
+            key = "groupIds",
+            requiredNotEmpty = true
+        )
 
         val currentGroups = groupsDao.allGroupsByIds(groupIds)
         if (currentGroups.isEmpty()) {

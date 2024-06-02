@@ -2,7 +2,7 @@ package com.meloda.kubsau.database.disciplines
 
 import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.model.Discipline
-import com.meloda.kubsau.route.journal.JournalFilter
+import com.meloda.kubsau.route.works.EntryFilter
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
@@ -13,7 +13,7 @@ class DisciplinesDaoImpl : DisciplinesDao {
         Disciplines.selectAll().map(::mapResultRow)
     }
 
-    override suspend fun allDisciplinesAsFilters(): List<JournalFilter> = dbQuery {
+    override suspend fun allDisciplinesAsFilters(): List<EntryFilter> = dbQuery {
         Disciplines
             .select(Disciplines.id, Disciplines.title)
             .map(::mapFilterResultRow)
@@ -34,17 +34,17 @@ class DisciplinesDaoImpl : DisciplinesDao {
             .singleOrNull()
     }
 
-    override suspend fun addNewDiscipline(title: String, workTypeId: Int): Discipline? = dbQuery {
+    override suspend fun addNewDiscipline(title: String, departmentId: Int): Discipline? = dbQuery {
         Disciplines.insert {
             it[Disciplines.title] = title
-            it[Disciplines.workTypeId] = workTypeId
+            it[Disciplines.departmentId] = departmentId
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 
-    override suspend fun updateDiscipline(disciplineId: Int, title: String, workTypeId: Int): Int = dbQuery {
+    override suspend fun updateDiscipline(disciplineId: Int, title: String, departmentId: Int): Int = dbQuery {
         Disciplines.update(where = { Disciplines.id eq disciplineId }) {
             it[Disciplines.title] = title
-            it[Disciplines.workTypeId] = workTypeId
+            it[Disciplines.departmentId] = departmentId
         }
     }
 
@@ -58,7 +58,7 @@ class DisciplinesDaoImpl : DisciplinesDao {
 
     override fun mapResultRow(row: ResultRow): Discipline = Discipline.mapResultRow(row)
 
-    override fun mapFilterResultRow(row: ResultRow): JournalFilter = JournalFilter(
+    override fun mapFilterResultRow(row: ResultRow): EntryFilter = EntryFilter(
         id = row[Disciplines.id].value,
         title = row[Disciplines.title]
     )

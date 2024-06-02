@@ -1,56 +1,98 @@
 package com.meloda.kubsau.route.programs
 
+import com.meloda.kubsau.DATA_FOLDER
 import com.meloda.kubsau.api.respondSuccess
+import com.meloda.kubsau.common.*
+import com.meloda.kubsau.database.departments.DepartmentsDao
+import com.meloda.kubsau.database.groups.GroupsDao
 import com.meloda.kubsau.database.programs.ProgramsDao
 import com.meloda.kubsau.database.programsdisciplines.ProgramsDisciplinesDao
+import com.meloda.kubsau.database.students.StudentsDao
 import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.UnknownException
 import com.meloda.kubsau.errors.ValidationException
+import com.meloda.kubsau.model.Department
 import com.meloda.kubsau.model.Discipline
+import com.meloda.kubsau.model.Program
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
+import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.*
 import org.koin.ktor.ext.inject
+import qrcode.QRCode
+import qrcode.color.Colors
+import java.awt.image.BufferedImage
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
+import javax.imageio.IIOImage
+import javax.imageio.ImageIO
+import javax.imageio.ImageWriteParam
 
 fun Route.programsRoutes() {
     authenticate {
         route("/programs") {
             getPrograms()
             getProgramById()
+            getDisciplines()
+            generateQRCodes()
+            searchPrograms()
             addProgram()
+            addDisciplinesToProgram()
             editProgram()
+            editProgramDisciplines()
             deleteProgramById()
             deleteProgramsByIds()
         }
     }
 }
 
+private data class ProgramWithDisciplineIds(
+    val program: Program,
+    val disciplineIds: List<Int>
+)
+
 private fun Route.getPrograms() {
     val programsDao by inject<ProgramsDao>()
     val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
 
     get {
-        val programIds = call.request.queryParameters["programIds"]
-            ?.split(",")
-            ?.map(String::trim)
-            ?.mapNotNull(String::toIntOrNull)
-            ?: emptyList()
+        val parameters = call.request.queryParameters
 
-        val disciplineIds = hashMapOf<Int, List<Int>>()
+        val programIds = parameters.getIntList(
+            key = "programIds",
+            maxSize = MAX_PROGRAMS
+        )
 
-        programIds.forEach { programId ->
-            disciplineIds[programId] = programsDisciplinesDao.allDisciplinesByProgramId(programId)
-                .map(Discipline::id)
+        val offset = parameters.getInt("offset")
+        val limit = parameters.getInt(key = "limit", range = ProgramRange)
+
+        val entries = programsDao.allProgramsBySearch(
+            programIds = programIds,
+            offset = offset,
+            limit = limit ?: MAX_PROGRAMS,
+            semester = null,
+            directivityId = null,
+            query = null
+        )
+
+        val disciplines = programsDisciplinesDao.allSearchDisciplinesByProgramIds(entries.map { it.program.id })
+
+        respondSuccess {
+            SearchResponse(
+                count = entries.size,
+                offset = offset ?: 0,
+                entries = entries.map { entry ->
+                    entry.copy(
+                        disciplines = disciplines.filter { it.programId == entry.program.id }.map { it.discipline }
+                    )
+                }
+            )
         }
-
-        val programs = if (programIds.isEmpty()) {
-            programsDao.allPrograms()
-        } else {
-            programsDao.allProgramsByIds(programIds)
-        }.map { program -> program.copy(disciplineIds = disciplineIds[program.id].orEmpty()) }
-
-        respondSuccess { programs }
     }
 }
 
@@ -59,83 +101,376 @@ private fun Route.getProgramById() {
     val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
 
     get("{id}") {
-        val programId = call.parameters["id"]?.toIntOrNull() ?: throw ValidationException("id is empty")
+        val programId = call.parameters.getIntOrThrow("id")
         val program = programsDao.singleProgram(programId) ?: throw ContentNotFoundException
 
         val disciplines = programsDisciplinesDao.allDisciplinesByProgramId(programId)
             .map(Discipline::id)
 
-        respondSuccess { program.copy(disciplineIds = disciplines) }
+        respondSuccess {
+            ProgramWithDisciplineIds(
+                program = program,
+                disciplineIds = disciplines
+            )
+        }
+    }
+}
+
+private data class DisciplinesResponse(
+    val disciplines: List<Discipline>
+)
+
+private data class FullDisciplinesResponse(
+    val disciplines: List<Discipline>,
+    val departments: List<Department>
+)
+
+private fun Route.getDisciplines() {
+    val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
+    val departmentsDao by inject<DepartmentsDao>()
+
+    get("{programId}/disciplines") {
+        val programId = call.parameters.getIntOrThrow("programId")
+        val extended = call.request.queryParameters.getBoolean("extended", false)
+
+        val disciplines = programsDisciplinesDao.allDisciplinesByProgramId(programId)
+
+        if (!extended) {
+            respondSuccess {
+                DisciplinesResponse(disciplines = disciplines)
+            }
+        } else {
+            val departmentIds = disciplines.map(Discipline::departmentId)
+            val departments = departmentsDao.allDepartmentsByIds(departmentIds)
+
+            respondSuccess {
+                FullDisciplinesResponse(
+                    disciplines = disciplines,
+                    departments = departments
+                )
+            }
+        }
+    }
+
+    get("/disciplines") {
+        val parameters = call.request.queryParameters
+
+        val programIds = parameters.getIntListOrThrow(
+            key = "programIds",
+            requiredNotEmpty = true
+        )
+
+        val extended = parameters.getBoolean("extended", false)
+
+        val disciplines = programsDisciplinesDao.allDisciplinesByProgramIds(programIds)
+
+        if (!extended) {
+            respondSuccess { DisciplinesResponse(disciplines = disciplines) }
+        } else {
+            val departmentIds = disciplines.map(Discipline::departmentId)
+            val departments = departmentsDao.allDepartmentsByIds(departmentIds)
+
+            respondSuccess {
+                FullDisciplinesResponse(
+                    disciplines = disciplines,
+                    departments = departments
+                )
+            }
+        }
+    }
+}
+
+private fun Route.generateQRCodes() {
+    val programsDao by inject<ProgramsDao>()
+    val groupsDao by inject<GroupsDao>()
+    val studentsDao by inject<StudentsDao>()
+    val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
+
+    get("{id}/qr") {
+        val programId = call.parameters.getIntOrThrow("id")
+        programsDao.singleProgram(programId) ?: throw ContentNotFoundException
+
+        val groupIds = call.request.queryParameters.getIntListOrThrow(
+            key = "groupIds",
+            requiredNotEmpty = true
+        )
+
+        val groups = groupsDao.allGroupsByIds(groupIds)
+        if (groups.isEmpty()) {
+            throw ContentNotFoundException
+        }
+
+        val students = studentsDao.allStudentsByGroupIdsAsMap(groupIds)
+        val disciplines = programsDisciplinesDao.allDisciplineIdsByProgramIdAsMap(programId)
+
+        val jobList = mutableListOf<Job>()
+
+        val limitedDispatcher = Dispatchers.IO.limitedParallelism(2)
+
+        for (group in groups) {
+            val groupFolder = File("$DATA_FOLDER/QRs/${group.title}")
+
+            val job = async(limitedDispatcher) {
+                for (student in students[group.id].orEmpty()) {
+                    val studentFolder = File("${groupFolder.path}/${student.fullName}").also { it.mkdirs() }
+
+                    val innerJobs = disciplines.map { discipline ->
+                        async(limitedDispatcher) {
+                            generateQRCode(
+                                dispatcher = limitedDispatcher,
+                                qrValue = "%d,%d,%d,%d".format(
+                                    discipline.departmentId,
+                                    discipline.disciplineId,
+                                    student.id,
+                                    discipline.workTypeId
+                                ),
+                                rootPath = studentFolder.path,
+                                fileName = discipline.title
+                            )
+                        }
+                    }
+                    innerJobs.awaitAll()
+                }
+            }
+            jobList.add(job)
+        }
+
+        jobList.joinAll()
+
+        val qrFolder = File("$DATA_FOLDER/QRs")
+        val fileToExtract = File("$DATA_FOLDER/temp.zip")
+
+        zipDirectory(qrFolder, fileToExtract)
+
+        call.respondFile(fileToExtract)
+
+        qrFolder.deleteRecursively()
+        fileToExtract.delete()
+    }
+}
+
+private suspend fun generateQRCode(
+    dispatcher: CoroutineDispatcher,
+    qrValue: String,
+    rootPath: String,
+    fileName: String
+): File = withContext(dispatcher) {
+    val qrCodeBuilder = QRCode
+        .ofRoundedSquares()
+        .withSize(10)
+        .withRadius(5)
+        .withBackgroundColor(Colors.WHITE)
+        .withColor(Colors.BLACK)
+        .build(qrValue)
+
+    val qrCode = qrCodeBuilder.render()
+    val file = File("$rootPath/$fileName.jpg")
+    qrCode.writeImage(file.outputStream())
+
+    val oldImage = ImageIO.read(file)
+    val image = BufferedImage(oldImage.width, oldImage.height, BufferedImage.TYPE_INT_RGB)
+    val g = image.createGraphics()
+    g.fillRect(0, 0, oldImage.width, oldImage.height)
+    g.drawImage(oldImage, 0, 0, null)
+    g.dispose()
+
+    val writers = ImageIO.getImageWritersByFormatName("jpg")
+    val writer = writers.next()
+
+    ImageIO.createImageOutputStream(file.outputStream()).let(writer::setOutput)
+
+    val param = writer.defaultWriteParam
+    param.compressionMode = ImageWriteParam.MODE_EXPLICIT
+    param.compressionQuality = 0.9f
+    writer.write(null, IIOImage(image, null, null), param)
+
+    writer.dispose()
+    file
+}
+
+fun zipDirectory(directory: File, zipFile: File) {
+    ZipOutputStream(FileOutputStream(zipFile)).use { zipOut ->
+        zipDirectory(directory, directory, zipOut)
+    }
+}
+
+private fun zipDirectory(baseDirectory: File, directoryToZip: File, zipOut: ZipOutputStream) {
+    val files = directoryToZip.listFiles() ?: return
+
+    for (file in files) {
+        if (file.isDirectory) {
+            zipDirectory(baseDirectory, file, zipOut)
+        } else {
+            val relativePath = baseDirectory.toURI().relativize(file.toURI()).path
+            val entry = ZipEntry(relativePath)
+            zipOut.putNextEntry(entry)
+
+            FileInputStream(file).use { inputStream ->
+                inputStream.copyTo(zipOut)
+            }
+            zipOut.closeEntry()
+        }
+    }
+}
+
+private data class SearchResponse(
+    val count: Int,
+    val offset: Int,
+    val entries: List<SearchEntry>
+)
+
+data class SearchEntry(
+    val program: SearchProgram,
+    val directivity: IdTitle,
+    val grade: IdTitle,
+    val disciplines: List<SearchDiscipline>
+)
+
+data class SearchProgram(
+    val id: Int,
+    val semester: Int
+)
+
+data class SearchDiscipline(
+    val id: Int,
+    val title: String,
+    val workTypeId: Int,
+    val departmentId: Int
+)
+
+data class SearchDisciplineWithProgramId(
+    val programId: Int,
+    val discipline: SearchDiscipline
+)
+
+data class FullDisciplineIds(
+    val disciplineId: Int,
+    val programId: Int,
+    val workTypeId: Int,
+    val departmentId: Int,
+    val title: String
+)
+
+private fun Route.searchPrograms() {
+    val programsDao by inject<ProgramsDao>()
+    val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
+
+    get("/search") {
+        val parameters = call.request.queryParameters
+
+        val offset = parameters.getInt("offset")
+        val limit = parameters.getInt(key = "limit", range = ProgramRange)
+        val semester = parameters.getInt("semester")
+        val directivityId = parameters.getInt("directivityId")
+        val query = parameters.getString(key = "query", trim = true)?.lowercase()
+
+        val entries = programsDao.allProgramsBySearch(
+            programIds = null,
+            offset = offset,
+            limit = limit ?: MAX_PROGRAMS,
+            semester = semester,
+            directivityId = directivityId,
+            query = query
+        )
+
+        val programIds = entries.map { it.program.id }
+        val disciplines = programsDisciplinesDao.allSearchDisciplinesByProgramIds(programIds)
+
+        respondSuccess {
+            SearchResponse(
+                count = entries.size,
+                offset = offset ?: 0,
+                entries = entries.map { entry ->
+                    entry.copy(
+                        disciplines = disciplines.filter { it.programId == entry.program.id }.map { it.discipline }
+                    )
+                }
+            )
+        }
     }
 }
 
 private fun Route.addProgram() {
     val programsDao by inject<ProgramsDao>()
-    val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
 
     post {
         val parameters = call.receiveParameters()
 
-        val title = parameters["title"]?.trim() ?: throw ValidationException("title is empty")
-        val semester = parameters["semester"]?.toIntOrNull() ?: throw ValidationException("semester is empty")
-        val disciplineIds =
-            parameters["disciplineIds"]
-                ?.split(",")
-                ?.mapNotNull(String::toIntOrNull)
-
-        if (disciplineIds.isNullOrEmpty()) {
-            throw ValidationException("disciplineIds is empty")
-        }
+        val semester = parameters.getIntOrThrow("semester")
+        val directivityId = parameters.getIntOrThrow("directivityId")
 
         val created = programsDao.addNewProgram(
-            title = title,
-            semester = semester
+            semester = semester,
+            directivityId = directivityId
         )
 
         if (created != null) {
-            disciplineIds.forEach { disciplineId ->
-                programsDisciplinesDao.addNewReference(
-                    programId = created.id, disciplineId = disciplineId
-                )
-            }
-
-            respondSuccess { created.copy(disciplineIds = disciplineIds) }
+            respondSuccess { created }
         } else {
             throw UnknownException
         }
     }
 }
 
-private fun Route.editProgram() {
+private fun Route.addDisciplinesToProgram() {
     val programsDao by inject<ProgramsDao>()
     val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
 
+    post("{id}/disciplines") {
+        val programId = call.parameters.getIntOrThrow("id")
+        programsDao.singleProgram(programId) ?: throw ContentNotFoundException
+
+        val parameters = call.receiveParameters()
+
+        val disciplineIds = parameters.getIntListOrThrow(
+            key = "disciplineIds",
+            requiredNotEmpty = true
+        )
+
+        val workTypeIds = parameters.getIntListOrThrow(
+            key = "workTypeIds",
+            requiredNotEmpty = true
+        )
+
+        if (disciplineIds.size != workTypeIds.size) {
+            throw ValidationException.InvalidException(
+                message = "different count of disciplines (${disciplineIds.size}) and work types (${workTypeIds.size}"
+            )
+        }
+
+        disciplineIds.forEachIndexed { index, disciplineId ->
+            if (!programsDisciplinesDao.addNewReference(
+                    programId = programId,
+                    disciplineId = disciplineId,
+                    workTypeId = workTypeIds[index]
+                )
+            ) {
+                throw UnknownException
+            }
+        }
+
+        respondSuccess { 1 }
+    }
+}
+
+private fun Route.editProgram() {
+    val programsDao by inject<ProgramsDao>()
+
     patch("{id}") {
-        val programId = call.parameters["id"]?.toIntOrNull() ?: throw ValidationException("id is empty")
+        val programId = call.parameters.getIntOrThrow("id")
         val currentProgram = programsDao.singleProgram(programId) ?: throw ContentNotFoundException
 
         val parameters = call.receiveParameters()
 
-        val title = parameters["title"]?.trim()
-        val semester = parameters["semester"]?.toIntOrNull()
-        val disciplineIds =
-            parameters["disciplineIds"]
-                ?.split(",")
-                ?.mapNotNull(String::toIntOrNull)
-
-        disciplineIds
-            ?.apply {
-                programsDisciplinesDao.deleteReferencesByProgramId(programId)
-            }?.forEach { disciplineId ->
-                programsDisciplinesDao.addNewReference(programId, disciplineId)
-            }
+        val semester = parameters.getInt("semester")
+        val directivityId = parameters.getInt("directivityId")
 
         programsDao.updateProgram(
             programId = programId,
-            title = title ?: currentProgram.title,
-            semester = semester ?: currentProgram.semester
-        ).let { changedCount ->
-            if (changedCount == 1) {
+            semester = semester ?: currentProgram.semester,
+            directivityId = directivityId ?: currentProgram.directivityId
+        ).let { success ->
+            if (success) {
                 respondSuccess { 1 }
             } else {
                 throw UnknownException
@@ -144,11 +479,47 @@ private fun Route.editProgram() {
     }
 }
 
+private fun Route.editProgramDisciplines() {
+    val programsDao by inject<ProgramsDao>()
+    val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
+
+    patch("{id}/disciplines") {
+        val programId = call.parameters.getIntOrThrow("id")
+        val program = programsDao.singleProgram(programId) ?: throw ContentNotFoundException
+
+        val parameters = call.receiveParameters()
+
+        val disciplineIds = parameters.getIntListOrThrow(
+            key = "disciplineIds",
+            requiredNotEmpty = true
+        )
+
+        val workTypeIds = parameters.getIntListOrThrow(
+            key = "workTypeIds",
+            requiredNotEmpty = true
+        )
+
+        if (disciplineIds.size != workTypeIds.size) {
+            throw ValidationException.InvalidException(
+                message = "disciplines size (${disciplineIds.size}) is different from work types size (${workTypeIds.size})"
+            )
+        }
+
+        programsDisciplinesDao.deleteReferencesByProgramId(program.id)
+
+        disciplineIds.forEachIndexed { index, disciplineId ->
+            programsDisciplinesDao.addNewReference(programId, disciplineId, workTypeIds[index])
+        }
+
+        respondSuccess { 1 }
+    }
+}
+
 private fun Route.deleteProgramById() {
     val programsDao by inject<ProgramsDao>()
 
     delete("{id}") {
-        val programId = call.parameters["id"]?.toIntOrNull() ?: throw ValidationException("id is empty")
+        val programId = call.parameters.getIntOrThrow("id")
         programsDao.singleProgram(programId) ?: throw ContentNotFoundException
 
         if (programsDao.deleteProgram(programId)) {
@@ -163,11 +534,10 @@ private fun Route.deleteProgramsByIds() {
     val programsDao by inject<ProgramsDao>()
 
     delete {
-        val programIds = call.request.queryParameters["programIds"]
-            ?.split(",")
-            ?.map(String::trim)
-            ?.mapNotNull(String::toIntOrNull)
-            ?: throw ValidationException("programIds is empty")
+        val programIds = call.request.queryParameters.getIntListOrThrow(
+            key = "programIds",
+            requiredNotEmpty = true
+        )
 
         val currentPrograms = programsDao.allProgramsByIds(programIds)
         if (currentPrograms.isEmpty()) {

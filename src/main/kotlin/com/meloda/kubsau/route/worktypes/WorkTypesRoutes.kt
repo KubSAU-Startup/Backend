@@ -1,10 +1,10 @@
 package com.meloda.kubsau.route.worktypes
 
 import com.meloda.kubsau.api.respondSuccess
+import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.worktypes.WorkTypesDao
 import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.UnknownException
-import com.meloda.kubsau.errors.ValidationException
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -28,11 +28,10 @@ private fun Route.getWorkTypes() {
     val workTypesDao by inject<WorkTypesDao>()
 
     get {
-        val workTypeIds = call.request.queryParameters["workTypeIds"]
-            ?.split(",")
-            ?.map(String::trim)
-            ?.mapNotNull(String::toIntOrNull)
-            ?: emptyList()
+        val workTypeIds = call.request.queryParameters.getIntList(
+            key = "workTypeIds",
+            defaultValue = emptyList()
+        )
 
         val workTypes = if (workTypeIds.isEmpty()) {
             workTypesDao.allWorkTypes()
@@ -48,7 +47,7 @@ private fun Route.getWorkTypeById() {
     val workTypesDao by inject<WorkTypesDao>()
 
     get("{id}") {
-        val workTypeId = call.parameters["id"]?.toIntOrNull() ?: throw ValidationException("id is empty")
+        val workTypeId = call.parameters.getIntOrThrow("id")
         val workType = workTypesDao.singleWorkType(workTypeId) ?: throw ContentNotFoundException
 
         respondSuccess { workType }
@@ -61,13 +60,12 @@ private fun Route.addWorkType() {
     post {
         val parameters = call.receiveParameters()
 
-        val title = parameters["title"]?.trim() ?: throw ValidationException("title is empty")
-        val isEditable =
-            parameters["isEditable"]?.toBooleanStrictOrNull() ?: throw ValidationException("isEditable is empty")
+        val title = parameters.getStringOrThrow("title")
+        val needTitle = parameters.getBooleanOrThrow("needTitle")
 
         val created = workTypesDao.addNewWorkType(
             title = title,
-            isEditable = isEditable
+            needTitle = needTitle
         )
 
         if (created != null) {
@@ -82,20 +80,20 @@ private fun Route.editWorkType() {
     val workTypesDao by inject<WorkTypesDao>()
 
     patch("{id}") {
-        val workTypeId = call.parameters["id"]?.toIntOrNull() ?: throw ValidationException("id is empty")
+        val workTypeId = call.parameters.getIntOrThrow("id")
         val currentWorkType = workTypesDao.singleWorkType(workTypeId) ?: throw ContentNotFoundException
 
         val parameters = call.receiveParameters()
 
-        val title = parameters["title"]?.trim()
-        val isEditable = parameters["isEditable"]?.toBooleanStrictOrNull()
+        val title = parameters.getString("title")
+        val needTitle = parameters.getBoolean("needTitle")
 
         workTypesDao.updateWorkType(
             workTypeId = workTypeId,
             title = title ?: currentWorkType.title,
-            isEditable = isEditable ?: currentWorkType.isEditable
-        ).let { changedCount ->
-            if (changedCount == 1) {
+            needTitle = needTitle ?: currentWorkType.needTitle
+        ).let { success ->
+            if (success) {
                 respondSuccess { 1 }
             } else {
                 throw UnknownException
@@ -108,7 +106,7 @@ private fun Route.deleteWorkTypeById() {
     val workTypesDao by inject<WorkTypesDao>()
 
     delete("{id}") {
-        val workTypeId = call.parameters["id"]?.toIntOrNull() ?: throw ValidationException("id is empty")
+        val workTypeId = call.parameters.getIntOrThrow("id")
         workTypesDao.singleWorkType(workTypeId) ?: throw ContentNotFoundException
 
         if (workTypesDao.deleteWorkType(workTypeId)) {
@@ -123,11 +121,10 @@ private fun Route.deleteWorkTypesByIds() {
     val workTypesDao by inject<WorkTypesDao>()
 
     delete {
-        val workTypeIds = call.request.queryParameters["workTypeIds"]
-            ?.split(",")
-            ?.map(String::trim)
-            ?.mapNotNull(String::toIntOrNull)
-            ?: throw ValidationException("workTypeIds is empty")
+        val workTypeIds = call.request.queryParameters.getIntListOrThrow(
+            key = "workTypeIds",
+            requiredNotEmpty = true
+        )
 
         val currentWorkTypes = workTypesDao.allWorkTypesByIds(workTypeIds)
         if (currentWorkTypes.isEmpty()) {

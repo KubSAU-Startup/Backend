@@ -44,7 +44,7 @@ fun Application.configureExceptions() {
 
                 is ContentNotFoundException -> {
                     respondError(call) {
-                        ApiError(Errors.CONTENT_NOT_FOUND, "Content not found")
+                        ApiError(Errors.CONTENT_NOT_FOUND, throwable.message ?: "Content not found")
                     }
                 }
             }
