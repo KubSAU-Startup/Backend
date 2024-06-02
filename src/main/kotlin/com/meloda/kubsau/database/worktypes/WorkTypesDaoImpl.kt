@@ -2,7 +2,7 @@ package com.meloda.kubsau.database.worktypes
 
 import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.model.WorkType
-import com.meloda.kubsau.route.journal.JournalFilter
+import com.meloda.kubsau.route.works.EntryFilter
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
@@ -13,7 +13,7 @@ class WorkTypesDaoImpl : WorkTypesDao {
         WorkTypes.selectAll().map(::mapResultRow)
     }
 
-    override suspend fun allWorkTypesAsFilters(): List<JournalFilter> = dbQuery {
+    override suspend fun allWorkTypesAsFilters(): List<EntryFilter> = dbQuery {
         WorkTypes
             .select(WorkTypes.id, WorkTypes.title)
             .map(::mapFilterResultRow)
@@ -42,18 +42,18 @@ class WorkTypesDaoImpl : WorkTypesDao {
             .singleOrNull()
     }
 
-    override suspend fun addNewWorkType(title: String, isEditable: Boolean): WorkType? = dbQuery {
+    override suspend fun addNewWorkType(title: String, needTitle: Boolean): WorkType? = dbQuery {
         WorkTypes.insert {
             it[WorkTypes.title] = title
-            it[WorkTypes.isEditable] = if (isEditable) 1 else 0
+            it[WorkTypes.needTitle] = needTitle
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 
-    override suspend fun updateWorkType(workTypeId: Int, title: String, isEditable: Boolean): Int = dbQuery {
+    override suspend fun updateWorkType(workTypeId: Int, title: String, needTitle: Boolean): Boolean = dbQuery {
         WorkTypes.update(where = { WorkTypes.id eq workTypeId }) {
             it[WorkTypes.title] = title
-            it[WorkTypes.isEditable] = if (isEditable) 1 else 0
-        }
+            it[WorkTypes.needTitle] = needTitle
+        } > 0
     }
 
     override suspend fun deleteWorkType(workTypeId: Int): Boolean = dbQuery {
@@ -70,7 +70,7 @@ class WorkTypesDaoImpl : WorkTypesDao {
 
     override fun mapResultRow(row: ResultRow): WorkType = WorkType.mapResultRow(row)
 
-    override fun mapFilterResultRow(row: ResultRow): JournalFilter = JournalFilter(
+    override fun mapFilterResultRow(row: ResultRow): EntryFilter = EntryFilter(
         id = row[WorkTypes.id].value,
         title = row[WorkTypes.title]
     )

@@ -39,13 +39,12 @@ class UsersDaoImpl : UsersDao {
         login: String,
         password: String,
         type: Int,
-        departmentId: Int
+        employeeId: Int
     ): User? = dbQuery {
         Users.insert {
             it[Users.login] = login
             it[Users.password] = password
-            it[Users.type] = type
-            it[Users.departmentId] = departmentId
+            it[Users.employeeId] = employeeId
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 

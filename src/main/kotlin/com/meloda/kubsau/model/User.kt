@@ -8,17 +8,16 @@ data class User(
     val login: String,
     // TODO: 24/02/2024, Danil Nikolaev: SECURITY, FOR FUCK's SAKE
     val password: String,
-    val type: Int,
-    val departmentId: Int
+    val employeeId: Int
 ) {
+
     companion object {
 
         fun mapResultRow(row: ResultRow): User = User(
             id = row[Users.id].value,
             login = row[Users.login],
             password = row[Users.password],
-            type = row[Users.type],
-            departmentId = row[Users.departmentId]
+            employeeId = row[Users.employeeId]
         )
     }
 }

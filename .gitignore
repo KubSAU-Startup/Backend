@@ -100,3 +100,5 @@ kotlin-ide/
 /.idea/vcs.xml
 database.sql.mv.db
 /config/db/database.db
+/config/secret.properties
+/config/config.properties

@@ -1,27 +1,28 @@
 package com.meloda.kubsau.database
 
-import com.meloda.kubsau.common.isInDocker
+import com.meloda.kubsau.CONFIG_FOLDER
+import com.meloda.kubsau.common.ConfigController
+import com.meloda.kubsau.common.SecretsController
 import com.meloda.kubsau.database.departments.Departments
+import com.meloda.kubsau.database.directivities.Directivities
 import com.meloda.kubsau.database.disciplines.Disciplines
+import com.meloda.kubsau.database.employees.Employees
+import com.meloda.kubsau.database.employeesdepartments.EmployeesDepartments
+import com.meloda.kubsau.database.employeesfaculties.EmployeesFaculties
+import com.meloda.kubsau.database.faculties.Faculties
+import com.meloda.kubsau.database.grades.Grades
 import com.meloda.kubsau.database.groups.Groups
-import com.meloda.kubsau.database.journals.Journals
-import com.meloda.kubsau.database.majors.Majors
+import com.meloda.kubsau.database.heads.Heads
 import com.meloda.kubsau.database.programs.Programs
 import com.meloda.kubsau.database.programsdisciplines.ProgramsDisciplines
-import com.meloda.kubsau.database.sessions.Sessions
-import com.meloda.kubsau.database.specializations.Specializations
-import com.meloda.kubsau.database.specializationsdisciplines.SpecializationsDisciplines
 import com.meloda.kubsau.database.students.Students
-import com.meloda.kubsau.database.teachers.Teachers
-import com.meloda.kubsau.database.teachersdisciplines.TeachersDisciplines
+import com.meloda.kubsau.database.studentstatuses.StudentStatuses
 import com.meloda.kubsau.database.users.Users
 import com.meloda.kubsau.database.works.Works
 import com.meloda.kubsau.database.worktypes.WorkTypes
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.StdOutSqlLogger
-import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
@@ -29,33 +30,46 @@ import java.io.File
 object DatabaseController {
 
     fun init() {
-        val driverClassName = "org.sqlite.JDBC"
+        val database = if (ConfigController.usePostgreSQL) {
+            Database.connect(
+                url = "jdbc:postgresql://${ConfigController.dbUrl}/${SecretsController.dbName}",
+                driver = "org.postgresql.Driver",
+                user = SecretsController.dbUser,
+                password = SecretsController.dbPassword
+            )
+        } else {
+            val folderPath = "$CONFIG_FOLDER/db"
+            val filePath = "$folderPath/database.db"
 
-        val userDir = if (isInDocker) "" else System.getProperty("user.dir")
+            File(folderPath).apply {
+                if (!exists()) mkdirs()
+            }
 
-        val folderPath = "$userDir/config/db"
-        val filePath = "$folderPath/database.db"
+            val jdbcURL = "jdbc:sqlite:$filePath"
 
-        File(folderPath).apply {
-            if (!exists()) mkdirs()
+            Database.connect(jdbcURL, "org.sqlite.JDBC")
         }
-
-        val jdbcURL = "jdbc:sqlite:$filePath"
-
-        val database = Database.connect(jdbcURL, driverClassName)
         transaction(database) {
-            addLogger(StdOutSqlLogger)
+            // TODO: 30/04/2024, Danil Nikolaev: enable/disable logger
+            //addLogger(StdOutSqlLogger)
+
             SchemaUtils.create(
-                Departments, Disciplines, Groups,
-                Journals, Majors, Programs,
-                ProgramsDisciplines, Sessions, Specializations,
-                SpecializationsDisciplines, Students, Teachers,
-                TeachersDisciplines, Users, Works,
-                WorkTypes
+                Departments, Directivities, Disciplines, Employees,
+                Faculties, Grades, Groups, Heads,
+                Programs, Students, StudentStatuses,
+                Users, Works, WorkTypes
+            )
+            SchemaUtils.create(
+                EmployeesDepartments, EmployeesFaculties, ProgramsDisciplines
             )
         }
     }
 
     suspend fun <T> dbQuery(block: suspend () -> T): T =
-        newSuspendedTransaction(Dispatchers.IO) { block() }
+        newSuspendedTransaction(Dispatchers.IO) {
+            // TODO: 30/04/2024, Danil Nikolaev: enable/disable logger
+            //addLogger(StdOutSqlLogger)
+
+            block()
+        }
 }

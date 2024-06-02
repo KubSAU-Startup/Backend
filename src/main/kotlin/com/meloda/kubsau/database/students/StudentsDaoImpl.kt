@@ -1,21 +1,43 @@
 package com.meloda.kubsau.database.students
 
 import com.meloda.kubsau.database.DatabaseController.dbQuery
+import com.meloda.kubsau.database.directivities.Directivities
+import com.meloda.kubsau.database.groups.Groups
+import com.meloda.kubsau.database.studentstatuses.StudentStatuses
 import com.meloda.kubsau.model.Student
+import com.meloda.kubsau.model.StudentStatus
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 
 class StudentsDaoImpl : StudentsDao {
 
-    override suspend fun allStudents(): List<Student> = dbQuery {
-        Students.selectAll().map(::mapResultRow)
+    override suspend fun allStudents(
+        offset: Int?,
+        limit: Int?
+    ): List<Student> = dbQuery {
+        Students
+            .selectAll()
+            .apply {
+                if (limit != null) {
+                    limit(limit, ((offset ?: 0).toLong()))
+                }
+            }
+            .orderBy(
+                column = Students.id,
+                order = SortOrder.DESC
+            )
+            .map(::mapResultRow)
     }
 
     override suspend fun allStudentsByIds(studentIds: List<Int>): List<Student> = dbQuery {
         Students
             .selectAll()
             .where { Students.id inList studentIds }
+            .orderBy(
+                column = Students.id,
+                order = SortOrder.DESC
+            )
             .map(::mapResultRow)
     }
 
@@ -23,6 +45,10 @@ class StudentsDaoImpl : StudentsDao {
         Students
             .selectAll()
             .where { Students.groupId eq groupId }
+            .orderBy(
+                column = Students.id,
+                order = SortOrder.DESC
+            )
             .map(::mapResultRow)
     }
 
@@ -30,7 +56,70 @@ class StudentsDaoImpl : StudentsDao {
         Students
             .selectAll()
             .where { Students.groupId inList groupIds }
+            .orderBy(
+                column = Students.id,
+                order = SortOrder.DESC
+            )
             .map(::mapResultRow)
+    }
+
+    override suspend fun allStudentsByGroupIdsAsMap(groupIds: List<Int>): HashMap<Int, List<Student>> = dbQuery {
+        val studentsMap = hashMapOf<Int, List<Student>>()
+
+        val allStudents = Students
+            .selectAll()
+            .where { Students.groupId inList groupIds }
+            .orderBy(
+                column = Students.id,
+                order = SortOrder.DESC
+            )
+            .map(::mapResultRow)
+
+        groupIds.forEach { groupId ->
+            allStudents
+                .filter { student -> student.groupId == groupId }
+                .let { students -> studentsMap[groupId] = students }
+        }
+
+        studentsMap
+    }
+
+    override suspend fun allStudentsBySearch(
+        offset: Int?,
+        limit: Int?,
+        groupId: Int?,
+        gradeId: Int?,
+        statusId: Int?,
+        query: String?
+    ): Map<Student, StudentStatus> = dbQuery {
+        val dbQuery = Students
+            .innerJoin(StudentStatuses, { Students.statusId }, { StudentStatuses.id })
+            .innerJoin(Groups, { Students.groupId }, { Groups.id })
+            .innerJoin(Directivities, { Groups.directivityId }, { Directivities.id })
+            .select(Students.columns.plus(StudentStatuses.columns))
+            .apply {
+                if (limit != null) {
+                    limit(limit, ((offset ?: 0).toLong()))
+                }
+            }
+
+        groupId?.let { dbQuery.andWhere { Students.groupId eq groupId } }
+        gradeId?.let { dbQuery.andWhere { Directivities.gradeId eq gradeId } }
+        statusId?.let { dbQuery.andWhere { Students.statusId eq statusId } }
+
+        query?.let { q -> "%$q%" }?.let { q ->
+            dbQuery.andWhere {
+                (Students.lastName.lowerCase() like q) or
+                        (Students.firstName.lowerCase() like q) or
+                        (Students.middleName.lowerCase() like q)
+            }
+        }
+
+        dbQuery
+            .orderBy(
+                column = Students.id,
+                order = SortOrder.DESC
+            ).associate { row -> Student.mapFromDb(row) to StudentStatus.mapFromDb(row) }
     }
 
     override suspend fun singleStudent(studentId: Int): Student? = dbQuery {
@@ -44,16 +133,16 @@ class StudentsDaoImpl : StudentsDao {
     override suspend fun addNewStudent(
         firstName: String,
         lastName: String,
-        middleName: String,
+        middleName: String?,
         groupId: Int,
-        status: Int
+        statusId: Int
     ): Student? = dbQuery {
         Students.insert {
             it[Students.firstName] = firstName
             it[Students.lastName] = lastName
             it[Students.middleName] = middleName
             it[Students.groupId] = groupId
-            it[Students.status] = status
+            it[Students.statusId] = statusId
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 
@@ -61,17 +150,17 @@ class StudentsDaoImpl : StudentsDao {
         studentId: Int,
         firstName: String,
         lastName: String,
-        middleName: String,
+        middleName: String?,
         groupId: Int,
-        status: Int
-    ): Int = dbQuery {
+        statusId: Int
+    ): Boolean = dbQuery {
         Students.update(where = { Students.id eq studentId }) {
             it[Students.firstName] = firstName
             it[Students.lastName] = lastName
             it[Students.middleName] = middleName
             it[Students.groupId] = groupId
-            it[Students.status] = status
-        }
+            it[Students.statusId] = statusId
+        } > 0
     }
 
     override suspend fun deleteStudent(studentId: Int): Boolean = dbQuery {
@@ -82,5 +171,5 @@ class StudentsDaoImpl : StudentsDao {
         Students.deleteWhere { Students.id inList studentIds } > 0
     }
 
-    override fun mapResultRow(row: ResultRow): Student = Student.mapResultRow(row)
+    override fun mapResultRow(row: ResultRow): Student = Student.mapFromDb(row)
 }

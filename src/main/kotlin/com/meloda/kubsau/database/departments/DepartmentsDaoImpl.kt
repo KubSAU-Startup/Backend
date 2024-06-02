@@ -2,18 +2,26 @@ package com.meloda.kubsau.database.departments
 
 import com.meloda.kubsau.database.DatabaseController.dbQuery
 import com.meloda.kubsau.model.Department
-import com.meloda.kubsau.route.journal.JournalFilter
+import com.meloda.kubsau.route.works.EntryFilter
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 
 class DepartmentsDaoImpl : DepartmentsDao {
 
+    override suspend fun isExist(departmentId: Int): Boolean = dbQuery {
+        Departments
+            .select(Departments.id)
+            .where { Departments.id eq departmentId }
+            .map { row -> row[Departments.id] }
+            .singleOrNull() != null
+    }
+
     override suspend fun allDepartments(): List<Department> = dbQuery {
         Departments.selectAll().map(::mapResultRow)
     }
 
-    override suspend fun allDepartmentsAsFilters(): List<JournalFilter> = dbQuery {
+    override suspend fun allDepartmentsAsFilters(): List<EntryFilter> = dbQuery {
         Departments
             .select(Departments.id, Departments.title)
             .map(::mapFilterResultRow)
@@ -26,10 +34,10 @@ class DepartmentsDaoImpl : DepartmentsDao {
             .map(::mapResultRow)
     }
 
-    override suspend fun singleDepartment(id: Int): Department? = dbQuery {
+    override suspend fun singleDepartment(departmentId: Int): Department? = dbQuery {
         Departments
             .selectAll()
-            .where { Departments.id eq id }
+            .where { Departments.id eq departmentId }
             .map(::mapResultRow)
             .singleOrNull()
     }
@@ -41,11 +49,11 @@ class DepartmentsDaoImpl : DepartmentsDao {
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 
-    override suspend fun updateDepartment(departmentId: Int, title: String, phone: String): Int = dbQuery {
+    override suspend fun updateDepartment(departmentId: Int, title: String, phone: String): Boolean = dbQuery {
         Departments.update(where = { Departments.id eq departmentId }) {
             it[Departments.title] = title
             it[Departments.phone] = phone
-        }
+        } > 0
     }
 
     override suspend fun deleteDepartment(departmentId: Int): Boolean = dbQuery {
@@ -58,7 +66,7 @@ class DepartmentsDaoImpl : DepartmentsDao {
 
     override fun mapResultRow(row: ResultRow): Department = Department.mapResultRow(row)
 
-    override fun mapFilterResultRow(row: ResultRow): JournalFilter = JournalFilter(
+    override fun mapFilterResultRow(row: ResultRow): EntryFilter = EntryFilter(
         id = row[Departments.id].value,
         title = row[Departments.title]
     )
