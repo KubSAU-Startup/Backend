@@ -61,6 +61,7 @@ class ProgramsDaoImpl : ProgramsDao {
                 Disciplines.id, Disciplines.title, Disciplines.departmentId
             )
             .apply { if (limit != null) limit(limit, (offset ?: 0).toLong()) }
+            .orderBy(Programs.id, order = SortOrder.DESC)
 
         programIds?.let { dbQuery.andWhere { Programs.id inList programIds } }
         semester?.let { dbQuery.andWhere { Programs.semester eq semester } }
