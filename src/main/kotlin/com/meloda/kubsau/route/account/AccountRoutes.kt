@@ -47,6 +47,7 @@ private fun Route.getAccountInfoRoute() {
                 type = employee.type,
                 login = user.login,
                 faculty = faculty,
+                selectedDepartmentId = principal.departmentId,
                 departments = departments
             )
         }
@@ -57,6 +58,7 @@ private data class AccountInfo(
     val id: Int,
     val type: Int,
     val login: String,
+    val selectedDepartmentId: Int?,
     val faculty: Faculty?,
     val departments: List<Department>
 )
