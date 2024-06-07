@@ -9,6 +9,8 @@ object Errors {
     const val WRONG_CREDENTIALS = 101
     const val ACCESS_TOKEN_REQUIRED = 102
     const val SESSION_EXPIRED = 103
+    const val WRONG_PASSWORD = 104
+    const val UNAVAILABLE_DEPARTMENT_ID = 105
 
     const val CONTENT_NOT_FOUND = 1001
 }
@@ -16,6 +18,8 @@ object Errors {
 data object UnknownException : Throwable()
 data object NoAccessTokenException : Throwable()
 data object SessionExpiredException : Throwable()
+data object WrongCurrentPasswordException : Throwable()
+data object UnavailableDepartmentId : Throwable()
 sealed class ValidationException(override val message: String) : Throwable() {
     data class InvalidException(override val message: String) : ValidationException(message)
     data class InvalidValueException(val key: String) : ValidationException("$key is invalid")

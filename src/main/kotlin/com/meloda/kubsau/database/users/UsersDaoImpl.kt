@@ -48,11 +48,11 @@ class UsersDaoImpl : UsersDao {
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 
-    override suspend fun updateUser(userId: Int, login: String, password: String): Int = dbQuery {
+    override suspend fun updateUser(userId: Int, login: String, password: String): Boolean = dbQuery {
         Users.update({ Users.id eq userId }) {
             it[Users.login] = login
             it[Users.password] = password
-        }
+        } > 0
     }
 
     override suspend fun deleteUser(userId: Int): Boolean = dbQuery {

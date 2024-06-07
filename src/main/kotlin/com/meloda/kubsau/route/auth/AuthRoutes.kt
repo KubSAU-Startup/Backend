@@ -12,6 +12,8 @@ import com.meloda.kubsau.database.employeesfaculties.EmployeesFacultiesDao
 import com.meloda.kubsau.database.users.UsersDao
 import com.meloda.kubsau.errors.ContentNotFoundException
 import com.meloda.kubsau.errors.SessionExpiredException
+import com.meloda.kubsau.errors.UnavailableDepartmentId
+import com.meloda.kubsau.model.Department
 import com.meloda.kubsau.model.User
 import com.meloda.kubsau.plugins.AUDIENCE
 import com.meloda.kubsau.plugins.ISSUER
@@ -87,13 +89,20 @@ private fun Route.addSession() {
 
 private fun Route.modifySession() {
     val usersDao by inject<UsersDao>()
+    val employeesDepartmentsDao by inject<EmployeesDepartmentsDao>()
 
     patch {
-        val departmentId = call.request.queryParameters.getIntOrThrow("departmentId")
-
         val principal = call.principal<UserPrincipal>() ?: throw SessionExpiredException
         val user = principal.user
         usersDao.singleUser(user.id) ?: throw ContentNotFoundException
+
+        val availableDepartmentIds = employeesDepartmentsDao.allDepartmentsByEmployeeId(user.employeeId)
+            .map(Department::id)
+
+        val departmentId = call.request.queryParameters.getIntOrThrow("departmentId")
+        if (departmentId !in availableDepartmentIds) {
+            throw UnavailableDepartmentId
+        }
 
         val modifiedToken = JWT.create()
             .withAudience(AUDIENCE)
