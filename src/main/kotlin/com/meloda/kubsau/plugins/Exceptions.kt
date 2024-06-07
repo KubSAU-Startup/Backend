@@ -47,6 +47,18 @@ fun Application.configureExceptions() {
                         ApiError(Errors.CONTENT_NOT_FOUND, throwable.message ?: "Content not found")
                     }
                 }
+
+                is WrongCurrentPasswordException -> {
+                    respondError(call) {
+                        ApiError(Errors.WRONG_PASSWORD, throwable.message ?: "Wrong current password")
+                    }
+                }
+
+                is UnavailableDepartmentId -> {
+                    respondError(call) {
+                        ApiError(Errors.UNAVAILABLE_DEPARTMENT_ID, throwable.message ?: "Unavailable department id")
+                    }
+                }
             }
         }
 
