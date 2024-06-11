@@ -4,6 +4,7 @@ import com.meloda.kubsau.model.ValidationException
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
+import org.mindrot.jbcrypt.BCrypt
 
 fun ApplicationRequest.toLogString(): String {
     val headers = headers.entries().joinToString(", ") { (key, values) -> "$key: ${values.joinToString()}" }
@@ -197,3 +198,18 @@ fun <T> Parameters.getOrThrow(key: String, mapper: (String) -> T): T = getOrThro
 
 fun <T> Parameters.getOrThrow(key: String, mapper: (String) -> T, message: () -> String): T =
     mapper(this[key] ?: throw ValidationException.InvalidException(message()))
+
+
+// TODO: 11/06/2024, Danil Nikolaev: когда-нибудь реализовать регистрацию и закинуть туда
+fun hashPassword(password: String): String {
+    return BCrypt.hashpw(password, BCrypt.gensalt())
+}
+
+fun checkPassword(plaintext: String, hashed: String): Boolean {
+    return runCatching {
+        BCrypt.checkpw(plaintext, hashed)
+    }.fold(
+        onSuccess = { it },
+        onFailure = { false }
+    )
+}

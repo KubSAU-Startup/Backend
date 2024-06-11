@@ -73,6 +73,8 @@ dependencies {
 
     implementation("io.github.g0dkar:qrcode-kotlin-jvm:$qrCodeVersion")
     implementation("io.github.g0dkar:qrcode-kotlin:$qrCodeVersion")
+
+    implementation("org.mindrot:jbcrypt:0.4")
 }
 
 kotlin {
