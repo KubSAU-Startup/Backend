@@ -1,10 +1,10 @@
 package com.meloda.kubsau.route.employees
 
-import com.meloda.kubsau.api.respondSuccess
+import com.meloda.kubsau.model.respondSuccess
 import com.meloda.kubsau.common.*
-import com.meloda.kubsau.database.employees.EmployeesDao
-import com.meloda.kubsau.errors.ContentNotFoundException
-import com.meloda.kubsau.errors.UnknownException
+import com.meloda.kubsau.database.employees.EmployeeDao
+import com.meloda.kubsau.model.ContentNotFoundException
+import com.meloda.kubsau.model.UnknownException
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -25,7 +25,7 @@ fun Route.employeesRoutes() {
 }
 
 private fun Route.getEmployees() {
-    val employeesDao by inject<EmployeesDao>()
+    val employeeDao by inject<EmployeeDao>()
 
     get {
         val employeeIds = call.request.queryParameters.getIntList(
@@ -34,9 +34,9 @@ private fun Route.getEmployees() {
         )
 
         val employees = if (employeeIds.isEmpty()) {
-            employeesDao.allEmployees()
+            employeeDao.allEmployees()
         } else {
-            employeesDao.allEmployeesByIds(employeeIds)
+            employeeDao.allEmployeesByIds(employeeIds)
         }
 
         respondSuccess { employees }
@@ -44,18 +44,18 @@ private fun Route.getEmployees() {
 }
 
 private fun Route.getEmployee() {
-    val employeesDao by inject<EmployeesDao>()
+    val employeeDao by inject<EmployeeDao>()
 
     get("{id}") {
         val employeeId = call.parameters.getIntOrThrow("id")
-        val employee = employeesDao.singleEmployee(employeeId) ?: throw ContentNotFoundException
+        val employee = employeeDao.singleEmployee(employeeId) ?: throw ContentNotFoundException
 
         respondSuccess { employee }
     }
 }
 
 private fun Route.addEmployee() {
-    val employeesDao by inject<EmployeesDao>()
+    val employeeDao by inject<EmployeeDao>()
 
     post {
         val parameters = call.receiveParameters()
@@ -66,7 +66,7 @@ private fun Route.addEmployee() {
         val email = parameters.getStringOrThrow("email")
         val type = parameters.getIntOrThrow("type")
 
-        val created = employeesDao.addNewEmployee(
+        val created = employeeDao.addNewEmployee(
             firstName = firstName,
             lastName = lastName,
             middleName = middleName,
@@ -83,11 +83,11 @@ private fun Route.addEmployee() {
 }
 
 private fun Route.editEmployee() {
-    val employeesDao by inject<EmployeesDao>()
+    val employeeDao by inject<EmployeeDao>()
 
     patch("{id}") {
         val employeeId = call.parameters.getIntOrThrow("id")
-        val currentEmployee = employeesDao.singleEmployee(employeeId) ?: throw ContentNotFoundException
+        val currentEmployee = employeeDao.singleEmployee(employeeId) ?: throw ContentNotFoundException
 
         val parameters = call.receiveParameters()
 
@@ -97,7 +97,7 @@ private fun Route.editEmployee() {
         val email = parameters.getString("email")
         val type = parameters.getInt("type")
 
-        employeesDao.updateEmployee(
+        employeeDao.updateEmployee(
             employeeId = employeeId,
             firstName = firstName ?: currentEmployee.firstName,
             lastName = lastName ?: currentEmployee.lastName,
@@ -115,13 +115,13 @@ private fun Route.editEmployee() {
 }
 
 private fun Route.deleteEmployeeById() {
-    val employeesDao by inject<EmployeesDao>()
+    val employeeDao by inject<EmployeeDao>()
 
     delete("{id}") {
         val employeeId = call.parameters.getIntOrThrow("id")
-        employeesDao.singleEmployee(employeeId) ?: throw ContentNotFoundException
+        employeeDao.singleEmployee(employeeId) ?: throw ContentNotFoundException
 
-        if (employeesDao.deleteEmployee(employeeId)) {
+        if (employeeDao.deleteEmployee(employeeId)) {
             respondSuccess { 1 }
         } else {
             throw UnknownException
@@ -130,7 +130,7 @@ private fun Route.deleteEmployeeById() {
 }
 
 private fun Route.deleteEmployeesByIds() {
-    val employeesDao by inject<EmployeesDao>()
+    val employeeDao by inject<EmployeeDao>()
 
     delete {
         val employeeIds = call.request.queryParameters.getIntListOrThrow(
@@ -138,12 +138,12 @@ private fun Route.deleteEmployeesByIds() {
             requiredNotEmpty = true
         )
 
-        val currentEmployees = employeesDao.allEmployeesByIds(employeeIds)
+        val currentEmployees = employeeDao.allEmployeesByIds(employeeIds)
         if (currentEmployees.isEmpty()) {
             throw ContentNotFoundException
         }
 
-        if (employeesDao.deleteEmployees(employeeIds)) {
+        if (employeeDao.deleteEmployees(employeeIds)) {
             respondSuccess { 1 }
         } else {
             throw UnknownException

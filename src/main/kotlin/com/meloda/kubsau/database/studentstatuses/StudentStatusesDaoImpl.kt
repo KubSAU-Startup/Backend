@@ -1,6 +1,6 @@
 package com.meloda.kubsau.database.studentstatuses
 
-import com.meloda.kubsau.database.DatabaseController.dbQuery
+import com.meloda.kubsau.config.DatabaseController.dbQuery
 import com.meloda.kubsau.model.StudentStatus
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.insert
