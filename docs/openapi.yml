@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Документация API
   description: 'TODO: заполнить описание и дофиксить косяки'
-  version: 0.2.10
+  version: 0.2.11
 servers:
   - url: https://kubsau-testbackend.melod1n.dedyn.io
   - url: https://kubsau-backend.melod1n.dedyn.io
