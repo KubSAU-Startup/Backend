@@ -16,15 +16,9 @@ fun Application.configureExceptions() {
                     }
                 }
 
-                is NoAccessTokenException -> {
-                    respondError(call = call, status = HttpStatusCode.Unauthorized) {
-                        ApiError(Errors.ACCESS_TOKEN_REQUIRED, "Access token required")
-                    }
-                }
-
-                is SessionExpiredException -> {
+                is AccessDeniedException -> {
                     respondError(call) {
-                        ApiError(Errors.SESSION_EXPIRED, "Session expired")
+                        ApiError(Errors.ACCESS_DENIED, throwable.message)
                     }
                 }
 
@@ -52,9 +46,15 @@ fun Application.configureExceptions() {
                     }
                 }
 
-                is UnavailableDepartmentId -> {
+                is WrongTokenFormatException -> {
                     respondError(call) {
-                        ApiError(Errors.UNAVAILABLE_DEPARTMENT_ID, throwable.message ?: "Unavailable department id")
+                        ApiError(Errors.WRONG_TOKEN_FORMAT, throwable.message ?: "Wrong token format")
+                    }
+                }
+
+                is UnknownTokenException -> {
+                    respondError(call) {
+                        ApiError(Errors.UNKNOWN_TOKEN_ERROR, throwable.message ?: "Unknown token error")
                     }
                 }
             }

@@ -5,8 +5,8 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.meloda.kubsau.PORT
 import com.meloda.kubsau.config.SecretsController
 import com.meloda.kubsau.database.users.UserDao
-import com.meloda.kubsau.model.SessionExpiredException
 import com.meloda.kubsau.model.User
+import com.meloda.kubsau.model.WrongTokenFormatException
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -33,15 +33,29 @@ fun Application.configureAuthentication() {
 
             validate { credential ->
                 credential.payload.getClaim("id").asInt()?.let { userId ->
-                    userDao.singleUser(userId)?.let {
-                        UserPrincipal(it, credential.payload.getClaim("departmentId").asInt())
+                    userDao.singleUser(userId)?.let { id ->
+                        try {
+                            UserPrincipal(
+                                user = id,
+                                type = credential.payload.getClaim("type").asInt(),
+                                facultyId = credential.payload.getClaim("facultyId")?.asInt(),
+                                departmentId = credential.payload.getClaim("departmentId")?.asInt()
+                            )
+                        } catch (e: Exception) {
+                            null
+                        }
                     }
                 }
             }
 
-            challenge { _, _ -> throw SessionExpiredException }
+            challenge { _, _ -> throw WrongTokenFormatException }
         }
     }
 }
 
-data class UserPrincipal(val user: User, val departmentId: Int?) : Principal
+data class UserPrincipal(
+    val user: User,
+    val type: Int,
+    val facultyId: Int?,
+    val departmentId: Int?,
+) : Principal

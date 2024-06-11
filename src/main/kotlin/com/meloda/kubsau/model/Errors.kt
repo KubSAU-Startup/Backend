@@ -5,10 +5,10 @@ object Errors {
     const val UNKNOWN_METHOD = 2
     const val BAD_REQUEST = 3
     const val ACCESS_DENIED = 4
+    const val WRONG_TOKEN_FORMAT = 5
+    const val UNKNOWN_TOKEN_ERROR = 6
 
     const val WRONG_CREDENTIALS = 101
-    const val ACCESS_TOKEN_REQUIRED = 102
-    const val SESSION_EXPIRED = 103
     const val WRONG_PASSWORD = 104
     const val UNAVAILABLE_DEPARTMENT_ID = 105
 
@@ -16,10 +16,10 @@ object Errors {
 }
 
 data object UnknownException : Throwable()
-data object NoAccessTokenException : Throwable()
-data object SessionExpiredException : Throwable()
+data class AccessDeniedException(override val message: String) : Throwable()
+data object UnknownTokenException : Throwable()
+data object WrongTokenFormatException : Throwable()
 data object WrongCurrentPasswordException : Throwable()
-data object UnavailableDepartmentId : Throwable()
 sealed class ValidationException(override val message: String) : Throwable() {
     data class InvalidException(override val message: String) : ValidationException(message)
     data class InvalidValueException(val key: String) : ValidationException("$key is invalid")
