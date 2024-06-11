@@ -513,7 +513,7 @@ private fun Application.createDummyHeads() {
 
     headsDao.apply {
         runBlocking {
-            if (allHeads(null, null).isEmpty()) {
+            if (allHeads(null, null, null).isEmpty()) {
                 println("Creating dummy heads...")
 
                 val time = measureTimeMillis {
@@ -692,7 +692,7 @@ private fun Application.createDummyGroups() {
 
     groupsDao.apply {
         runBlocking {
-            val headTuples = headsDao.allHeads(null, null).map {
+            val headTuples = headsDao.allHeads(null, null, null).map {
                 it.id to it.abbreviation
             }
 

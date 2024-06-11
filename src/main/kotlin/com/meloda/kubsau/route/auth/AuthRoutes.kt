@@ -2,19 +2,14 @@ package com.meloda.kubsau.route.auth
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import com.meloda.kubsau.model.respondSuccess
-import com.meloda.kubsau.config.SecretsController
 import com.meloda.kubsau.common.getIntOrThrow
 import com.meloda.kubsau.common.getStringOrThrow
+import com.meloda.kubsau.config.SecretsController
 import com.meloda.kubsau.database.employees.EmployeeDao
 import com.meloda.kubsau.database.employeesdepartments.EmployeesDepartmentsDao
 import com.meloda.kubsau.database.employeesfaculties.EmployeesFacultiesDao
 import com.meloda.kubsau.database.users.UserDao
-import com.meloda.kubsau.model.ContentNotFoundException
-import com.meloda.kubsau.model.SessionExpiredException
-import com.meloda.kubsau.model.UnavailableDepartmentId
-import com.meloda.kubsau.model.Department
-import com.meloda.kubsau.model.User
+import com.meloda.kubsau.model.*
 import com.meloda.kubsau.plugins.AUDIENCE
 import com.meloda.kubsau.plugins.ISSUER
 import com.meloda.kubsau.plugins.UserPrincipal
@@ -74,6 +69,8 @@ private fun Route.addSession() {
             .withAudience(AUDIENCE)
             .withIssuer(ISSUER)
             .withClaim("id", user.id)
+            .withClaim("type", employee.type)
+            .withClaim("facultyId", facultyId)
             .sign(Algorithm.HMAC256(SecretsController.jwtSecret))
 
         respondSuccess {
@@ -92,7 +89,7 @@ private fun Route.modifySession() {
     val employeesDepartmentsDao by inject<EmployeesDepartmentsDao>()
 
     patch {
-        val principal = call.principal<UserPrincipal>() ?: throw SessionExpiredException
+        val principal = call.principal<UserPrincipal>() ?: throw UnknownTokenException
         val user = principal.user
         userDao.singleUser(user.id) ?: throw ContentNotFoundException
 
@@ -101,13 +98,15 @@ private fun Route.modifySession() {
 
         val departmentId = call.request.queryParameters.getIntOrThrow("departmentId")
         if (departmentId !in availableDepartmentIds) {
-            throw UnavailableDepartmentId
+            throw AccessDeniedException("Unavailable departmentId value: $departmentId")
         }
 
         val modifiedToken = JWT.create()
             .withAudience(AUDIENCE)
             .withIssuer(ISSUER)
             .withClaim("id", user.id)
+            .withClaim("type", principal.type)
+            .withClaim("facultyId", principal.facultyId)
             .withClaim("departmentId", departmentId)
             .sign(Algorithm.HMAC256(SecretsController.jwtSecret))
 
