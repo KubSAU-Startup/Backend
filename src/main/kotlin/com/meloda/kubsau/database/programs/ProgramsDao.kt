@@ -1,6 +1,6 @@
 package com.meloda.kubsau.database.programs
 
-import com.meloda.kubsau.database.Dao
+import com.meloda.kubsau.base.Dao
 import com.meloda.kubsau.model.Directivity
 import com.meloda.kubsau.model.Program
 import com.meloda.kubsau.route.programs.SearchEntry

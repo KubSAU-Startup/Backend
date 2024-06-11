@@ -1,6 +1,6 @@
 package com.meloda.kubsau.database.directivities
 
-import com.meloda.kubsau.database.DatabaseController.dbQuery
+import com.meloda.kubsau.config.DatabaseController.dbQuery
 import com.meloda.kubsau.model.Directivity
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq

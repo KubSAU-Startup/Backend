@@ -1,18 +1,19 @@
 package com.meloda.kubsau.route.programs
 
 import com.meloda.kubsau.DATA_FOLDER
-import com.meloda.kubsau.api.respondSuccess
+import com.meloda.kubsau.model.respondSuccess
 import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.departments.DepartmentsDao
 import com.meloda.kubsau.database.groups.GroupsDao
 import com.meloda.kubsau.database.programs.ProgramsDao
 import com.meloda.kubsau.database.programsdisciplines.ProgramsDisciplinesDao
 import com.meloda.kubsau.database.students.StudentsDao
-import com.meloda.kubsau.errors.ContentNotFoundException
-import com.meloda.kubsau.errors.UnknownException
-import com.meloda.kubsau.errors.ValidationException
+import com.meloda.kubsau.model.ContentNotFoundException
+import com.meloda.kubsau.model.UnknownException
+import com.meloda.kubsau.model.ValidationException
 import com.meloda.kubsau.model.Department
 import com.meloda.kubsau.model.Discipline
+import com.meloda.kubsau.model.IdTitle
 import com.meloda.kubsau.model.Program
 import io.ktor.server.application.*
 import io.ktor.server.auth.*

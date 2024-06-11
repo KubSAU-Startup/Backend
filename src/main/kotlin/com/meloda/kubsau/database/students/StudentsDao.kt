@@ -1,6 +1,6 @@
 package com.meloda.kubsau.database.students
 
-import com.meloda.kubsau.database.Dao
+import com.meloda.kubsau.base.Dao
 import com.meloda.kubsau.model.Student
 import com.meloda.kubsau.model.StudentStatus
 

@@ -1,9 +1,9 @@
 package com.meloda.kubsau.database.employees
 
-import com.meloda.kubsau.database.Dao
+import com.meloda.kubsau.base.Dao
 import com.meloda.kubsau.model.Employee
 
-interface EmployeesDao : Dao<Employee> {
+interface EmployeeDao : Dao<Employee> {
 
     suspend fun allEmployees(): List<Employee>
     suspend fun allTeachers(): List<Employee>

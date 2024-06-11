@@ -1,6 +1,6 @@
 package com.meloda.kubsau.common
 
-import com.meloda.kubsau.errors.ValidationException
+import com.meloda.kubsau.model.ValidationException
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*

@@ -1,4 +1,4 @@
-package com.meloda.kubsau.model
+package com.meloda.kubsau.base
 
 interface Filterable {
     val id: Int

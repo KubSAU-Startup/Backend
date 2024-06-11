@@ -1,6 +1,6 @@
 package com.meloda.kubsau.database.students
 
-import com.meloda.kubsau.database.DatabaseController.dbQuery
+import com.meloda.kubsau.config.DatabaseController.dbQuery
 import com.meloda.kubsau.database.directivities.Directivities
 import com.meloda.kubsau.database.groups.Groups
 import com.meloda.kubsau.database.studentstatuses.StudentStatuses

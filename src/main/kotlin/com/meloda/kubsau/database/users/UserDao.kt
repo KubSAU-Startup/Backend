@@ -1,9 +1,9 @@
 package com.meloda.kubsau.database.users
 
-import com.meloda.kubsau.database.Dao
+import com.meloda.kubsau.base.Dao
 import com.meloda.kubsau.model.User
 
-interface UsersDao : Dao<User> {
+interface UserDao : Dao<User> {
 
     suspend fun allUsers(): List<User>
     suspend fun allUsersByIds(userIds: List<Int>): List<User>

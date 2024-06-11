@@ -6,8 +6,8 @@ import com.meloda.kubsau.database.directivities.DirectivitiesDao
 import com.meloda.kubsau.database.directivities.DirectivitiesDaoImpl
 import com.meloda.kubsau.database.disciplines.DisciplinesDao
 import com.meloda.kubsau.database.disciplines.DisciplinesDaoImpl
-import com.meloda.kubsau.database.employees.EmployeesDao
-import com.meloda.kubsau.database.employees.EmployeesDaoImpl
+import com.meloda.kubsau.database.employees.EmployeeDao
+import com.meloda.kubsau.database.employees.EmployeeDaoImpl
 import com.meloda.kubsau.database.employeesdepartments.EmployeesDepartmentsDao
 import com.meloda.kubsau.database.employeesdepartments.EmployeesDepartmentsDaoImpl
 import com.meloda.kubsau.database.employeesfaculties.EmployeesFacultiesDao
@@ -28,8 +28,8 @@ import com.meloda.kubsau.database.students.StudentsDao
 import com.meloda.kubsau.database.students.StudentsDaoImpl
 import com.meloda.kubsau.database.studentstatuses.StudentStatusesDao
 import com.meloda.kubsau.database.studentstatuses.StudentStatusesDaoImpl
-import com.meloda.kubsau.database.users.UsersDao
-import com.meloda.kubsau.database.users.UsersDaoImpl
+import com.meloda.kubsau.database.users.UserDao
+import com.meloda.kubsau.database.users.UserDaoImpl
 import com.meloda.kubsau.database.works.WorksDao
 import com.meloda.kubsau.database.works.WorksDaoImpl
 import com.meloda.kubsau.database.worktypes.WorkTypesDao
@@ -42,7 +42,7 @@ val databaseModule = module {
     singleOf(::DepartmentsDaoImpl) bind DepartmentsDao::class
     singleOf(::DirectivitiesDaoImpl) bind DirectivitiesDao::class
     singleOf(::DisciplinesDaoImpl) bind DisciplinesDao::class
-    singleOf(::EmployeesDaoImpl) bind EmployeesDao::class
+    singleOf(::EmployeeDaoImpl) bind EmployeeDao::class
     singleOf(::EmployeesDepartmentsDaoImpl) bind EmployeesDepartmentsDao::class
     singleOf(::EmployeesFacultiesDaoImpl) bind EmployeesFacultiesDao::class
     singleOf(::FacultiesDaoImpl) bind FacultiesDao::class
@@ -53,7 +53,7 @@ val databaseModule = module {
     singleOf(::ProgramsDisciplinesDaoImpl) bind ProgramsDisciplinesDao::class
     singleOf(::StudentsDaoImpl) bind StudentsDao::class
     singleOf(::StudentStatusesDaoImpl) bind StudentStatusesDao::class
-    singleOf(::UsersDaoImpl) bind UsersDao::class
+    singleOf(::UserDaoImpl) bind UserDao::class
     singleOf(::WorksDaoImpl) bind WorksDao::class
     singleOf(::WorkTypesDaoImpl) bind WorkTypesDao::class
 }

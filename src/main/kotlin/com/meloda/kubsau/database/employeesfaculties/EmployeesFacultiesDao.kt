@@ -1,6 +1,6 @@
 package com.meloda.kubsau.database.employeesfaculties
 
-import com.meloda.kubsau.database.RefDao
+import com.meloda.kubsau.base.RefDao
 import com.meloda.kubsau.model.Employee
 import com.meloda.kubsau.model.Faculty
 

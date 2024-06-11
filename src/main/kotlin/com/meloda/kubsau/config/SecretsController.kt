@@ -1,6 +1,7 @@
-package com.meloda.kubsau.common
+package com.meloda.kubsau.config
 
 import com.meloda.kubsau.CONFIG_FOLDER
+import com.meloda.kubsau.common.getEnvOrElse
 import java.io.File
 import java.util.*
 

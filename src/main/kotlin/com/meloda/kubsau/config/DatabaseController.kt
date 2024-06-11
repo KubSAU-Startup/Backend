@@ -1,8 +1,6 @@
-package com.meloda.kubsau.database
+package com.meloda.kubsau.config
 
 import com.meloda.kubsau.CONFIG_FOLDER
-import com.meloda.kubsau.common.ConfigController
-import com.meloda.kubsau.common.SecretsController
 import com.meloda.kubsau.database.departments.Departments
 import com.meloda.kubsau.database.directivities.Directivities
 import com.meloda.kubsau.database.disciplines.Disciplines

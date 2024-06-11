@@ -1,6 +1,6 @@
 package com.meloda.kubsau.route.qr
 
-import com.meloda.kubsau.api.respondSuccess
+import com.meloda.kubsau.model.respondSuccess
 import com.meloda.kubsau.common.getIntListOrThrow
 import com.meloda.kubsau.common.getIntOrThrow
 import com.meloda.kubsau.database.students.StudentsDao

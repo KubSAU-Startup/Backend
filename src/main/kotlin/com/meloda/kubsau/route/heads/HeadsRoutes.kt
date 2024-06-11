@@ -1,11 +1,11 @@
 package com.meloda.kubsau.route.heads
 
-import com.meloda.kubsau.api.respondSuccess
+import com.meloda.kubsau.model.respondSuccess
 import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.faculties.FacultiesDao
 import com.meloda.kubsau.database.heads.HeadsDao
-import com.meloda.kubsau.errors.ContentNotFoundException
-import com.meloda.kubsau.errors.UnknownException
+import com.meloda.kubsau.model.ContentNotFoundException
+import com.meloda.kubsau.model.UnknownException
 import com.meloda.kubsau.model.Faculty
 import com.meloda.kubsau.model.Head
 import io.ktor.server.application.*

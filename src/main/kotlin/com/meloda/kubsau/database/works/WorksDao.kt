@@ -1,6 +1,6 @@
 package com.meloda.kubsau.database.works
 
-import com.meloda.kubsau.database.Dao
+import com.meloda.kubsau.base.Dao
 import com.meloda.kubsau.model.Work
 import com.meloda.kubsau.route.works.Entry
 

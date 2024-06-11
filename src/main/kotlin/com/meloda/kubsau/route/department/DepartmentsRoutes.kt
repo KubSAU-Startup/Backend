@@ -1,14 +1,14 @@
 package com.meloda.kubsau.route.department
 
-import com.meloda.kubsau.api.respondSuccess
+import com.meloda.kubsau.model.respondSuccess
 import com.meloda.kubsau.common.getIntList
 import com.meloda.kubsau.common.getIntListOrThrow
 import com.meloda.kubsau.common.getIntOrThrow
 import com.meloda.kubsau.common.getStringOrThrow
 import com.meloda.kubsau.database.departments.DepartmentsDao
 import com.meloda.kubsau.database.employeesdepartments.EmployeesDepartmentsDao
-import com.meloda.kubsau.errors.ContentNotFoundException
-import com.meloda.kubsau.errors.UnknownException
+import com.meloda.kubsau.model.ContentNotFoundException
+import com.meloda.kubsau.model.UnknownException
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*

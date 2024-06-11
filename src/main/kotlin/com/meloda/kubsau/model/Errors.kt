@@ -1,4 +1,4 @@
-package com.meloda.kubsau.errors
+package com.meloda.kubsau.model
 
 object Errors {
     const val UNKNOWN_ERROR = 1

@@ -1,8 +1,8 @@
 package com.meloda.kubsau.database.employeesfaculties
 
-import com.meloda.kubsau.database.DatabaseController.dbQuery
+import com.meloda.kubsau.config.DatabaseController.dbQuery
 import com.meloda.kubsau.database.employees.Employees
-import com.meloda.kubsau.database.employees.EmployeesDao
+import com.meloda.kubsau.database.employees.EmployeeDao
 import com.meloda.kubsau.database.faculties.Faculties
 import com.meloda.kubsau.database.faculties.FacultiesDao
 import com.meloda.kubsau.model.Employee
@@ -12,7 +12,7 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 
 class EmployeesFacultiesDaoImpl(
-    private val employeesDao: EmployeesDao,
+    private val employeeDao: EmployeeDao,
     private val facultiesDao: FacultiesDao
 ) : EmployeesFacultiesDao {
 
@@ -48,7 +48,7 @@ class EmployeesFacultiesDaoImpl(
         }.resultedValues?.size != 0
     }
 
-    override fun mapFirstResultRow(row: ResultRow): Employee = employeesDao.mapResultRow(row)
+    override fun mapFirstResultRow(row: ResultRow): Employee = employeeDao.mapResultRow(row)
 
     override fun mapSecondResultRow(row: ResultRow): Faculty = facultiesDao.mapResultRow(row)
 }

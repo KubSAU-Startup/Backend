@@ -1,6 +1,6 @@
 package com.meloda.kubsau.database.grades
 
-import com.meloda.kubsau.database.Dao
+import com.meloda.kubsau.base.Dao
 import com.meloda.kubsau.model.Grade
 
 interface GradesDao : Dao<Grade> {
