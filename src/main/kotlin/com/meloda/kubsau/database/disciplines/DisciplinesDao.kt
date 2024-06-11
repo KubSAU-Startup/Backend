@@ -1,6 +1,6 @@
 package com.meloda.kubsau.database.disciplines
 
-import com.meloda.kubsau.database.FilterableDao
+import com.meloda.kubsau.base.FilterableDao
 import com.meloda.kubsau.model.Discipline
 import com.meloda.kubsau.route.works.EntryFilter
 

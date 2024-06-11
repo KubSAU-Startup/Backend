@@ -1,16 +1,16 @@
 package com.meloda.kubsau.route.works
 
-import com.meloda.kubsau.api.respondSuccess
+import com.meloda.kubsau.model.respondSuccess
 import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.departments.DepartmentsDao
 import com.meloda.kubsau.database.disciplines.DisciplinesDao
-import com.meloda.kubsau.database.employees.EmployeesDao
+import com.meloda.kubsau.database.employees.EmployeeDao
 import com.meloda.kubsau.database.groups.GroupsDao
 import com.meloda.kubsau.database.students.StudentsDao
 import com.meloda.kubsau.database.works.WorksDao
 import com.meloda.kubsau.database.worktypes.WorkTypesDao
-import com.meloda.kubsau.errors.ContentNotFoundException
-import com.meloda.kubsau.errors.UnknownException
+import com.meloda.kubsau.model.ContentNotFoundException
+import com.meloda.kubsau.model.UnknownException
 import com.meloda.kubsau.model.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -52,7 +52,7 @@ private fun Route.getWorks() {
     val studentsDao by inject<StudentsDao>()
     val workTypesDao by inject<WorkTypesDao>()
     val departmentsDao by inject<DepartmentsDao>()
-    val employeesDao by inject<EmployeesDao>()
+    val employeeDao by inject<EmployeeDao>()
 
     get {
         val parameters = call.request.queryParameters
@@ -89,7 +89,7 @@ private fun Route.getWorks() {
             val departments = departmentsDao.allDepartmentsByIds(departmentIds)
 
             val employeeIds = works.map(Work::employeeId)
-            val employees = employeesDao.allEmployeesByIds(employeeIds)
+            val employees = employeeDao.allEmployeesByIds(employeeIds)
 
             respondSuccess {
                 FullWorksResponse(
@@ -124,7 +124,7 @@ private fun Route.getWorkById() {
     val studentsDao by inject<StudentsDao>()
     val workTypesDao by inject<WorkTypesDao>()
     val departmentsDao by inject<DepartmentsDao>()
-    val employeesDao by inject<EmployeesDao>()
+    val employeeDao by inject<EmployeeDao>()
 
     get("{id}") {
         val workId = call.parameters.getIntOrThrow("id")
@@ -139,7 +139,7 @@ private fun Route.getWorkById() {
             val student = studentsDao.singleStudent(work.studentId)
             val workType = workTypesDao.singleWorkType(work.workTypeId)
             val department = departmentsDao.singleDepartment(discipline.departmentId)
-            val employee = employeesDao.singleEmployee(work.employeeId)
+            val employee = employeeDao.singleEmployee(work.employeeId)
 
             if (student == null || workType == null || employee == null || department == null) {
                 throw ContentNotFoundException
@@ -297,10 +297,10 @@ private fun Route.getDisciplinesFilters() {
 }
 
 private fun Route.getEmployeesFilters() {
-    val employeesDao by inject<EmployeesDao>()
+    val employeeDao by inject<EmployeeDao>()
 
     get("/employees") {
-        val employeeFilters = employeesDao.allTeachers().map { employee ->
+        val employeeFilters = employeeDao.allTeachers().map { employee ->
             EntryFilter(
                 id = employee.id,
                 title = employee.fullName

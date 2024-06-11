@@ -1,7 +1,7 @@
 package com.meloda.kubsau.database.programs
 
-import com.meloda.kubsau.common.IdTitle
-import com.meloda.kubsau.database.DatabaseController.dbQuery
+import com.meloda.kubsau.model.IdTitle
+import com.meloda.kubsau.config.DatabaseController.dbQuery
 import com.meloda.kubsau.database.directivities.Directivities
 import com.meloda.kubsau.database.grades.Grades
 import com.meloda.kubsau.model.Directivity

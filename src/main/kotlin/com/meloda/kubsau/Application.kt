@@ -1,11 +1,13 @@
 package com.meloda.kubsau
 
 import com.meloda.kubsau.common.*
-import com.meloda.kubsau.database.DatabaseController
+import com.meloda.kubsau.config.ConfigController
+import com.meloda.kubsau.config.SecretsController
+import com.meloda.kubsau.config.DatabaseController
 import com.meloda.kubsau.database.departments.DepartmentsDao
 import com.meloda.kubsau.database.directivities.DirectivitiesDao
 import com.meloda.kubsau.database.disciplines.DisciplinesDao
-import com.meloda.kubsau.database.employees.EmployeesDao
+import com.meloda.kubsau.database.employees.EmployeeDao
 import com.meloda.kubsau.database.employeesdepartments.EmployeesDepartmentsDao
 import com.meloda.kubsau.database.employeesfaculties.EmployeesFacultiesDao
 import com.meloda.kubsau.database.faculties.FacultiesDao
@@ -16,7 +18,7 @@ import com.meloda.kubsau.database.programs.ProgramsDao
 import com.meloda.kubsau.database.programsdisciplines.ProgramsDisciplinesDao
 import com.meloda.kubsau.database.students.StudentsDao
 import com.meloda.kubsau.database.studentstatuses.StudentStatusesDao
-import com.meloda.kubsau.database.users.UsersDao
+import com.meloda.kubsau.database.users.UserDao
 import com.meloda.kubsau.database.works.WorksDao
 import com.meloda.kubsau.database.worktypes.WorkTypesDao
 import com.meloda.kubsau.model.*
@@ -135,9 +137,9 @@ private fun Application.prepopulateDB() {
 }
 
 private fun Application.createDummyUsers() {
-    val usersDao by inject<UsersDao>()
+    val userDao by inject<UserDao>()
 
-    usersDao.apply {
+    userDao.apply {
         runBlocking {
             if (allUsers().isEmpty()) {
                 println("Creating dummy users...")
@@ -178,7 +180,7 @@ private fun Application.createDummyGrades() {
 }
 
 private fun Application.createDummyEmployees() {
-    val employeesDao by inject<EmployeesDao>()
+    val employeeDao by inject<EmployeeDao>()
 
     val names = ("Савина Валентина Ярославовна\n" +
             "Попов Фёдор Тимофеевич\n" +
@@ -241,7 +243,7 @@ private fun Application.createDummyEmployees() {
             "Беспалов Лука Маркович\n" +
             "Карпова Юлия Кирилловна").split("\n")
 
-    employeesDao.apply {
+    employeeDao.apply {
         runBlocking {
             if (allEmployees().isEmpty()) {
                 println("Creating dummy employees...")
@@ -863,7 +865,7 @@ private fun Application.createDummyWorks() {
     val workTypesDao by inject<WorkTypesDao>()
     val disciplinesDao by inject<DisciplinesDao>()
     val studentsDao by inject<StudentsDao>()
-    val employeesDao by inject<EmployeesDao>()
+    val employeeDao by inject<EmployeeDao>()
 
     runBlocking {
         val works = worksDao.allWorks(null, null)
@@ -875,7 +877,7 @@ private fun Application.createDummyWorks() {
                 val workTypeIds = workTypesDao.allWorkTypes().map(WorkType::id)
                 val disciplines = disciplinesDao.allDisciplines()
                 val studentIds = studentsDao.allStudents(null, null).map(Student::id)
-                val employeeIds = employeesDao.allTeachers().map(Employee::id)
+                val employeeIds = employeeDao.allTeachers().map(Employee::id)
 
                 repeat(100) { index ->
                     val discipline = disciplines.random()

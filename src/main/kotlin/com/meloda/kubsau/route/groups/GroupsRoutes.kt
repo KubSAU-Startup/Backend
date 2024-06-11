@@ -1,13 +1,13 @@
 package com.meloda.kubsau.route.groups
 
-import com.meloda.kubsau.api.respondSuccess
+import com.meloda.kubsau.model.respondSuccess
 import com.meloda.kubsau.common.getIntList
 import com.meloda.kubsau.common.getIntListOrThrow
 import com.meloda.kubsau.common.getIntOrThrow
 import com.meloda.kubsau.common.getStringOrThrow
 import com.meloda.kubsau.database.groups.GroupsDao
-import com.meloda.kubsau.errors.ContentNotFoundException
-import com.meloda.kubsau.errors.UnknownException
+import com.meloda.kubsau.model.ContentNotFoundException
+import com.meloda.kubsau.model.UnknownException
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*

@@ -1,5 +1,6 @@
 package com.meloda.kubsau.model
 
+import com.meloda.kubsau.base.Filterable
 import com.meloda.kubsau.database.groups.Groups
 import org.jetbrains.exposed.sql.ResultRow
 

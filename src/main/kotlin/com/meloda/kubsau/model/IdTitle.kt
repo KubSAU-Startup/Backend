@@ -1,4 +1,4 @@
-package com.meloda.kubsau.common
+package com.meloda.kubsau.model
 
 data class IdTitle(
     val id: Int,

@@ -2,17 +2,17 @@ package com.meloda.kubsau.route.auth
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import com.meloda.kubsau.api.respondSuccess
-import com.meloda.kubsau.common.SecretsController
+import com.meloda.kubsau.model.respondSuccess
+import com.meloda.kubsau.config.SecretsController
 import com.meloda.kubsau.common.getIntOrThrow
 import com.meloda.kubsau.common.getStringOrThrow
-import com.meloda.kubsau.database.employees.EmployeesDao
+import com.meloda.kubsau.database.employees.EmployeeDao
 import com.meloda.kubsau.database.employeesdepartments.EmployeesDepartmentsDao
 import com.meloda.kubsau.database.employeesfaculties.EmployeesFacultiesDao
-import com.meloda.kubsau.database.users.UsersDao
-import com.meloda.kubsau.errors.ContentNotFoundException
-import com.meloda.kubsau.errors.SessionExpiredException
-import com.meloda.kubsau.errors.UnavailableDepartmentId
+import com.meloda.kubsau.database.users.UserDao
+import com.meloda.kubsau.model.ContentNotFoundException
+import com.meloda.kubsau.model.SessionExpiredException
+import com.meloda.kubsau.model.UnavailableDepartmentId
 import com.meloda.kubsau.model.Department
 import com.meloda.kubsau.model.User
 import com.meloda.kubsau.plugins.AUDIENCE
@@ -36,8 +36,8 @@ fun Route.authRoutes() {
 
 
 private fun Route.addSession() {
-    val usersDao by inject<UsersDao>()
-    val employeesDao by inject<EmployeesDao>()
+    val userDao by inject<UserDao>()
+    val employeeDao by inject<EmployeeDao>()
     val employeesFacultiesDao by inject<EmployeesFacultiesDao>()
     val employeesDepartmentsDao by inject<EmployeesDepartmentsDao>()
 
@@ -47,7 +47,7 @@ private fun Route.addSession() {
         val login = parameters.getStringOrThrow("login")
         val password = parameters.getStringOrThrow("password")
 
-        val users = usersDao.allUsers()
+        val users = userDao.allUsers()
 
         val logins = users.map(User::login)
         val passwords = users.map(User::password)
@@ -64,7 +64,7 @@ private fun Route.addSession() {
 
         val user = users[loginIndex]
 
-        val employee = employeesDao.singleEmployee(user.employeeId) ?: throw ContentNotFoundException
+        val employee = employeeDao.singleEmployee(user.employeeId) ?: throw ContentNotFoundException
         val facultyId: Int? = if (employee.isAdmin()) {
             employeesFacultiesDao.singleFacultyIdByEmployeeId(employee.id)
         } else null
@@ -88,13 +88,13 @@ private fun Route.addSession() {
 }
 
 private fun Route.modifySession() {
-    val usersDao by inject<UsersDao>()
+    val userDao by inject<UserDao>()
     val employeesDepartmentsDao by inject<EmployeesDepartmentsDao>()
 
     patch {
         val principal = call.principal<UserPrincipal>() ?: throw SessionExpiredException
         val user = principal.user
-        usersDao.singleUser(user.id) ?: throw ContentNotFoundException
+        userDao.singleUser(user.id) ?: throw ContentNotFoundException
 
         val availableDepartmentIds = employeesDepartmentsDao.allDepartmentsByEmployeeId(user.employeeId)
             .map(Department::id)

@@ -1,11 +1,11 @@
 package com.meloda.kubsau.route.students
 
-import com.meloda.kubsau.api.respondSuccess
+import com.meloda.kubsau.model.respondSuccess
 import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.students.StudentsDao
 import com.meloda.kubsau.database.studentstatuses.StudentStatusesDao
-import com.meloda.kubsau.errors.ContentNotFoundException
-import com.meloda.kubsau.errors.UnknownException
+import com.meloda.kubsau.model.ContentNotFoundException
+import com.meloda.kubsau.model.UnknownException
 import com.meloda.kubsau.model.Student
 import com.meloda.kubsau.model.StudentStatus
 import io.ktor.server.application.*

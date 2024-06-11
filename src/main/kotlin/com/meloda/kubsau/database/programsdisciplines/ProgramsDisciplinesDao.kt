@@ -1,7 +1,7 @@
 package com.meloda.kubsau.database.programsdisciplines
 
-import com.meloda.kubsau.common.IdTitle
-import com.meloda.kubsau.database.RefDao
+import com.meloda.kubsau.model.IdTitle
+import com.meloda.kubsau.base.RefDao
 import com.meloda.kubsau.model.Discipline
 import com.meloda.kubsau.model.Program
 import com.meloda.kubsau.model.WorkType

@@ -1,12 +1,12 @@
 package com.meloda.kubsau.database.employees
 
-import com.meloda.kubsau.database.DatabaseController.dbQuery
+import com.meloda.kubsau.config.DatabaseController.dbQuery
 import com.meloda.kubsau.model.Employee
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 
-class EmployeesDaoImpl : EmployeesDao {
+class EmployeeDaoImpl : EmployeeDao {
 
     override suspend fun allEmployees(): List<Employee> = dbQuery {
         Employees.selectAll().orderBy(Employees.id, order = SortOrder.DESC).map(::mapResultRow)

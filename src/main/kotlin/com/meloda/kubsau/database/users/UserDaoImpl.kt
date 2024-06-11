@@ -1,12 +1,12 @@
 package com.meloda.kubsau.database.users
 
-import com.meloda.kubsau.database.DatabaseController.dbQuery
+import com.meloda.kubsau.config.DatabaseController.dbQuery
 import com.meloda.kubsau.model.User
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 
-class UsersDaoImpl : UsersDao {
+class UserDaoImpl : UserDao {
 
     override suspend fun allUsers(): List<User> = dbQuery {
         Users.selectAll().map(::mapResultRow)

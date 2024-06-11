@@ -1,6 +1,6 @@
 package com.meloda.kubsau.database.worktypes
 
-import com.meloda.kubsau.database.FilterableDao
+import com.meloda.kubsau.base.FilterableDao
 import com.meloda.kubsau.model.WorkType
 import com.meloda.kubsau.route.works.EntryFilter
 

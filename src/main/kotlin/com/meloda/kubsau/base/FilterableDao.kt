@@ -1,4 +1,4 @@
-package com.meloda.kubsau.database
+package com.meloda.kubsau.base
 
 import org.jetbrains.exposed.sql.ResultRow
 

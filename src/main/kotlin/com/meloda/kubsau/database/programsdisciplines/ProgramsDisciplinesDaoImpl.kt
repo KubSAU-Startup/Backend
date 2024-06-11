@@ -1,7 +1,7 @@
 package com.meloda.kubsau.database.programsdisciplines
 
-import com.meloda.kubsau.common.IdTitle
-import com.meloda.kubsau.database.DatabaseController.dbQuery
+import com.meloda.kubsau.model.IdTitle
+import com.meloda.kubsau.config.DatabaseController.dbQuery
 import com.meloda.kubsau.database.disciplines.Disciplines
 import com.meloda.kubsau.database.programs.Programs
 import com.meloda.kubsau.database.worktypes.WorkTypes
