@@ -9,17 +9,21 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 class HeadsDaoImpl : HeadsDao {
 
     override suspend fun allHeads(
+        facultyId: Int?,
         offset: Int?,
         limit: Int?
     ): List<Head> = dbQuery {
-        Heads
+        val dbQuery = Heads
             .selectAll()
             .apply {
                 if (limit != null) {
                     limit(limit, (offset ?: 0).toLong())
                 }
             }
-            .map(::mapResultRow)
+
+        facultyId?.let { dbQuery.andWhere { Heads.facultyId eq facultyId } }
+
+        dbQuery.map(::mapResultRow)
     }
 
     override suspend fun allHeadsByIds(headIds: List<Int>): List<Head> = dbQuery {
