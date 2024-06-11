@@ -2,8 +2,8 @@ package com.meloda.kubsau
 
 import com.meloda.kubsau.common.*
 import com.meloda.kubsau.config.ConfigController
-import com.meloda.kubsau.config.SecretsController
 import com.meloda.kubsau.config.DatabaseController
+import com.meloda.kubsau.config.SecretsController
 import com.meloda.kubsau.database.departments.DepartmentsDao
 import com.meloda.kubsau.database.directivities.DirectivitiesDao
 import com.meloda.kubsau.database.disciplines.DisciplinesDao
@@ -145,10 +145,30 @@ private fun Application.createDummyUsers() {
                 println("Creating dummy users...")
 
                 val time = measureTimeMillis {
-                    addNewUser(login = "lischenkodev@gmail.com", password = "123456", type = 1, employeeId = 1)
-                    addNewUser(login = "m.kozhukhar@gmail.com", password = "789012", type = 1, employeeId = 2)
-                    addNewUser(login = "ya.abros@gmail.com", password = "345678", type = 1, employeeId = 3)
-                    addNewUser(login = "email@domain.com", password = "123456", type = 2, employeeId = 4)
+                    addNewUser(
+                        login = "lischenkodev@gmail.com",
+                        password = hashPassword("123456"),
+                        type = 1,
+                        employeeId = 1
+                    )
+                    addNewUser(
+                        login = "m.kozhukhar@gmail.com",
+                        password = hashPassword("789012"),
+                        type = 1,
+                        employeeId = 2
+                    )
+                    addNewUser(
+                        login = "ya.abros@gmail.com",
+                        password = hashPassword("345678"),
+                        type = 1,
+                        employeeId = 3
+                    )
+                    addNewUser(
+                        login = "email@domain.com",
+                        password = hashPassword("123456"),
+                        type = 2,
+                        employeeId = 4
+                    )
                 }
 
                 println("Dummy users created. Took ${time}ms")

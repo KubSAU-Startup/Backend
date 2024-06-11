@@ -2,6 +2,7 @@ package com.meloda.kubsau.route.auth
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import com.meloda.kubsau.common.checkPassword
 import com.meloda.kubsau.common.getIntOrThrow
 import com.meloda.kubsau.common.getStringOrThrow
 import com.meloda.kubsau.config.SecretsController
@@ -53,7 +54,7 @@ private fun Route.addSession() {
 
         val loginIndex = logins.indexOf(login)
 
-        if (passwords[loginIndex] != password) {
+        if (!checkPassword(password, passwords[loginIndex])) {
             throw WrongCredentialsException
         }
 
