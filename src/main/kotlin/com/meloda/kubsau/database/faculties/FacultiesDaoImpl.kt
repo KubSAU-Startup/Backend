@@ -1,6 +1,6 @@
 package com.meloda.kubsau.database.faculties
 
-import com.meloda.kubsau.database.DatabaseController.dbQuery
+import com.meloda.kubsau.config.DatabaseController.dbQuery
 import com.meloda.kubsau.model.Faculty
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.insert

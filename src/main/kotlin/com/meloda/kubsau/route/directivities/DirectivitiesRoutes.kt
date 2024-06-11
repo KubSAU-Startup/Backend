@@ -1,13 +1,13 @@
 package com.meloda.kubsau.route.directivities
 
-import com.meloda.kubsau.api.respondSuccess
+import com.meloda.kubsau.model.respondSuccess
 import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.directivities.DirectivitiesDao
 import com.meloda.kubsau.database.grades.GradesDao
 import com.meloda.kubsau.database.groups.GroupsDao
 import com.meloda.kubsau.database.heads.HeadsDao
-import com.meloda.kubsau.errors.ContentNotFoundException
-import com.meloda.kubsau.errors.UnknownException
+import com.meloda.kubsau.model.ContentNotFoundException
+import com.meloda.kubsau.model.UnknownException
 import com.meloda.kubsau.model.Directivity
 import com.meloda.kubsau.model.Grade
 import com.meloda.kubsau.model.Head
