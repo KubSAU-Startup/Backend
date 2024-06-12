@@ -1,5 +1,7 @@
 package com.meloda.kubsau.repository
 
+import com.meloda.kubsau.common.checkPassword
+import com.meloda.kubsau.common.hashPassword
 import com.meloda.kubsau.database.employees.EmployeeDao
 import com.meloda.kubsau.database.employeesdepartments.EmployeesDepartmentsDao
 import com.meloda.kubsau.database.employeesfaculties.EmployeesFacultiesDao
@@ -15,6 +17,7 @@ interface UserRepository {
     suspend fun getUsersByIds(userIds: List<Int>): List<User>
     suspend fun getUserById(userId: Int): User?
     suspend fun getAccountInfo(principal: UserPrincipal): AccountInfo?
+
     suspend fun updateAccountInfo(
         principal: UserPrincipal,
         currentPassword: String,
@@ -61,11 +64,11 @@ class UserRepositoryImpl(
     ): Boolean {
         val currentUser = userDao.singleUser(principal.user.id) ?: throw ContentNotFoundException
 
-        if (currentPassword != currentUser.password) {
+        if (!checkPassword(currentPassword, currentUser.password)) {
             throw WrongCurrentPasswordException
         }
 
         // TODO: 07/06/2024, Danil Nikolaev: validate password for security
-        return userDao.updateUser(currentUser.id, currentUser.login, newPassword)
+        return userDao.updateUser(currentUser.id, currentUser.login, hashPassword(newPassword))
     }
 }

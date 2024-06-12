@@ -10,6 +10,7 @@ interface UserService {
     suspend fun getUsersByIds(userIds: List<Int>): List<User>
     suspend fun getUserById(userId: Int): User?
     suspend fun getAccountInfo(principal: UserPrincipal): AccountInfo?
+
     suspend fun updateAccountInfo(
         principal: UserPrincipal,
         currentPassword: String,
