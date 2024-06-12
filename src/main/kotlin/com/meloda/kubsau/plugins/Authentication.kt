@@ -32,17 +32,22 @@ fun Application.configureAuthentication() {
             )
 
             validate { credential ->
-                credential.payload.getClaim("id").asInt()?.let { userId ->
-                    userDao.singleUser(userId)?.let { id ->
-                        try {
-                            UserPrincipal(
-                                user = id,
-                                type = credential.payload.getClaim("type").asInt(),
-                                facultyId = credential.payload.getClaim("facultyId")?.asInt(),
-                                departmentId = credential.payload.getClaim("departmentId")?.asInt()
-                            )
-                        } catch (e: Exception) {
-                            null
+                credential.payload.run {
+                    getClaim("id")?.asInt()?.let { userId ->
+                        userDao.singleUser(userId)?.let { id ->
+                            try {
+                                UserPrincipal(
+                                    user = id,
+                                    type = getClaim("type").asInt(),
+                                    facultyId = getClaim("facultyId")?.asInt(),
+                                    selectedDepartmentId = getClaim("selectedDepartmentId")?.asInt(),
+                                    departmentIds = getClaim("departmentIds").asString().split(", ")
+                                        .mapNotNull { it.trim().toIntOrNull() }
+                                )
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                null
+                            }
                         }
                     }
                 }
@@ -57,5 +62,6 @@ data class UserPrincipal(
     val user: User,
     val type: Int,
     val facultyId: Int?,
-    val departmentId: Int?,
+    val selectedDepartmentId: Int?,
+    val departmentIds: List<Int>
 ) : Principal
