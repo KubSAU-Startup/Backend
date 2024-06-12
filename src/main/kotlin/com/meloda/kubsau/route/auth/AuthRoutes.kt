@@ -72,6 +72,7 @@ private fun Route.addSession() {
             .withClaim("id", user.id)
             .withClaim("type", employee.type)
             .withClaim("facultyId", facultyId)
+            .withClaim("departmentIds", departmentIds.joinToString())
             .sign(Algorithm.HMAC256(SecretsController.jwtSecret))
 
         respondSuccess {
@@ -108,7 +109,8 @@ private fun Route.modifySession() {
             .withClaim("id", user.id)
             .withClaim("type", principal.type)
             .withClaim("facultyId", principal.facultyId)
-            .withClaim("departmentId", departmentId)
+            .withClaim("selectedDepartmentId", departmentId)
+            .withClaim("departmentIds", principal.departmentIds.joinToString())
             .sign(Algorithm.HMAC256(SecretsController.jwtSecret))
 
         respondSuccess {
