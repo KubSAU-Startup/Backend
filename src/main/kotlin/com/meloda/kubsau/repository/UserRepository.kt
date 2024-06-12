@@ -49,7 +49,7 @@ class UserRepositoryImpl(
             type = employee.type,
             login = user.login,
             faculty = faculty,
-            selectedDepartmentId = principal.departmentId,
+            selectedDepartmentId = principal.selectedDepartmentId,
             departments = departments
         )
     }
