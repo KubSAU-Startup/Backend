@@ -3,17 +3,12 @@ package com.meloda.kubsau.plugins
 import com.meloda.kubsau.CONFIG_FOLDER
 import com.meloda.kubsau.common.Constants
 import com.meloda.kubsau.common.IS_IN_DOCKER
-import com.meloda.kubsau.controller.GroupController
-import com.meloda.kubsau.controller.UserController
-import com.meloda.kubsau.controller.WorkController
+import com.meloda.kubsau.controller.*
 import com.meloda.kubsau.model.ServerInfo
 import com.meloda.kubsau.route.auth.authRoutes
-import com.meloda.kubsau.route.department.departmentsRoutes
-import com.meloda.kubsau.route.directivities.directivitiesRoutes
 import com.meloda.kubsau.route.disciplines.disciplinesRoutes
 import com.meloda.kubsau.route.employees.employeesRoutes
 import com.meloda.kubsau.route.grades.gradesRoutes
-import com.meloda.kubsau.route.heads.majorsRoutes
 import com.meloda.kubsau.route.programs.programsRoutes
 import com.meloda.kubsau.route.qr.qrRoutes
 import com.meloda.kubsau.route.students.studentsRoutes
@@ -47,7 +42,7 @@ fun Application.routing() {
 context(Route)
 private fun routes() {
     authRoutes()
-    departmentsRoutes()
+    DepartmentController.routes()
     qrRoutes()
     disciplinesRoutes()
     studentsRoutes()
@@ -57,7 +52,7 @@ private fun routes() {
     WorkController.routes()
     UserController.routes()
     employeesRoutes()
-    directivitiesRoutes()
-    majorsRoutes()
+    DirectivityController.routes()
+    HeadController.routes()
     gradesRoutes()
 }

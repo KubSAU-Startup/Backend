@@ -3,8 +3,8 @@ package com.meloda.kubsau.controller
 import com.meloda.kubsau.common.getIntList
 import com.meloda.kubsau.common.getIntOrThrow
 import com.meloda.kubsau.common.getStringOrThrow
+import com.meloda.kubsau.common.userPrincipal
 import com.meloda.kubsau.model.*
-import com.meloda.kubsau.plugins.UserPrincipal
 import com.meloda.kubsau.service.UserService
 import io.ktor.server.application.*
 import io.ktor.server.auth.*

@@ -5,6 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.meloda.kubsau.common.checkPassword
 import com.meloda.kubsau.common.getIntOrThrow
 import com.meloda.kubsau.common.getStringOrThrow
+import com.meloda.kubsau.common.userPrincipal
 import com.meloda.kubsau.config.SecretsController
 import com.meloda.kubsau.database.employees.EmployeeDao
 import com.meloda.kubsau.database.employeesdepartments.EmployeeDepartmentDao
@@ -13,7 +14,6 @@ import com.meloda.kubsau.database.users.UserDao
 import com.meloda.kubsau.model.*
 import com.meloda.kubsau.plugins.AUDIENCE
 import com.meloda.kubsau.plugins.ISSUER
-import com.meloda.kubsau.plugins.UserPrincipal
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*

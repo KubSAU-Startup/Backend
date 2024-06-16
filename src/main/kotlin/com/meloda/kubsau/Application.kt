@@ -333,7 +333,7 @@ private fun Application.createDummyDepartments() {
 
     departmentDao.apply {
         runBlocking {
-            if (allDepartments().isEmpty()) {
+            if (allDepartments(null).isEmpty()) {
                 println("Creating dummy departments...")
 
                 val time = measureTimeMillis {
@@ -359,7 +359,7 @@ private fun Application.createDummyEmployeesDepartments() {
                 println("Creating dummy employees departments references...")
 
                 val time = measureTimeMillis {
-                    val departmentIds = departmentDao.allDepartments().map(Department::id)
+                    val departmentIds = departmentDao.allDepartments(null).map(Department::id)
 
                     addNewReference(1, 1)
                     addNewReference(2, 2)
@@ -434,7 +434,7 @@ private fun Application.createDummyDisciplines() {
             if (allDisciplines().isEmpty()) {
                 println("Creating dummy disciplines...")
 
-                val departmentIds = departmentDao.allDepartments().map(Department::id)
+                val departmentIds = departmentDao.allDepartments(null).map(Department::id)
 
                 val time = measureTimeMillis {
                     disciplinesString.forEach { title ->
@@ -564,7 +564,7 @@ private fun Application.createDummyDirectivities() {
 
     directivityDao.apply {
         runBlocking {
-            if (allDirectivities(null, null).isEmpty()) {
+            if (allDirectivities(null, null, null).isEmpty()) {
                 println("Creating dummy directivities...")
 
                 val time = measureTimeMillis {
@@ -722,10 +722,10 @@ private fun Application.createDummyGroups() {
                 it.id to it.abbreviation
             }
 
-            if (allGroups().isEmpty()) {
+            if (allGroups(null).isEmpty()) {
                 println("Creating dummy groups...")
 
-                val directivities = directivityDao.allDirectivities(null, null)
+                val directivities = directivityDao.allDirectivities(null, null, null)
 
                 val time = measureTimeMillis {
                     headTuples.forEach { (headId, abbreviation) ->
@@ -838,7 +838,7 @@ private fun Application.createDummyStudents() {
 
     studentDao.apply {
         runBlocking {
-            val groups = groupDao.allGroups().map(Group::id)
+            val groups = groupDao.allGroups(null).map(Group::id)
 
             if (allStudents(null, null).isEmpty()) {
                 println("Creating dummy students...")
@@ -929,7 +929,7 @@ private fun Application.createDummyPrograms() {
 
     programDao.apply {
         runBlocking {
-            val directivities = directivityDao.allDirectivities(null, null)
+            val directivities = directivityDao.allDirectivities(null, null, null)
 
             if (allPrograms(null, null).isEmpty()) {
                 println("Creating dummy programs...")
