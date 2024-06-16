@@ -3,7 +3,7 @@ package com.meloda.kubsau.route.qr
 import com.meloda.kubsau.model.respondSuccess
 import com.meloda.kubsau.common.getIntListOrThrow
 import com.meloda.kubsau.common.getIntOrThrow
-import com.meloda.kubsau.database.students.StudentsDao
+import com.meloda.kubsau.database.students.StudentDao
 import com.meloda.kubsau.model.Student
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -19,11 +19,11 @@ fun Route.qrRoutes() {
 }
 
 private fun Route.students() {
-    val studentsDao by inject<StudentsDao>()
+    val studentDao by inject<StudentDao>()
 
     get("/groups/{groupId}/students") {
         val groupId = call.parameters.getIntOrThrow("groupId")
-        val students = studentsDao.allStudentsByGroupId(groupId)
+        val students = studentDao.allStudentsByGroupId(groupId)
         respondSuccess { students }
     }
 
@@ -34,7 +34,7 @@ private fun Route.students() {
             requiredNotEmpty = true
         )
 
-        val fullStudents = studentsDao.allStudentsByGroupIds(groupIds)
+        val fullStudents = studentDao.allStudentsByGroupIds(groupIds)
 
         val listOfStudents = mutableListOf<GroupIdWithStudents>()
 
@@ -51,7 +51,7 @@ private fun Route.students() {
 
     route("/students") {
         get {
-            val students = studentsDao.allStudents(null, null).map(Student::mapToShrankItem)
+            val students = studentDao.allStudents(null, null).map(Student::mapToShrankItem)
             respondSuccess { students }
         }
     }

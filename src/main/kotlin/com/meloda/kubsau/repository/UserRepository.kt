@@ -3,8 +3,8 @@ package com.meloda.kubsau.repository
 import com.meloda.kubsau.common.checkPassword
 import com.meloda.kubsau.common.hashPassword
 import com.meloda.kubsau.database.employees.EmployeeDao
-import com.meloda.kubsau.database.employeesdepartments.EmployeesDepartmentsDao
-import com.meloda.kubsau.database.employeesfaculties.EmployeesFacultiesDao
+import com.meloda.kubsau.database.employeesdepartments.EmployeeDepartmentDao
+import com.meloda.kubsau.database.employeesfaculties.EmployeeFacultyDao
 import com.meloda.kubsau.database.users.UserDao
 import com.meloda.kubsau.model.AccountInfo
 import com.meloda.kubsau.model.ContentNotFoundException
@@ -28,8 +28,8 @@ interface UserRepository {
 class UserRepositoryImpl(
     private val userDao: UserDao,
     private val employeeDao: EmployeeDao,
-    private val employeesDepartmentsDao: EmployeesDepartmentsDao,
-    private val employeesFacultiesDao: EmployeesFacultiesDao
+    private val employeeDepartmentDao: EmployeeDepartmentDao,
+    private val employeeFacultyDao: EmployeeFacultyDao
 ) : UserRepository {
     override suspend fun getAllUsers(): List<User> = userDao.allUsers()
     override suspend fun getUsersByIds(userIds: List<Int>): List<User> = userDao.allUsersByIds(userIds)
@@ -37,12 +37,13 @@ class UserRepositoryImpl(
 
     override suspend fun getAccountInfo(principal: UserPrincipal): AccountInfo {
         val user = principal.user
+
         val employee = employeeDao.singleEmployee(user.employeeId) ?: throw ContentNotFoundException
 
-        val departments = employeesDepartmentsDao.allDepartmentsByEmployeeId(employee.id)
+        val departments = employeeDepartmentDao.allDepartmentsByEmployeeId(employee.id)
 
         val faculty = if (employee.isAdmin()) {
-            employeesFacultiesDao.singleFacultyByEmployeeId(employee.id)
+            employeeFacultyDao.singleFacultyByEmployeeId(employee.id)
         } else {
             null
         }

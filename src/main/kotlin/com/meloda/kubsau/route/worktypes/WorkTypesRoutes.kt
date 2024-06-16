@@ -2,7 +2,7 @@ package com.meloda.kubsau.route.worktypes
 
 import com.meloda.kubsau.model.respondSuccess
 import com.meloda.kubsau.common.*
-import com.meloda.kubsau.database.worktypes.WorkTypesDao
+import com.meloda.kubsau.database.worktypes.WorkTypeDao
 import com.meloda.kubsau.model.ContentNotFoundException
 import com.meloda.kubsau.model.UnknownException
 import io.ktor.server.application.*
@@ -25,7 +25,7 @@ fun Route.workTypesRoutes() {
 }
 
 private fun Route.getWorkTypes() {
-    val workTypesDao by inject<WorkTypesDao>()
+    val workTypeDao by inject<WorkTypeDao>()
 
     get {
         val workTypeIds = call.request.queryParameters.getIntList(
@@ -34,9 +34,9 @@ private fun Route.getWorkTypes() {
         )
 
         val workTypes = if (workTypeIds.isEmpty()) {
-            workTypesDao.allWorkTypes()
+            workTypeDao.allWorkTypes()
         } else {
-            workTypesDao.allWorkTypesByIds(workTypeIds)
+            workTypeDao.allWorkTypesByIds(workTypeIds)
         }
 
         respondSuccess { workTypes }
@@ -44,18 +44,18 @@ private fun Route.getWorkTypes() {
 }
 
 private fun Route.getWorkTypeById() {
-    val workTypesDao by inject<WorkTypesDao>()
+    val workTypeDao by inject<WorkTypeDao>()
 
     get("{id}") {
         val workTypeId = call.parameters.getIntOrThrow("id")
-        val workType = workTypesDao.singleWorkType(workTypeId) ?: throw ContentNotFoundException
+        val workType = workTypeDao.singleWorkType(workTypeId) ?: throw ContentNotFoundException
 
         respondSuccess { workType }
     }
 }
 
 private fun Route.addWorkType() {
-    val workTypesDao by inject<WorkTypesDao>()
+    val workTypeDao by inject<WorkTypeDao>()
 
     post {
         val parameters = call.receiveParameters()
@@ -63,7 +63,7 @@ private fun Route.addWorkType() {
         val title = parameters.getStringOrThrow("title")
         val needTitle = parameters.getBooleanOrThrow("needTitle")
 
-        val created = workTypesDao.addNewWorkType(
+        val created = workTypeDao.addNewWorkType(
             title = title,
             needTitle = needTitle
         )
@@ -77,18 +77,18 @@ private fun Route.addWorkType() {
 }
 
 private fun Route.editWorkType() {
-    val workTypesDao by inject<WorkTypesDao>()
+    val workTypeDao by inject<WorkTypeDao>()
 
     patch("{id}") {
         val workTypeId = call.parameters.getIntOrThrow("id")
-        val currentWorkType = workTypesDao.singleWorkType(workTypeId) ?: throw ContentNotFoundException
+        val currentWorkType = workTypeDao.singleWorkType(workTypeId) ?: throw ContentNotFoundException
 
         val parameters = call.receiveParameters()
 
         val title = parameters.getString("title")
         val needTitle = parameters.getBoolean("needTitle")
 
-        workTypesDao.updateWorkType(
+        workTypeDao.updateWorkType(
             workTypeId = workTypeId,
             title = title ?: currentWorkType.title,
             needTitle = needTitle ?: currentWorkType.needTitle
@@ -103,13 +103,13 @@ private fun Route.editWorkType() {
 }
 
 private fun Route.deleteWorkTypeById() {
-    val workTypesDao by inject<WorkTypesDao>()
+    val workTypeDao by inject<WorkTypeDao>()
 
     delete("{id}") {
         val workTypeId = call.parameters.getIntOrThrow("id")
-        workTypesDao.singleWorkType(workTypeId) ?: throw ContentNotFoundException
+        workTypeDao.singleWorkType(workTypeId) ?: throw ContentNotFoundException
 
-        if (workTypesDao.deleteWorkType(workTypeId)) {
+        if (workTypeDao.deleteWorkType(workTypeId)) {
             respondSuccess { 1 }
         } else {
             throw UnknownException
@@ -118,7 +118,7 @@ private fun Route.deleteWorkTypeById() {
 }
 
 private fun Route.deleteWorkTypesByIds() {
-    val workTypesDao by inject<WorkTypesDao>()
+    val workTypeDao by inject<WorkTypeDao>()
 
     delete {
         val workTypeIds = call.request.queryParameters.getIntListOrThrow(
@@ -126,12 +126,12 @@ private fun Route.deleteWorkTypesByIds() {
             requiredNotEmpty = true
         )
 
-        val currentWorkTypes = workTypesDao.allWorkTypesByIds(workTypeIds)
+        val currentWorkTypes = workTypeDao.allWorkTypesByIds(workTypeIds)
         if (currentWorkTypes.isEmpty()) {
             throw ContentNotFoundException
         }
 
-        if (workTypesDao.deleteWorkTypes(workTypeIds)) {
+        if (workTypeDao.deleteWorkTypes(workTypeIds)) {
             respondSuccess { 1 }
         } else {
             throw UnknownException

@@ -1,10 +1,12 @@
 package com.meloda.kubsau.route.employees
 
-import com.meloda.kubsau.model.respondSuccess
 import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.employees.EmployeeDao
 import com.meloda.kubsau.model.ContentNotFoundException
 import com.meloda.kubsau.model.UnknownException
+import com.meloda.kubsau.model.UnknownTokenException
+import com.meloda.kubsau.model.respondSuccess
+import com.meloda.kubsau.plugins.UserPrincipal
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -28,13 +30,14 @@ private fun Route.getEmployees() {
     val employeeDao by inject<EmployeeDao>()
 
     get {
+        val principal = call.userPrincipal()
         val employeeIds = call.request.queryParameters.getIntList(
             key = "employeeIds",
             defaultValue = emptyList()
         )
 
         val employees = if (employeeIds.isEmpty()) {
-            employeeDao.allEmployees()
+            employeeDao.allEmployees(principal.facultyId, null, null)
         } else {
             employeeDao.allEmployeesByIds(employeeIds)
         }
@@ -87,7 +90,8 @@ private fun Route.editEmployee() {
 
     patch("{id}") {
         val employeeId = call.parameters.getIntOrThrow("id")
-        val currentEmployee = employeeDao.singleEmployee(employeeId) ?: throw ContentNotFoundException
+        val currentEmployee =
+            employeeDao.singleEmployee(employeeId) ?: throw ContentNotFoundException
 
         val parameters = call.receiveParameters()
 

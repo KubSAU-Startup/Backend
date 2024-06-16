@@ -57,7 +57,7 @@ class UserController(private val userService: UserService) {
 
     private fun Route.getAccountInfo() {
         get {
-            val principal = call.principal<UserPrincipal>() ?: throw UnknownTokenException
+            val principal = call.userPrincipal()
             val info = userService.getAccountInfo(principal)
             respondSuccess { info }
         }
@@ -65,7 +65,7 @@ class UserController(private val userService: UserService) {
 
     private fun Route.editAccountInfo() {
         patch {
-            val principal = call.principal<UserPrincipal>() ?: throw UnknownTokenException
+            val principal = call.userPrincipal()
 
             val parameters = call.receiveParameters()
             val currentPassword = parameters.getStringOrThrow("currentPassword")

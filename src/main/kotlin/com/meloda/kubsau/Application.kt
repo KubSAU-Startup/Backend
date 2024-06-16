@@ -4,23 +4,23 @@ import com.meloda.kubsau.common.*
 import com.meloda.kubsau.config.ConfigController
 import com.meloda.kubsau.config.DatabaseController
 import com.meloda.kubsau.config.SecretsController
-import com.meloda.kubsau.database.departments.DepartmentsDao
-import com.meloda.kubsau.database.directivities.DirectivitiesDao
-import com.meloda.kubsau.database.disciplines.DisciplinesDao
+import com.meloda.kubsau.database.departments.DepartmentDao
+import com.meloda.kubsau.database.directivities.DirectivityDao
+import com.meloda.kubsau.database.disciplines.DisciplineDao
 import com.meloda.kubsau.database.employees.EmployeeDao
-import com.meloda.kubsau.database.employeesdepartments.EmployeesDepartmentsDao
-import com.meloda.kubsau.database.employeesfaculties.EmployeesFacultiesDao
-import com.meloda.kubsau.database.faculties.FacultiesDao
-import com.meloda.kubsau.database.grades.GradesDao
-import com.meloda.kubsau.database.groups.GroupsDao
-import com.meloda.kubsau.database.heads.HeadsDao
-import com.meloda.kubsau.database.programs.ProgramsDao
-import com.meloda.kubsau.database.programsdisciplines.ProgramsDisciplinesDao
-import com.meloda.kubsau.database.students.StudentsDao
-import com.meloda.kubsau.database.studentstatuses.StudentStatusesDao
+import com.meloda.kubsau.database.employeesdepartments.EmployeeDepartmentDao
+import com.meloda.kubsau.database.employeesfaculties.EmployeeFacultyDao
+import com.meloda.kubsau.database.faculties.FacultyDao
+import com.meloda.kubsau.database.grades.GradeDao
+import com.meloda.kubsau.database.groups.GroupDao
+import com.meloda.kubsau.database.heads.HeadDao
+import com.meloda.kubsau.database.programs.ProgramDao
+import com.meloda.kubsau.database.programsdisciplines.ProgramDisciplineDao
+import com.meloda.kubsau.database.students.StudentDao
+import com.meloda.kubsau.database.studentstatuses.StudentStatusDao
 import com.meloda.kubsau.database.users.UserDao
-import com.meloda.kubsau.database.works.WorksDao
-import com.meloda.kubsau.database.worktypes.WorkTypesDao
+import com.meloda.kubsau.database.works.WorkDao
+import com.meloda.kubsau.database.worktypes.WorkTypeDao
 import com.meloda.kubsau.model.*
 import com.meloda.kubsau.plugins.*
 import io.ktor.http.*
@@ -148,25 +148,21 @@ private fun Application.createDummyUsers() {
                     addNewUser(
                         login = "lischenkodev@gmail.com",
                         password = hashPassword("123456"),
-                        type = 1,
                         employeeId = 1
                     )
                     addNewUser(
                         login = "m.kozhukhar@gmail.com",
                         password = hashPassword("789012"),
-                        type = 1,
                         employeeId = 2
                     )
                     addNewUser(
                         login = "ya.abros@gmail.com",
                         password = hashPassword("345678"),
-                        type = 1,
                         employeeId = 3
                     )
                     addNewUser(
                         login = "email@domain.com",
                         password = hashPassword("123456"),
-                        type = 2,
                         employeeId = 4
                     )
                 }
@@ -178,9 +174,9 @@ private fun Application.createDummyUsers() {
 }
 
 private fun Application.createDummyGrades() {
-    val gradesDao by inject<GradesDao>()
+    val gradeDao by inject<GradeDao>()
 
-    gradesDao.apply {
+    gradeDao.apply {
         runBlocking {
             if (allGrades(null, null).isEmpty()) {
                 println("Crearing dummy grades...")
@@ -265,7 +261,7 @@ private fun Application.createDummyEmployees() {
 
     employeeDao.apply {
         runBlocking {
-            if (allEmployees().isEmpty()) {
+            if (allEmployees(null, null, null).isEmpty()) {
                 println("Creating dummy employees...")
 
                 val time = measureTimeMillis {
@@ -318,7 +314,7 @@ private fun Application.createDummyEmployees() {
 
 
 private fun Application.createDummyDepartments() {
-    val departmentsDao by inject<DepartmentsDao>()
+    val departmentDao by inject<DepartmentDao>()
 
     val strings = listOf(
         "АгрохимииsepАдминистративного и финансового праваsepАнатомии, ветеринарного акушерства и хирургииsepАрхитектурыsepАудитаsepБиотехнологии, биохимии и биофизикиsepБотаники и общей экологииsepБухгалтерского учетаsepВиноградарстваsepВысшей математикиsepГенетики, селекции и семеноводстваsepГеодезииsepГидравлики и с.х. водоснабженияsepГосударственного и международного праваsepГосударственного и муниципального управленияsepГражданского праваsepГражданского процессаsepДенежного обращения и кредитаsepЗемельного, трудового и экологического праваsepЗемлеустройства и земельного кадастра",
@@ -335,7 +331,7 @@ private fun Application.createDummyDepartments() {
         }
     }
 
-    departmentsDao.apply {
+    departmentDao.apply {
         runBlocking {
             if (allDepartments().isEmpty()) {
                 println("Creating dummy departments...")
@@ -353,14 +349,18 @@ private fun Application.createDummyDepartments() {
 }
 
 private fun Application.createDummyEmployeesDepartments() {
-    val employeesDepartmentsDao by inject<EmployeesDepartmentsDao>()
+    val departmentDao by inject<DepartmentDao>()
+    val employeeDao by inject<EmployeeDao>()
+    val employeeDepartmentDao by inject<EmployeeDepartmentDao>()
 
-    employeesDepartmentsDao.apply {
+    employeeDepartmentDao.apply {
         runBlocking {
             if (allReferences().isEmpty()) {
                 println("Creating dummy employees departments references...")
 
                 val time = measureTimeMillis {
+                    val departmentIds = departmentDao.allDepartments().map(Department::id)
+
                     addNewReference(1, 1)
                     addNewReference(2, 2)
                     addNewReference(3, 3)
@@ -369,6 +369,12 @@ private fun Application.createDummyEmployeesDepartments() {
                     addNewReference(3, 6)
                     addNewReference(4, 7)
                     addNewReference(4, 8)
+
+                    employeeDao.allTeachers(null, null, null)
+                        .map(Employee::id)
+                        .forEach { id ->
+                            addNewReference(id, departmentIds.random())
+                        }
                 }
 
                 println("Dummy employees departments references created. Took ${time}ms")
@@ -420,15 +426,15 @@ private fun Application.createDummyDisciplines() {
         "Генетика"
     )
 
-    val disciplinesDao by inject<DisciplinesDao>()
-    val departmentsDao by inject<DepartmentsDao>()
+    val disciplineDao by inject<DisciplineDao>()
+    val departmentDao by inject<DepartmentDao>()
 
-    disciplinesDao.apply {
+    disciplineDao.apply {
         runBlocking {
             if (allDisciplines().isEmpty()) {
                 println("Creating dummy disciplines...")
 
-                val departmentIds = departmentsDao.allDepartments().map(Department::id)
+                val departmentIds = departmentDao.allDepartments().map(Department::id)
 
                 val time = measureTimeMillis {
                     disciplinesString.forEach { title ->
@@ -446,7 +452,7 @@ private fun Application.createDummyDisciplines() {
 }
 
 private fun Application.createDummyFaculties() {
-    val facultiesDao by inject<FacultiesDao>()
+    val facultyDao by inject<FacultyDao>()
 
     val titles = listOf(
         "Агрономии и экологии",
@@ -471,13 +477,13 @@ private fun Application.createDummyFaculties() {
         "Военное обучение"
     )
 
-    facultiesDao.apply {
+    facultyDao.apply {
         runBlocking {
             if (allFaculties(null, null).isEmpty()) {
                 println("Creating dummy faculties...")
 
                 val time = measureTimeMillis {
-                    titles.forEach { title -> facultiesDao.addNewFaculty(title) }
+                    titles.forEach { title -> facultyDao.addNewFaculty(title) }
                 }
 
                 println("Dummy faculties created. Took ${time}ms")
@@ -487,9 +493,9 @@ private fun Application.createDummyFaculties() {
 }
 
 private fun Application.createDummyEmployeesFaculties() {
-    val employeesFacultiesDao by inject<EmployeesFacultiesDao>()
+    val employeeFacultyDao by inject<EmployeeFacultyDao>()
 
-    employeesFacultiesDao.apply {
+    employeeFacultyDao.apply {
         runBlocking {
             if (allReferences().isEmpty()) {
                 println("Creating dummy employees faculties references...")
@@ -529,9 +535,9 @@ private fun Application.createDummyHeads() {
         Triple("40.03.01", "Юриспруденция", "ЮР"),
     )
 
-    val headsDao by inject<HeadsDao>()
+    val headDao by inject<HeadDao>()
 
-    headsDao.apply {
+    headDao.apply {
         runBlocking {
             if (allHeads(null, null, null).isEmpty()) {
                 println("Creating dummy heads...")
@@ -554,9 +560,9 @@ private fun Application.createDummyHeads() {
 }
 
 private fun Application.createDummyDirectivities() {
-    val directivitiesDao by inject<DirectivitiesDao>()
+    val directivityDao by inject<DirectivityDao>()
 
-    directivitiesDao.apply {
+    directivityDao.apply {
         runBlocking {
             if (allDirectivities(null, null).isEmpty()) {
                 println("Creating dummy directivities...")
@@ -706,20 +712,20 @@ private fun Application.createDummyDirectivities() {
 }
 
 private fun Application.createDummyGroups() {
-    val groupsDao by inject<GroupsDao>()
-    val headsDao by inject<HeadsDao>()
-    val directivitiesDao by inject<DirectivitiesDao>()
+    val groupDao by inject<GroupDao>()
+    val headDao by inject<HeadDao>()
+    val directivityDao by inject<DirectivityDao>()
 
-    groupsDao.apply {
+    groupDao.apply {
         runBlocking {
-            val headTuples = headsDao.allHeads(null, null, null).map {
+            val headTuples = headDao.allHeads(null, null, null).map {
                 it.id to it.abbreviation
             }
 
             if (allGroups().isEmpty()) {
                 println("Creating dummy groups...")
 
-                val directivities = directivitiesDao.allDirectivities(null, null)
+                val directivities = directivityDao.allDirectivities(null, null)
 
                 val time = measureTimeMillis {
                     headTuples.forEach { (headId, abbreviation) ->
@@ -739,9 +745,9 @@ private fun Application.createDummyGroups() {
 }
 
 private fun Application.createDummyStudentStatuses() {
-    val studentStatusesDao by inject<StudentStatusesDao>()
+    val studentStatusDao by inject<StudentStatusDao>()
 
-    studentStatusesDao.apply {
+    studentStatusDao.apply {
         runBlocking {
             if (allStatuses().isEmpty()) {
                 println("Creating dummy students statuses...")
@@ -826,18 +832,18 @@ private fun Application.createDummyStudents() {
             "Матвеева Анна Вячеславовна")
         .split("\n")
 
-    val groupsDao by inject<GroupsDao>()
-    val studentsDao by inject<StudentsDao>()
-    val studentStatusesDao by inject<StudentStatusesDao>()
+    val groupDao by inject<GroupDao>()
+    val studentDao by inject<StudentDao>()
+    val studentStatusDao by inject<StudentStatusDao>()
 
-    studentsDao.apply {
+    studentDao.apply {
         runBlocking {
-            val groups = groupsDao.allGroups().map(Group::id)
+            val groups = groupDao.allGroups().map(Group::id)
 
             if (allStudents(null, null).isEmpty()) {
                 println("Creating dummy students...")
 
-                val statusIds = studentStatusesDao.allStatuses().map(StudentStatus::id)
+                val statusIds = studentStatusDao.allStatuses().map(StudentStatus::id)
 
                 val time = measureTimeMillis {
                     groups.forEach { groupId ->
@@ -860,9 +866,9 @@ private fun Application.createDummyStudents() {
 }
 
 private fun Application.createDummyWorkTypes() {
-    val workTypesDao by inject<WorkTypesDao>()
+    val workTypeDao by inject<WorkTypeDao>()
 
-    workTypesDao.apply {
+    workTypeDao.apply {
         runBlocking {
             if (allWorkTypes().isEmpty()) {
                 println("Creating dummy work types...")
@@ -881,27 +887,27 @@ private fun Application.createDummyWorkTypes() {
 }
 
 private fun Application.createDummyWorks() {
-    val worksDao by inject<WorksDao>()
-    val workTypesDao by inject<WorkTypesDao>()
-    val disciplinesDao by inject<DisciplinesDao>()
-    val studentsDao by inject<StudentsDao>()
+    val workDao by inject<WorkDao>()
+    val workTypeDao by inject<WorkTypeDao>()
+    val disciplineDao by inject<DisciplineDao>()
+    val studentDao by inject<StudentDao>()
     val employeeDao by inject<EmployeeDao>()
 
     runBlocking {
-        val works = worksDao.allWorks(null, null)
+        val works = workDao.allWorks(null, null, null)
 
         if (works.isEmpty()) {
             println("Creating dummy works...")
 
             val time = measureTimeMillis {
-                val workTypeIds = workTypesDao.allWorkTypes().map(WorkType::id)
-                val disciplines = disciplinesDao.allDisciplines()
-                val studentIds = studentsDao.allStudents(null, null).map(Student::id)
-                val employeeIds = employeeDao.allTeachers().map(Employee::id)
+                val workTypeIds = workTypeDao.allWorkTypes().map(WorkType::id)
+                val disciplines = disciplineDao.allDisciplines()
+                val studentIds = studentDao.allStudents(null, null).map(Student::id)
+                val employeeIds = employeeDao.allTeachers(null, null, null).map(Employee::id)
 
                 repeat(100) { index ->
                     val discipline = disciplines.random()
-                    worksDao.addNewWork(
+                    workDao.addNewWork(
                         disciplineId = discipline.id,
                         studentId = studentIds.random(),
                         registrationDate = getRandomUnixTime(),
@@ -918,12 +924,12 @@ private fun Application.createDummyWorks() {
 }
 
 private fun Application.createDummyPrograms() {
-    val directivitiesDao by inject<DirectivitiesDao>()
-    val programsDao by inject<ProgramsDao>()
+    val directivityDao by inject<DirectivityDao>()
+    val programDao by inject<ProgramDao>()
 
-    programsDao.apply {
+    programDao.apply {
         runBlocking {
-            val directivities = directivitiesDao.allDirectivities(null, null)
+            val directivities = directivityDao.allDirectivities(null, null)
 
             if (allPrograms(null, null).isEmpty()) {
                 println("Creating dummy programs...")
@@ -948,23 +954,23 @@ private fun Application.createDummyPrograms() {
 }
 
 private fun Application.createDummyProgramsDisciplines() {
-    val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
-    val programsDao by inject<ProgramsDao>()
-    val disciplinesDao by inject<DisciplinesDao>()
-    val workTypesDao by inject<WorkTypesDao>()
+    val programDisciplineDao by inject<ProgramDisciplineDao>()
+    val programDao by inject<ProgramDao>()
+    val disciplineDao by inject<DisciplineDao>()
+    val workTypeDao by inject<WorkTypeDao>()
 
     runBlocking {
-        if (programsDisciplinesDao.allReferences(null, null).isEmpty()) {
+        if (programDisciplineDao.allReferences(null, null).isEmpty()) {
             println("Creating dummy programs-disciplines references...")
 
-            val programIds = programsDao.allPrograms(null, null).map(Program::id)
-            val disciplineIds = disciplinesDao.allDisciplines().map(Discipline::id)
-            val workTypeIds = workTypesDao.allWorkTypes().map(WorkType::id)
+            val programIds = programDao.allPrograms(null, null).map(Program::id)
+            val disciplineIds = disciplineDao.allDisciplines().map(Discipline::id)
+            val workTypeIds = workTypeDao.allWorkTypes().map(WorkType::id)
 
             val time = measureTimeMillis {
                 programIds.forEach { programId ->
                     disciplineIds.shuffled().take(9).forEach { disciplineId ->
-                        programsDisciplinesDao.addNewReference(
+                        programDisciplineDao.addNewReference(
                             programId = programId,
                             disciplineId = disciplineId,
                             workTypeId = workTypeIds.random()

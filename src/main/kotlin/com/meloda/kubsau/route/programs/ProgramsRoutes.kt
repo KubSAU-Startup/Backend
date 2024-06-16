@@ -3,11 +3,11 @@ package com.meloda.kubsau.route.programs
 import com.meloda.kubsau.DATA_FOLDER
 import com.meloda.kubsau.model.respondSuccess
 import com.meloda.kubsau.common.*
-import com.meloda.kubsau.database.departments.DepartmentsDao
-import com.meloda.kubsau.database.groups.GroupsDao
-import com.meloda.kubsau.database.programs.ProgramsDao
-import com.meloda.kubsau.database.programsdisciplines.ProgramsDisciplinesDao
-import com.meloda.kubsau.database.students.StudentsDao
+import com.meloda.kubsau.database.departments.DepartmentDao
+import com.meloda.kubsau.database.groups.GroupDao
+import com.meloda.kubsau.database.programs.ProgramDao
+import com.meloda.kubsau.database.programsdisciplines.ProgramDisciplineDao
+import com.meloda.kubsau.database.students.StudentDao
 import com.meloda.kubsau.model.ContentNotFoundException
 import com.meloda.kubsau.model.UnknownException
 import com.meloda.kubsau.model.ValidationException
@@ -54,8 +54,8 @@ private data class ProgramWithDisciplineIds(
 )
 
 private fun Route.getPrograms() {
-    val programsDao by inject<ProgramsDao>()
-    val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
+    val programDao by inject<ProgramDao>()
+    val programDisciplineDao by inject<ProgramDisciplineDao>()
 
     get {
         val parameters = call.request.queryParameters
@@ -68,7 +68,7 @@ private fun Route.getPrograms() {
         val offset = parameters.getInt("offset")
         val limit = parameters.getInt(key = "limit", range = ProgramRange)
 
-        val entries = programsDao.allProgramsBySearch(
+        val entries = programDao.allProgramsBySearch(
             programIds = programIds,
             offset = offset,
             limit = limit ?: MAX_PROGRAMS,
@@ -77,7 +77,7 @@ private fun Route.getPrograms() {
             query = null
         )
 
-        val disciplines = programsDisciplinesDao.allSearchDisciplinesByProgramIds(entries.map { it.program.id })
+        val disciplines = programDisciplineDao.allSearchDisciplinesByProgramIds(entries.map { it.program.id })
 
         respondSuccess {
             SearchResponse(
@@ -94,14 +94,14 @@ private fun Route.getPrograms() {
 }
 
 private fun Route.getProgramById() {
-    val programsDao by inject<ProgramsDao>()
-    val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
+    val programDao by inject<ProgramDao>()
+    val programDisciplineDao by inject<ProgramDisciplineDao>()
 
     get("{id}") {
         val programId = call.parameters.getIntOrThrow("id")
-        val program = programsDao.singleProgram(programId) ?: throw ContentNotFoundException
+        val program = programDao.singleProgram(programId) ?: throw ContentNotFoundException
 
-        val disciplines = programsDisciplinesDao.allDisciplinesByProgramId(programId)
+        val disciplines = programDisciplineDao.allDisciplinesByProgramId(programId)
             .map(Discipline::id)
 
         respondSuccess {
@@ -123,14 +123,14 @@ private data class FullDisciplinesResponse(
 )
 
 private fun Route.getDisciplines() {
-    val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
-    val departmentsDao by inject<DepartmentsDao>()
+    val programDisciplineDao by inject<ProgramDisciplineDao>()
+    val departmentDao by inject<DepartmentDao>()
 
     get("{programId}/disciplines") {
         val programId = call.parameters.getIntOrThrow("programId")
         val extended = call.request.queryParameters.getBoolean("extended", false)
 
-        val disciplines = programsDisciplinesDao.allDisciplinesByProgramId(programId)
+        val disciplines = programDisciplineDao.allDisciplinesByProgramId(programId)
 
         if (!extended) {
             respondSuccess {
@@ -138,7 +138,7 @@ private fun Route.getDisciplines() {
             }
         } else {
             val departmentIds = disciplines.map(Discipline::departmentId)
-            val departments = departmentsDao.allDepartmentsByIds(departmentIds)
+            val departments = departmentDao.allDepartmentsByIds(departmentIds)
 
             respondSuccess {
                 FullDisciplinesResponse(
@@ -159,13 +159,13 @@ private fun Route.getDisciplines() {
 
         val extended = parameters.getBoolean("extended", false)
 
-        val disciplines = programsDisciplinesDao.allDisciplinesByProgramIds(programIds)
+        val disciplines = programDisciplineDao.allDisciplinesByProgramIds(programIds)
 
         if (!extended) {
             respondSuccess { DisciplinesResponse(disciplines = disciplines) }
         } else {
             val departmentIds = disciplines.map(Discipline::departmentId)
-            val departments = departmentsDao.allDepartmentsByIds(departmentIds)
+            val departments = departmentDao.allDepartmentsByIds(departmentIds)
 
             respondSuccess {
                 FullDisciplinesResponse(
@@ -178,27 +178,27 @@ private fun Route.getDisciplines() {
 }
 
 private fun Route.generateQRCodes() {
-    val programsDao by inject<ProgramsDao>()
-    val groupsDao by inject<GroupsDao>()
-    val studentsDao by inject<StudentsDao>()
-    val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
+    val programDao by inject<ProgramDao>()
+    val groupDao by inject<GroupDao>()
+    val studentDao by inject<StudentDao>()
+    val programDisciplineDao by inject<ProgramDisciplineDao>()
 
     get("{id}/qr") {
         val programId = call.parameters.getIntOrThrow("id")
-        programsDao.singleProgram(programId) ?: throw ContentNotFoundException
+        programDao.singleProgram(programId) ?: throw ContentNotFoundException
 
         val groupIds = call.request.queryParameters.getIntListOrThrow(
             key = "groupIds",
             requiredNotEmpty = true
         )
 
-        val groups = groupsDao.allGroupsByIds(groupIds)
+        val groups = groupDao.allGroupsByIds(groupIds)
         if (groups.isEmpty()) {
             throw ContentNotFoundException
         }
 
-        val students = studentsDao.allStudentsByGroupIdsAsMap(groupIds)
-        val disciplines = programsDisciplinesDao.allDisciplineIdsByProgramIdAsMap(programId)
+        val students = studentDao.allStudentsByGroupIdsAsMap(groupIds)
+        val disciplines = programDisciplineDao.allDisciplineIdsByProgramIdAsMap(programId)
 
         val jobList = mutableListOf<Job>()
 
@@ -331,8 +331,8 @@ data class FullDisciplineIds(
 )
 
 private fun Route.searchPrograms() {
-    val programsDao by inject<ProgramsDao>()
-    val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
+    val programDao by inject<ProgramDao>()
+    val programDisciplineDao by inject<ProgramDisciplineDao>()
 
     get("/search") {
         val parameters = call.request.queryParameters
@@ -343,7 +343,7 @@ private fun Route.searchPrograms() {
         val directivityId = parameters.getInt("directivityId")
         val query = parameters.getString(key = "query", trim = true)?.lowercase()
 
-        val entries = programsDao.allProgramsBySearch(
+        val entries = programDao.allProgramsBySearch(
             programIds = null,
             offset = offset,
             limit = limit ?: MAX_PROGRAMS,
@@ -353,7 +353,7 @@ private fun Route.searchPrograms() {
         )
 
         val programIds = entries.map { it.program.id }
-        val disciplines = programsDisciplinesDao.allSearchDisciplinesByProgramIds(programIds)
+        val disciplines = programDisciplineDao.allSearchDisciplinesByProgramIds(programIds)
 
         respondSuccess {
             SearchResponse(
@@ -370,7 +370,7 @@ private fun Route.searchPrograms() {
 }
 
 private fun Route.addProgram() {
-    val programsDao by inject<ProgramsDao>()
+    val programDao by inject<ProgramDao>()
 
     post {
         val parameters = call.receiveParameters()
@@ -378,7 +378,7 @@ private fun Route.addProgram() {
         val semester = parameters.getIntOrThrow("semester")
         val directivityId = parameters.getIntOrThrow("directivityId")
 
-        val created = programsDao.addNewProgram(
+        val created = programDao.addNewProgram(
             semester = semester,
             directivityId = directivityId
         )
@@ -392,12 +392,12 @@ private fun Route.addProgram() {
 }
 
 private fun Route.addDisciplinesToProgram() {
-    val programsDao by inject<ProgramsDao>()
-    val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
+    val programDao by inject<ProgramDao>()
+    val programDisciplineDao by inject<ProgramDisciplineDao>()
 
     post("{id}/disciplines") {
         val programId = call.parameters.getIntOrThrow("id")
-        programsDao.singleProgram(programId) ?: throw ContentNotFoundException
+        programDao.singleProgram(programId) ?: throw ContentNotFoundException
 
         val parameters = call.receiveParameters()
 
@@ -418,7 +418,7 @@ private fun Route.addDisciplinesToProgram() {
         }
 
         disciplineIds.forEachIndexed { index, disciplineId ->
-            if (!programsDisciplinesDao.addNewReference(
+            if (!programDisciplineDao.addNewReference(
                     programId = programId,
                     disciplineId = disciplineId,
                     workTypeId = workTypeIds[index]
@@ -433,18 +433,18 @@ private fun Route.addDisciplinesToProgram() {
 }
 
 private fun Route.editProgram() {
-    val programsDao by inject<ProgramsDao>()
+    val programDao by inject<ProgramDao>()
 
     patch("{id}") {
         val programId = call.parameters.getIntOrThrow("id")
-        val currentProgram = programsDao.singleProgram(programId) ?: throw ContentNotFoundException
+        val currentProgram = programDao.singleProgram(programId) ?: throw ContentNotFoundException
 
         val parameters = call.receiveParameters()
 
         val semester = parameters.getInt("semester")
         val directivityId = parameters.getInt("directivityId")
 
-        programsDao.updateProgram(
+        programDao.updateProgram(
             programId = programId,
             semester = semester ?: currentProgram.semester,
             directivityId = directivityId ?: currentProgram.directivityId
@@ -459,12 +459,12 @@ private fun Route.editProgram() {
 }
 
 private fun Route.editProgramDisciplines() {
-    val programsDao by inject<ProgramsDao>()
-    val programsDisciplinesDao by inject<ProgramsDisciplinesDao>()
+    val programDao by inject<ProgramDao>()
+    val programDisciplineDao by inject<ProgramDisciplineDao>()
 
     patch("{id}/disciplines") {
         val programId = call.parameters.getIntOrThrow("id")
-        val program = programsDao.singleProgram(programId) ?: throw ContentNotFoundException
+        val program = programDao.singleProgram(programId) ?: throw ContentNotFoundException
 
         val parameters = call.receiveParameters()
 
@@ -484,10 +484,10 @@ private fun Route.editProgramDisciplines() {
             )
         }
 
-        programsDisciplinesDao.deleteReferencesByProgramId(program.id)
+        programDisciplineDao.deleteReferencesByProgramId(program.id)
 
         disciplineIds.forEachIndexed { index, disciplineId ->
-            programsDisciplinesDao.addNewReference(programId, disciplineId, workTypeIds[index])
+            programDisciplineDao.addNewReference(programId, disciplineId, workTypeIds[index])
         }
 
         respondSuccess { 1 }
@@ -495,13 +495,13 @@ private fun Route.editProgramDisciplines() {
 }
 
 private fun Route.deleteProgramById() {
-    val programsDao by inject<ProgramsDao>()
+    val programDao by inject<ProgramDao>()
 
     delete("{id}") {
         val programId = call.parameters.getIntOrThrow("id")
-        programsDao.singleProgram(programId) ?: throw ContentNotFoundException
+        programDao.singleProgram(programId) ?: throw ContentNotFoundException
 
-        if (programsDao.deleteProgram(programId)) {
+        if (programDao.deleteProgram(programId)) {
             respondSuccess { 1 }
         } else {
             throw UnknownException
@@ -510,7 +510,7 @@ private fun Route.deleteProgramById() {
 }
 
 private fun Route.deleteProgramsByIds() {
-    val programsDao by inject<ProgramsDao>()
+    val programDao by inject<ProgramDao>()
 
     delete {
         val programIds = call.request.queryParameters.getIntListOrThrow(
@@ -518,12 +518,12 @@ private fun Route.deleteProgramsByIds() {
             requiredNotEmpty = true
         )
 
-        val currentPrograms = programsDao.allProgramsByIds(programIds)
+        val currentPrograms = programDao.allProgramsByIds(programIds)
         if (currentPrograms.isEmpty()) {
             throw ContentNotFoundException
         }
 
-        if (programsDao.deletePrograms(programIds)) {
+        if (programDao.deletePrograms(programIds)) {
             respondSuccess { 1 }
         } else {
             throw UnknownException

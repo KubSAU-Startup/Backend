@@ -1,6 +1,8 @@
 package com.meloda.kubsau.database.employees
 
 import com.meloda.kubsau.config.DatabaseController.dbQuery
+import com.meloda.kubsau.database.employeesdepartments.EmployeesDepartments
+import com.meloda.kubsau.database.employeesfaculties.EmployeesFaculties
 import com.meloda.kubsau.model.Employee
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -8,32 +10,59 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 
 class EmployeeDaoImpl : EmployeeDao {
 
-    override suspend fun allEmployees(): List<Employee> = dbQuery {
-        Employees.selectAll().orderBy(Employees.id, order = SortOrder.DESC).map(::mapResultRow)
+    override suspend fun allEmployees(facultyId: Int?, offset: Int?, limit: Int?): List<Employee> = dbQuery {
+        val dbQuery = Employees
+            .run {
+                facultyId?.run { innerJoin(EmployeesFaculties, { Employees.id }, { EmployeesFaculties.employeeId }) }
+                    ?: this
+            }
+            .select(Employees.columns)
+            .orderBy(Employees.id, order = SortOrder.DESC)
+            .apply {
+                if (limit != null) {
+                    limit(limit, (offset ?: 0).toLong())
+                }
+            }
+
+        facultyId?.let { EmployeesFaculties.facultyId eq facultyId }
+
+        dbQuery.map(::mapResultRow)
     }
 
-    override suspend fun allTeachers(): List<Employee> = dbQuery {
-        Employees
-            .selectAll()
+    override suspend fun allTeachers(offset: Int?, limit: Int?, departmentIds: List<Int>?): List<Employee> = dbQuery {
+        val dbQuery = Employees
+            .run { departmentIds?.run { innerJoin(EmployeesDepartments) } ?: this }
+            .select(Employees.columns)
             .orderBy(Employees.id, order = SortOrder.DESC)
             .where { Employees.type eq Employee.TYPE_TEACHER }
-            .map(::mapResultRow)
+            .apply {
+                if (limit != null) {
+                    limit(limit, (offset ?: 0).toLong())
+                }
+            }
+
+        departmentIds?.let { dbQuery.andWhere { EmployeesDepartments.departmentId inList departmentIds } }
+
+        dbQuery.map(::mapResultRow)
     }
 
     override suspend fun allEmployeesByIds(employeeIds: List<Int>): List<Employee> = dbQuery {
-        Employees
-            .selectAll()
+        val dbQuery = Employees
+            .innerJoin(EmployeesFaculties)
+            .select(Employees.columns)
             .orderBy(Employees.id, order = SortOrder.DESC)
             .where { Employees.id inList employeeIds }
-            .map(::mapResultRow)
+
+        dbQuery.map(::mapResultRow)
     }
 
     override suspend fun singleEmployee(employeeId: Int): Employee? = dbQuery {
-        Employees
-            .selectAll()
+        val dbQuery = Employees
+            .innerJoin(EmployeesFaculties)
+            .select(Employees.columns)
             .where { Employees.id eq employeeId }
-            .map(::mapResultRow)
-            .singleOrNull()
+
+        dbQuery.map(::mapResultRow).singleOrNull()
     }
 
     override suspend fun addNewEmployee(
