@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ "dev" ]
   push:
-    branches: [ "dev", "master", "test" ]
+    branches: [ "dev" ]
 
 env:
   REGISTRY: ghcr.io
@@ -46,7 +46,7 @@ jobs:
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ghcr.io/kubsau-startup/kubsau-backend:dev
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
