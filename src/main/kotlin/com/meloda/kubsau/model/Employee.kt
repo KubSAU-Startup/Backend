@@ -25,8 +25,8 @@ data class Employee(
     companion object {
 
         const val TYPE_ADMIN = 1
-        const val TYPE_LABORANT = 2
-        const val TYPE_TEACHER = 3
+        const val TYPE_TEACHER = 2
+        const val TYPE_LABORANT = 3
 
         fun mapResultRow(row: ResultRow): Employee = Employee(
             id = row[Employees.id].value,

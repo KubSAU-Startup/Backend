@@ -174,6 +174,7 @@ class WorkController {
             val workTypeId = parameters.getIntOrThrow("workTypeId")
             val employeeId = parameters.getIntOrThrow("employeeId")
 
+            // TODO: 20/06/2024, Danil Nikolaev: get student and validate that student is learning
             val created = workDao.addNewWork(
                 disciplineId = disciplineId,
                 studentId = studentId,

@@ -198,6 +198,7 @@ private fun Route.generateQRCodes() {
         }
 
         val students = studentDao.allStudentsByGroupIdsAsMap(groupIds)
+        // TODO: 20/06/2024, Danil Nikolaev: только обучающиеся
         val disciplines = programDisciplineDao.allDisciplineIdsByProgramIdAsMap(programId)
 
         val jobList = mutableListOf<Job>()

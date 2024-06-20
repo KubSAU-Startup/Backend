@@ -128,6 +128,7 @@ class HeadController(
         }
     }
 
+    // TODO: 20/06/2024, Danil Nikolaev: remove
     private fun Route.addHead() {
         val headDao by inject<HeadDao>()
 
@@ -161,6 +162,7 @@ class HeadController(
         }
     }
 
+    // TODO: 20/06/2024, Danil Nikolaev: remove
     private fun Route.editHead() {
         val headDao by inject<HeadDao>()
 
