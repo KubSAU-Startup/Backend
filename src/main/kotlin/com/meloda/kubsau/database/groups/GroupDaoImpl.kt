@@ -26,6 +26,8 @@ class GroupDaoImpl : GroupDao {
             .innerJoin(Faculties, { Heads.facultyId }, { Faculties.id })
             .selectAll()
 
+        facultyId?.let { dbQuery.andWhere { Faculties.id eq facultyId } }
+
         dbQuery.map(::mapResultRow)
     }
 

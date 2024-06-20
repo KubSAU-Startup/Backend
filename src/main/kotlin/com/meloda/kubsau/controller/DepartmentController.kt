@@ -35,6 +35,7 @@ class DepartmentController(private val service: DepartmentService) {
                 key = "departmentIds"
             )
 
+            // TODO: 20/06/2024, Danil Nikolaev: use facultyId
             val departments = if (departmentIds == null) {
                 service.getAllDepartments(principal.departmentIds)
             } else {

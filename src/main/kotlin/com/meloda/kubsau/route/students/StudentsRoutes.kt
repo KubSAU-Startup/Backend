@@ -1,13 +1,11 @@
 package com.meloda.kubsau.route.students
 
-import com.meloda.kubsau.model.respondSuccess
 import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.students.StudentDao
-import com.meloda.kubsau.database.studentstatuses.StudentStatusDao
 import com.meloda.kubsau.model.ContentNotFoundException
-import com.meloda.kubsau.model.UnknownException
 import com.meloda.kubsau.model.Student
-import com.meloda.kubsau.model.StudentStatus
+import com.meloda.kubsau.model.UnknownException
+import com.meloda.kubsau.model.respondSuccess
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -34,16 +32,8 @@ private data class StudentsResponse(
     val students: List<Student>
 )
 
-private data class FullStudentsResponse(
-    val count: Int,
-    val offset: Int,
-    val students: List<Student>,
-    val statuses: List<StudentStatus>
-)
-
 private fun Route.getStudents() {
     val studentDao by inject<StudentDao>()
-    val studentStatusDao by inject<StudentStatusDao>()
 
     get {
         val parameters = call.request.queryParameters
@@ -56,7 +46,8 @@ private fun Route.getStudents() {
 
         val offset = parameters.getInt("offset")
         val limit = parameters.getInt("limit", range = LimitRange)
-        val extended = parameters.getBoolean("extended", false)
+
+        // TODO: 20/06/2024, Danil Nikolaev: filter by facultyId
 
         val students = if (studentIds.isEmpty()) {
             studentDao.allStudents(offset, limit ?: MAX_ITEMS_SIZE)
@@ -64,56 +55,24 @@ private fun Route.getStudents() {
             studentDao.allStudentsByIds(studentIds)
         }
 
-        if (!extended) {
-            respondSuccess {
-                StudentsResponse(
-                    count = students.size,
-                    offset = offset ?: 0,
-                    students = students
-                )
-            }
-        } else {
-            val statusIds = students.map(Student::statusId)
-            val statuses = studentStatusDao.allStatusesByIds(statusIds)
-
-            respondSuccess {
-                FullStudentsResponse(
-                    count = students.size,
-                    offset = offset ?: 0,
-                    students = students,
-                    statuses = statuses
-                )
-            }
+        respondSuccess {
+            StudentsResponse(
+                count = students.size,
+                offset = offset ?: 0,
+                students = students
+            )
         }
     }
 }
 
-private data class StudentResponse(val student: Student)
-
-private data class FullStudentResponse(val student: Student, val status: StudentStatus)
-
 private fun Route.getStudentById() {
     val studentDao by inject<StudentDao>()
-    val studentStatusDao by inject<StudentStatusDao>()
 
     get("{id}") {
         val studentId = call.parameters.getIntOrThrow("id")
-        val extended = call.request.queryParameters.getBoolean("extended", false)
-
         val student = studentDao.singleStudent(studentId) ?: throw ContentNotFoundException
 
-        if (!extended) {
-            respondSuccess { StudentResponse(student = student) }
-        } else {
-            val status = studentStatusDao.singleStatus(student.statusId) ?: throw ContentNotFoundException
-
-            respondSuccess {
-                FullStudentResponse(
-                    student = student,
-                    status = status
-                )
-            }
-        }
+        respondSuccess { student }
     }
 }
 
@@ -127,27 +86,25 @@ private fun Route.searchStudents() {
         val limit = parameters.getInt(key = "limit", range = LimitRange)
         val groupId = parameters.getInt("groupId")
         val gradeId = parameters.getInt("gradeId")
-        val statusId = parameters.getInt("statusId")
+        val status = parameters.getInt("status")
         val query = parameters.getString(key = "query", trim = true)?.lowercase()
 
-        val studentsStatuses = studentDao.allStudentsBySearch(
+        // TODO: 20/06/2024, Danil Nikolaev: filter by facultyId
+
+        val students = studentDao.allStudentsBySearch(
             offset = offset,
             limit = limit,
             groupId = groupId,
             gradeId = gradeId,
-            statusId = statusId,
+            status = status,
             query = query
         )
 
-        val students = studentsStatuses.keys.toList()
-        val statuses = studentsStatuses.values.toList().distinctBy(StudentStatus::id)
-
         respondSuccess {
-            FullStudentsResponse(
+            StudentsResponse(
                 offset = offset ?: 0,
-                count = studentsStatuses.size,
-                students = students,
-                statuses = statuses
+                count = students.size,
+                students = students
             )
         }
     }
@@ -163,14 +120,16 @@ private fun Route.addStudent() {
         val firstName = parameters.getStringOrThrow("firstName")
         val middleName = parameters.getString("middleName")
         val groupId = parameters.getIntOrThrow("groupId")
-        val statusId = parameters.getIntOrThrow("statusId")
+        val status = parameters.getIntOrThrow("status")
+
+        // TODO: 20/06/2024, Danil Nikolaev: check groupId
 
         val created = studentDao.addNewStudent(
             firstName = firstName,
             lastName = lastName,
             middleName = middleName,
             groupId = groupId,
-            statusId = statusId
+            status = status
         )
 
         if (created != null) {
@@ -194,7 +153,9 @@ private fun Route.editStudent() {
         val firstName = parameters.getString("firstName")
         val middleName = parameters.getString("middleName")
         val groupId = parameters.getInt("groupId")
-        val statusId = parameters.getInt("statusId")
+        val status = parameters.getInt("status")
+
+        // TODO: 20/06/2024, Danil Nikolaev: check groupId
 
         studentDao.updateStudent(
             studentId = studentId,
@@ -202,7 +163,7 @@ private fun Route.editStudent() {
             lastName = lastName ?: currentStudent.lastName,
             middleName = if ("middleName" in parameters) middleName else currentStudent.middleName,
             groupId = groupId ?: currentStudent.groupId,
-            statusId = statusId ?: currentStudent.statusId
+            status = status ?: currentStudent.status
         ).let { success ->
             if (success) {
                 respondSuccess { 1 }
@@ -220,6 +181,8 @@ private fun Route.deleteStudent() {
         val studentId = call.parameters.getIntOrThrow("id")
         studentDao.singleStudent(studentId) ?: throw ContentNotFoundException
 
+        // TODO: 20/06/2024, Danil Nikolaev: check access
+
         if (studentDao.deleteStudent(studentId)) {
             respondSuccess { 1 }
         } else {
@@ -236,6 +199,8 @@ private fun Route.deleteStudents() {
             key = "studentIds",
             requiredNotEmpty = true
         )
+
+        // TODO: 20/06/2024, Danil Nikolaev: check access
 
         val currentStudents = studentDao.allStudentsByIds(studentIds)
         if (currentStudents.isEmpty()) {

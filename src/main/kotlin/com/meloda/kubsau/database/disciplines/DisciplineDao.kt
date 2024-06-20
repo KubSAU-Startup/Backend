@@ -6,7 +6,7 @@ import com.meloda.kubsau.model.Discipline
 
 interface DisciplineDao : FilterableDao<Discipline, EntryFilter> {
 
-    suspend fun allDisciplines(): List<Discipline>
+    suspend fun allDisciplines(departmentIds: List<Int>?): List<Discipline>
     suspend fun allDisciplinesAsFilters(departmentIds: List<Int>?): List<EntryFilter>
     suspend fun allDisciplinesByIds(disciplineIds: List<Int>): List<Discipline>
     suspend fun singleDiscipline(disciplineId: Int): Discipline?

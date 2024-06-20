@@ -4,7 +4,7 @@ import com.meloda.kubsau.database.disciplines.DisciplineDao
 import com.meloda.kubsau.model.Discipline
 
 interface DisciplineRepository {
-    suspend fun getAllDisciplines(): List<Discipline>
+    suspend fun getAllDisciplines(departmentIds: List<Int>?): List<Discipline>
     suspend fun getDisciplinesByIds(disciplineIds: List<Int>): List<Discipline>
     suspend fun getDisciplineById(disciplineId: Int): Discipline?
     suspend fun addDiscipline(title: String, departmentId: Int): Discipline?
@@ -14,7 +14,7 @@ interface DisciplineRepository {
 }
 
 class DisciplineRepositoryImpl(private val dao: DisciplineDao) : DisciplineRepository {
-    override suspend fun getAllDisciplines(): List<Discipline> = dao.allDisciplines()
+    override suspend fun getAllDisciplines(departmentIds: List<Int>?): List<Discipline> = dao.allDisciplines(departmentIds)
 
     override suspend fun getDisciplinesByIds(disciplineIds: List<Int>): List<Discipline> =
         dao.allDisciplinesByIds(disciplineIds)

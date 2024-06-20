@@ -197,7 +197,7 @@ private fun Route.generateQRCodes() {
             throw ContentNotFoundException
         }
 
-        val students = studentDao.allStudentsByGroupIdsAsMap(groupIds)
+        val students = studentDao.allStudentsByGroupIdsAsMap(groupIds, true)
         // TODO: 20/06/2024, Danil Nikolaev: только обучающиеся
         val disciplines = programDisciplineDao.allDisciplineIdsByProgramIdAsMap(programId)
 

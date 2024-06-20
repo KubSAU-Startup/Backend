@@ -9,8 +9,13 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 
 class DisciplineDaoImpl : DisciplineDao {
 
-    override suspend fun allDisciplines(): List<Discipline> = dbQuery {
-        Disciplines.selectAll().map(::mapResultRow)
+    override suspend fun allDisciplines(departmentIds: List<Int>?): List<Discipline> = dbQuery {
+        val dbQuery = Disciplines
+            .selectAll()
+
+        departmentIds?.let { dbQuery.andWhere { Disciplines.departmentId inList departmentIds } }
+
+        dbQuery.map(::mapResultRow)
     }
 
     override suspend fun allDisciplinesAsFilters(departmentIds: List<Int>?): List<EntryFilter> = dbQuery {

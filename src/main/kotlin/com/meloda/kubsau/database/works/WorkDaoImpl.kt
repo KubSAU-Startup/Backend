@@ -9,7 +9,6 @@ import com.meloda.kubsau.database.disciplines.Disciplines
 import com.meloda.kubsau.database.employees.Employees
 import com.meloda.kubsau.database.groups.Groups
 import com.meloda.kubsau.database.students.Students
-import com.meloda.kubsau.database.studentstatuses.StudentStatuses
 import com.meloda.kubsau.database.worktypes.WorkTypes
 import com.meloda.kubsau.model.*
 import org.jetbrains.exposed.sql.*
@@ -41,7 +40,6 @@ class WorkDaoImpl : WorkDao {
         val dbQuery = Works
             .innerJoin(Disciplines, { Works.disciplineId }, { Disciplines.id })
             .innerJoin(Students, { Works.studentId }, { Students.id })
-            .innerJoin(StudentStatuses, { Students.statusId }, { StudentStatuses.id })
             .innerJoin(WorkTypes, { Works.workTypeId }, { WorkTypes.id })
             .innerJoin(Groups, { Students.groupId }, { Groups.id })
             .innerJoin(Employees, { Works.employeeId }, { Employees.id })
@@ -57,7 +55,7 @@ class WorkDaoImpl : WorkDao {
 
         dbQuery.map { row ->
             Entry(
-                student = Student.mapFromDb(row).mapToEntryStudent(StudentStatus.mapFromDb(row)),
+                student = Student.mapFromDb(row).mapToEntryStudent(),
                 group = Group.mapResultRow(row),
                 discipline = Discipline.mapResultRow(row),
                 employee = Employee.mapResultRow(row),
@@ -78,7 +76,6 @@ class WorkDaoImpl : WorkDao {
         val dbQuery = Works
             .innerJoin(Disciplines, { Works.disciplineId }, { Disciplines.id })
             .innerJoin(Students, { Works.studentId }, { Students.id })
-            .innerJoin(StudentStatuses, { Students.statusId }, { StudentStatuses.id })
             .innerJoin(WorkTypes, { Works.workTypeId }, { WorkTypes.id })
             .innerJoin(Groups, { Students.groupId }, { Groups.id })
             .innerJoin(Employees, { Works.employeeId }, { Employees.id })
@@ -90,7 +87,6 @@ class WorkDaoImpl : WorkDao {
                         (Students.middleName.lowerCase() like q) or
                         (Groups.title.lowerCase() like q) or
                         (WorkTypes.title.lowerCase() like q) or
-                        (StudentStatuses.title.lowerCase() like q) or
                         (Disciplines.title.lowerCase() like q) or
                         (Employees.lastName.lowerCase() like q) or
                         (Employees.firstName.lowerCase() like q) or
@@ -108,7 +104,7 @@ class WorkDaoImpl : WorkDao {
 
         dbQuery.map { row ->
             Entry(
-                student = Student.mapFromDb(row).mapToEntryStudent(StudentStatus.mapFromDb(row)),
+                student = Student.mapFromDb(row).mapToEntryStudent(),
                 group = Group.mapResultRow(row),
                 discipline = Discipline.mapResultRow(row),
                 employee = Employee.mapResultRow(row),
@@ -134,7 +130,6 @@ class WorkDaoImpl : WorkDao {
             Works
                 .innerJoin(Disciplines, { Works.disciplineId }, { Disciplines.id })
                 .innerJoin(Students, { Works.studentId }, { Students.id })
-                .innerJoin(StudentStatuses, { Students.statusId }, { StudentStatuses.id })
                 .innerJoin(WorkTypes, { Works.workTypeId }, { WorkTypes.id })
                 .innerJoin(Groups, { Students.groupId }, { Groups.id })
                 .innerJoin(Employees, { Works.employeeId }, { Employees.id })
@@ -161,7 +156,6 @@ class WorkDaoImpl : WorkDao {
                         (Students.middleName.lowerCase() like q) or
                         (Groups.title.lowerCase() like q) or
                         (WorkTypes.title.lowerCase() like q) or
-                        (StudentStatuses.title.lowerCase() like q) or
                         (Disciplines.title.lowerCase() like q) or
                         (Employees.lastName.lowerCase() like q) or
                         (Employees.firstName.lowerCase() like q) or
@@ -175,7 +169,7 @@ class WorkDaoImpl : WorkDao {
 
         dbQuery.map { row ->
             Entry(
-                student = Student.mapFromDb(row).mapToEntryStudent(StudentStatus.mapFromDb(row)),
+                student = Student.mapFromDb(row).mapToEntryStudent(),
                 group = Group.mapResultRow(row),
                 discipline = Discipline.mapResultRow(row),
                 employee = Employee.mapResultRow(row),

@@ -7,7 +7,6 @@ import com.meloda.kubsau.model.*
 import com.meloda.kubsau.repository.HeadRepository
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
@@ -21,11 +20,6 @@ class HeadController(
         authenticate {
             route("/heads") {
                 getHeads()
-                getHeadById()
-                addHead()
-                editHead()
-                deleteHead()
-                deleteHeads()
             }
         }
     }
@@ -85,168 +79,6 @@ class HeadController(
                         faculties = faculties
                     )
                 }
-            }
-        }
-    }
-
-    private data class HeadResponse(
-        val head: Head
-    )
-
-    private data class FullHeadResponse(
-        val head: Head,
-        val faculty: Faculty
-    )
-
-    private fun Route.getHeadById() {
-        val headDao by inject<HeadDao>()
-        val facultyDao by inject<FacultyDao>()
-
-        get("{id}") {
-            val principal = call.userPrincipal()
-            val headId = call.parameters.getIntOrThrow("id")
-            val extended = call.request.queryParameters.getBoolean("extended", false)
-
-            val head = headDao.singleHead(headId) ?: throw ContentNotFoundException
-
-            if (principal.facultyId != null && head.facultyId != principal.facultyId) {
-                throw AccessDeniedException("Unavailable headId: $headId")
-            }
-
-            if (!extended) {
-                respondSuccess { HeadResponse(head = head) }
-            } else {
-                val faculty = facultyDao.singleFaculty(head.facultyId) ?: throw ContentNotFoundException
-
-                respondSuccess {
-                    FullHeadResponse(
-                        head = head,
-                        faculty = faculty
-                    )
-                }
-            }
-        }
-    }
-
-    // TODO: 20/06/2024, Danil Nikolaev: remove
-    private fun Route.addHead() {
-        val headDao by inject<HeadDao>()
-
-        post {
-            val principal = call.userPrincipal()
-            val parameters = call.receiveParameters()
-
-            val code = parameters.getStringOrThrow("code")
-            val abbreviation = parameters.getStringOrThrow("abbreviation")
-            val title = parameters.getStringOrThrow("title")
-
-            // TODO: 17/06/2024, Danil Nikolaev: facultyId from token if present?
-            val facultyId = parameters.getIntOrThrow("facultyId")
-
-            if (principal.facultyId != null && facultyId != principal.facultyId) {
-                throw AccessDeniedException("Unavailable facultyId: $facultyId")
-            }
-
-            val created = headDao.addNewHead(
-                code = code,
-                abbreviation = abbreviation,
-                title = title,
-                facultyId = facultyId
-            )
-
-            if (created != null) {
-                respondSuccess { created }
-            } else {
-                throw UnknownException
-            }
-        }
-    }
-
-    // TODO: 20/06/2024, Danil Nikolaev: remove
-    private fun Route.editHead() {
-        val headDao by inject<HeadDao>()
-
-        patch("{id}") {
-            val principal = call.userPrincipal()
-            val headId = call.parameters.getIntOrThrow("id")
-            val currentHead = headDao.singleHead(headId) ?: throw ContentNotFoundException
-
-            val parameters = call.receiveParameters()
-
-            val code = parameters.getString("code")
-            val abbreviation = parameters.getString("abbreviation")
-            val title = parameters.getString("title")
-
-            // TODO: 17/06/2024, Danil Nikolaev: facultyId from token if present?
-            val facultyId = parameters.getInt("facultyId")
-
-            if (principal.facultyId != null && facultyId != null && facultyId != principal.facultyId) {
-                throw AccessDeniedException("Unavailable facultyId: $facultyId")
-            }
-
-            headDao.updateHead(
-                headId = headId,
-                code = code ?: currentHead.code,
-                abbreviation = abbreviation ?: currentHead.abbreviation,
-                title = title ?: currentHead.title,
-                facultyId = facultyId ?: currentHead.facultyId
-            ).let { success ->
-                if (success) {
-                    respondSuccess { 1 }
-                } else {
-                    throw UnknownException
-                }
-            }
-        }
-    }
-
-    private fun Route.deleteHead() {
-        val headDao by inject<HeadDao>()
-
-        delete("{id}") {
-            val principal = call.userPrincipal()
-            val headId = call.parameters.getIntOrThrow("id")
-            val currentHead = headDao.singleHead(headId) ?: throw ContentNotFoundException
-
-            if (principal.facultyId != null && currentHead.facultyId != principal.facultyId) {
-                throw AccessDeniedException("You can't delete this head with facultyId: ${currentHead.facultyId}")
-            }
-
-            if (headDao.deleteHead(headId)) {
-                respondSuccess { 1 }
-            } else {
-                throw UnknownException
-            }
-        }
-    }
-
-    private fun Route.deleteHeads() {
-        val headDao by inject<HeadDao>()
-
-        delete {
-            val principal = call.userPrincipal()
-            val headIds = call.request.queryParameters.getIntListOrThrow(
-                key = "headIds",
-                requiredNotEmpty = true
-            )
-
-            val currentHeads = headDao.allHeadsByIds(headIds)
-            if (currentHeads.isEmpty()) {
-                throw ContentNotFoundException
-            }
-
-            if (principal.facultyId != null &&
-                currentHeads.map(Head::facultyId).distinct().singleOrNull() != principal.facultyId
-            ) {
-                val headsWithoutAccess =
-                    currentHeads.filter { head -> head.facultyId != principal.facultyId }.map(Head::id)
-                throw AccessDeniedException("You can't delete heads with ids: ${headsWithoutAccess.joinToString()}")
-            }
-
-            if (headDao.deleteHeads(headIds)) {
-                respondSuccess { 1 }
-            } else {
-                throw UnknownException
             }
         }
     }

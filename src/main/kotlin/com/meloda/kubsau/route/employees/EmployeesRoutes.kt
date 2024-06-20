@@ -36,6 +36,8 @@ private fun Route.getEmployees() {
             defaultValue = emptyList()
         )
 
+        // TODO: 20/06/2024, Danil Nikolaev: filter by departmentIds
+        
         val employees = if (employeeIds.isEmpty()) {
             employeeDao.allEmployees(principal.facultyId, null, null)
         } else {
@@ -76,6 +78,8 @@ private fun Route.addEmployee() {
             email = email,
             type = type
         )
+
+        // TODO: 20/06/2024, Danil Nikolaev: link employee with current department
 
         if (created != null) {
             respondSuccess { created }
@@ -125,6 +129,8 @@ private fun Route.deleteEmployeeById() {
         val employeeId = call.parameters.getIntOrThrow("id")
         employeeDao.singleEmployee(employeeId) ?: throw ContentNotFoundException
 
+        // TODO: 20/06/2024, Danil Nikolaev: remove link
+
         if (employeeDao.deleteEmployee(employeeId)) {
             respondSuccess { 1 }
         } else {
@@ -146,6 +152,8 @@ private fun Route.deleteEmployeesByIds() {
         if (currentEmployees.isEmpty()) {
             throw ContentNotFoundException
         }
+
+        // TODO: 20/06/2024, Danil Nikolaev: remove link
 
         if (employeeDao.deleteEmployees(employeeIds)) {
             respondSuccess { 1 }

@@ -3,9 +3,7 @@ package com.meloda.kubsau.database.students
 import com.meloda.kubsau.config.DatabaseController.dbQuery
 import com.meloda.kubsau.database.directivities.Directivities
 import com.meloda.kubsau.database.groups.Groups
-import com.meloda.kubsau.database.studentstatuses.StudentStatuses
 import com.meloda.kubsau.model.Student
-import com.meloda.kubsau.model.StudentStatus
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
@@ -63,17 +61,23 @@ class StudentDaoImpl : StudentDao {
             .map(::mapResultRow)
     }
 
-    override suspend fun allStudentsByGroupIdsAsMap(groupIds: List<Int>): HashMap<Int, List<Student>> = dbQuery {
+    override suspend fun allStudentsByGroupIdsAsMap(
+        groupIds: List<Int>,
+        learnersOnly: Boolean?
+    ): HashMap<Int, List<Student>> = dbQuery {
         val studentsMap = hashMapOf<Int, List<Student>>()
 
-        val allStudents = Students
+        val dbQuery = Students
             .selectAll()
             .where { Students.groupId inList groupIds }
             .orderBy(
                 column = Students.id,
                 order = SortOrder.DESC
             )
-            .map(::mapResultRow)
+
+        learnersOnly?.let { dbQuery.andWhere { Students.status eq Student.STATUS_LEARNING } }
+
+        val allStudents = dbQuery.map(::mapResultRow)
 
         groupIds.forEach { groupId ->
             allStudents
@@ -89,23 +93,26 @@ class StudentDaoImpl : StudentDao {
         limit: Int?,
         groupId: Int?,
         gradeId: Int?,
-        statusId: Int?,
+        status: Int?,
         query: String?
-    ): Map<Student, StudentStatus> = dbQuery {
+    ): List<Student> = dbQuery {
         val dbQuery = Students
-            .innerJoin(StudentStatuses, { Students.statusId }, { StudentStatuses.id })
             .innerJoin(Groups, { Students.groupId }, { Groups.id })
             .innerJoin(Directivities, { Groups.directivityId }, { Directivities.id })
-            .select(Students.columns.plus(StudentStatuses.columns))
+            .select(Students.columns)
             .apply {
                 if (limit != null) {
                     limit(limit, ((offset ?: 0).toLong()))
                 }
             }
+            .orderBy(
+                column = Students.id,
+                order = SortOrder.DESC
+            )
 
         groupId?.let { dbQuery.andWhere { Students.groupId eq groupId } }
         gradeId?.let { dbQuery.andWhere { Directivities.gradeId eq gradeId } }
-        statusId?.let { dbQuery.andWhere { Students.statusId eq statusId } }
+        status?.let { dbQuery.andWhere { Students.status eq status } }
 
         query?.let { q -> "%$q%" }?.let { q ->
             dbQuery.andWhere {
@@ -115,11 +122,7 @@ class StudentDaoImpl : StudentDao {
             }
         }
 
-        dbQuery
-            .orderBy(
-                column = Students.id,
-                order = SortOrder.DESC
-            ).associate { row -> Student.mapFromDb(row) to StudentStatus.mapFromDb(row) }
+        dbQuery.map(Student::mapFromDb)
     }
 
     override suspend fun singleStudent(studentId: Int): Student? = dbQuery {
@@ -135,14 +138,14 @@ class StudentDaoImpl : StudentDao {
         lastName: String,
         middleName: String?,
         groupId: Int,
-        statusId: Int
+        status: Int
     ): Student? = dbQuery {
         Students.insert {
             it[Students.firstName] = firstName
             it[Students.lastName] = lastName
             it[Students.middleName] = middleName
             it[Students.groupId] = groupId
-            it[Students.statusId] = statusId
+            it[Students.status] = status
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 
@@ -152,14 +155,14 @@ class StudentDaoImpl : StudentDao {
         lastName: String,
         middleName: String?,
         groupId: Int,
-        statusId: Int
+        status: Int
     ): Boolean = dbQuery {
         Students.update(where = { Students.id eq studentId }) {
             it[Students.firstName] = firstName
             it[Students.lastName] = lastName
             it[Students.middleName] = middleName
             it[Students.groupId] = groupId
-            it[Students.statusId] = statusId
+            it[Students.status] = status
         } > 0
     }
 

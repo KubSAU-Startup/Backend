@@ -9,7 +9,6 @@ import com.meloda.kubsau.database.students.StudentDao
 import com.meloda.kubsau.database.works.WorkDao
 import com.meloda.kubsau.database.worktypes.WorkTypeDao
 import com.meloda.kubsau.model.*
-import com.meloda.kubsau.plugins.UserPrincipal
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -421,7 +420,7 @@ data class Entry(
 data class EntryStudent(
     val id: Int,
     val fullName: String,
-    val status: StudentStatus
+    val status: Int
 )
 
 data class EntryWork(
@@ -432,7 +431,7 @@ data class EntryWork(
     val employeeId: Int
 )
 
-fun Student.mapToEntryStudent(status: StudentStatus): EntryStudent =
+fun Student.mapToEntryStudent(): EntryStudent =
     EntryStudent(
         id = id,
         fullName = fullName,

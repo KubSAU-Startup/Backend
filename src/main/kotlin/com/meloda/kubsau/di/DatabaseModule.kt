@@ -26,8 +26,6 @@ import com.meloda.kubsau.database.programsdisciplines.ProgramDisciplineDao
 import com.meloda.kubsau.database.programsdisciplines.ProgramDisciplineDaoImpl
 import com.meloda.kubsau.database.students.StudentDao
 import com.meloda.kubsau.database.students.StudentDaoImpl
-import com.meloda.kubsau.database.studentstatuses.StudentStatusDao
-import com.meloda.kubsau.database.studentstatuses.StudentStatusDaoImpl
 import com.meloda.kubsau.database.users.UserDao
 import com.meloda.kubsau.database.users.UserDaoImpl
 import com.meloda.kubsau.database.works.WorkDao
@@ -52,7 +50,6 @@ val databaseModule = module {
     singleOf(::ProgramDaoImpl) bind ProgramDao::class
     singleOf(::ProgramDisciplineDaoImpl) bind ProgramDisciplineDao::class
     singleOf(::StudentDaoImpl) bind StudentDao::class
-    singleOf(::StudentStatusDaoImpl) bind StudentStatusDao::class
     singleOf(::UserDaoImpl) bind UserDao::class
     singleOf(::WorkDaoImpl) bind WorkDao::class
     singleOf(::WorkTypeDaoImpl) bind WorkTypeDao::class

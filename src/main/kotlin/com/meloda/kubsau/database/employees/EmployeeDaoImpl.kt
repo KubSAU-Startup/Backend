@@ -57,12 +57,10 @@ class EmployeeDaoImpl : EmployeeDao {
     }
 
     override suspend fun singleEmployee(employeeId: Int): Employee? = dbQuery {
-        val dbQuery = Employees
-            .innerJoin(EmployeesFaculties)
+        Employees
             .select(Employees.columns)
             .where { Employees.id eq employeeId }
-
-        dbQuery.map(::mapResultRow).singleOrNull()
+            .map(::mapResultRow).singleOrNull()
     }
 
     override suspend fun addNewEmployee(

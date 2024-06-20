@@ -17,7 +17,6 @@ import com.meloda.kubsau.database.heads.HeadDao
 import com.meloda.kubsau.database.programs.ProgramDao
 import com.meloda.kubsau.database.programsdisciplines.ProgramDisciplineDao
 import com.meloda.kubsau.database.students.StudentDao
-import com.meloda.kubsau.database.studentstatuses.StudentStatusDao
 import com.meloda.kubsau.database.users.UserDao
 import com.meloda.kubsau.database.works.WorkDao
 import com.meloda.kubsau.database.worktypes.WorkTypeDao
@@ -126,7 +125,6 @@ private fun Application.prepopulateDB() {
 
     createDummyGroups()
 
-    createDummyStudentStatuses()
     createDummyStudents()
 
     createDummyWorkTypes()
@@ -241,7 +239,7 @@ private fun Application.createDummyUsers() {
                     val hashedPassword2 = hashPassword("789012")
 
                     addNewUser(
-                        login = "vasilenko.i@kubsau.ru",
+                        login = "vasilenko.i2@kubsau.ru",
                         password = hashedPassword2,
                         employeeId = 1
                     )
@@ -434,7 +432,7 @@ private fun Application.createDummyDisciplines() {
 
     disciplineDao.apply {
         runBlocking {
-            if (allDisciplines().isEmpty()) {
+            if (allDisciplines(null).isEmpty()) {
                 println("Creating dummy disciplines...")
 
                 val time = measureTimeMillis {
@@ -586,26 +584,6 @@ private fun Application.createDummyGroups() {
     }
 }
 
-private fun Application.createDummyStudentStatuses() {
-    val studentStatusDao by inject<StudentStatusDao>()
-
-    studentStatusDao.apply {
-        runBlocking {
-            if (allStatuses().isEmpty()) {
-                println("Creating dummy students statuses...")
-
-                val time = measureTimeMillis {
-                    addNewStatus("Учится")
-                    addNewStatus("Отчислен")
-                    addNewStatus("Академ")
-                }
-
-                println("Dummy students statuses created. Took ${time}ms")
-            }
-        }
-    }
-}
-
 private fun Application.createDummyStudents() {
     val names1 = ("Абросимов Ярослав Валерьевич\n" +
             "Абу Раид Хумам\n" +
@@ -635,6 +613,72 @@ private fun Application.createDummyStudents() {
             "Шепетило Константин Валерьевич\n" +
             "Яценко Никита Алексеевич")
         .split("\n")
+        .map { it.split(" ") }
+
+    val names12 = ("Васильев Данил Викторович\n" +
+            "Газизов Родион Рамизович\n" +
+            "Гертер Евгений Алексеевич\n" +
+            "Гордиенко Мария Юрьевна \n" +
+            "Григорьев Григорий Максимович\n" +
+            "Денисов Александр Андреевич\n" +
+            "Егоров Илья Андреевич\n" +
+            "Кириллов Владимир Сергеевич\n" +
+            "Корепанов Даниил Сергеевич\n" +
+            "Коротаева Анастасия Алексеевна\n" +
+            "Кост Александр Евгеньевич\n" +
+            "Кравченко Егор Андреевич\n" +
+            "Криворучко Алексей Максимович\n" +
+            "Куприянова Влада Михайловна\n" +
+            "Мирошников Артем Валерьевич\n" +
+            "Ней Егор Геннадьевич\n" +
+            "Овсепьян Сурен Самвелович\n" +
+            "Ольховский Максим Александрович\n" +
+            "Панина Ульяна Евгеньевна\n" +
+            "Переверзев Данила Дмитриевич\n" +
+            "Петрина Елена Дмитриевна\n" +
+            "Пруцаков Виктор Викторович\n" +
+            "Сапрыкина Александра Ивановна\n" +
+            "Степанов Антон Сергеевич\n" +
+            "Ткаченко Александр Владимирович\n" +
+            "Федоренко Лев Евгеньевич\n" +
+            "Фоменко Иван Викторович\n" +
+            "Ханцев Даниил Алексеевич\n" +
+            "Химичева Ольга Сергеевна\n" +
+            "Черногаев Матвей Дмитриевич\n" +
+            "Шепилов Алексей Александрович\n" +
+            "Шипулин Николай Сергеевич")
+        .split("\n")
+        .map { it.split(" ") }
+
+    val names13 = ("Богородицкая Лия Вячеславна\n" +
+            "Болотин Игорь Владимирович\n" +
+            "Давыдов Максим Алексеевич\n" +
+            "Зубричев Илья Владимирович\n" +
+            "Иващенко Григорий Дмитриевич\n" +
+            "Ковылов Никита Станиславович\n" +
+            "Коровченко Михаил Сергеевич\n" +
+            "Куриль Владислав Витальевич\n" +
+            "Лепшоков Расул Рашидович\n" +
+            "Ляшенко Никита Николаевич\n" +
+            "Масалов Даниил Игоревич\n" +
+            "Михайличенко Александр Валерьевич\n" +
+            "Мищенко Владислав Юрьевич\n" +
+            "Похожай Владислав Александрович\n" +
+            "Пьянов Алексей Анатольевич\n" +
+            "Радченко Роман Антонович\n" +
+            "Ремигайло Артем Евгеньевич\n" +
+            "Романюк Ирина Михайловна\n" +
+            "Русый Михаил Русланович\n" +
+            "Салфетников Никита Дмитриевич\n" +
+            "Синяков Илья Евгеньевич\n" +
+            "Скребнев Иван Ильич\n" +
+            "Удычак Мурат Русланович\n" +
+            "Харченко Антон Сергеевич\n" +
+            "Хах Асхад Адамович\n" +
+            "Шанков Амир Асланович\n" +
+            "Шатковский Богдан Борисович")
+        .split("\n")
+        .map { it.split(" ") }
 
     val names2 = ("Крюков Егор Богданович\n" +
             "Филиппов Марк Фёдорович\n" +
@@ -657,6 +701,31 @@ private fun Application.createDummyStudents() {
             "Токарев Всеволод Егорович\n" +
             "Гончарова Мария Лукинична")
         .split("\n")
+        .map { it.split(" ") }
+
+    val names22 = ("Багаева Алена Александровна\n" +
+            "Барсегян Радик Арменович\n" +
+            "Беляев Кирилл Павлович\n" +
+            "Давиденко Владимир Андреевич\n" +
+            "Иванченко Юрий Владимирович\n" +
+            "Избицкий Юрий Иванович\n" +
+            "Кийкова Юлия Андреевна\n" +
+            "Кравцова Светлана Юрьевна\n" +
+            "Кузуб Валерия Вячеславовна\n" +
+            "Кутнякова Лидия Александровна\n" +
+            "Лаптырев Вячеслав Юрьевич\n" +
+            "Мамедов Кямран Сулей\n" +
+            "Маштакова Алина Владимировна\n" +
+            "Медведев Владислав Андреевич\n" +
+            "Павленко Анна Геннадьевна\n" +
+            "Савощенко Юлия Александровна\n" +
+            "Тарасова Валерия Николаевна\n" +
+            "Тарверанова Яна Отаровна\n" +
+            "Филиппова Юлия Дмитриевна\n" +
+            "Шатыркина Екатерина Викторовна\n" +
+            "Яковенко Александр Александрович")
+        .split("\n")
+        .map { it.split(" ") }
 
     val names3 = ("Лаврова Софья Владиславовна\n" +
             "Комиссарова Арина Михайловна\n" +
@@ -679,6 +748,7 @@ private fun Application.createDummyStudents() {
             "Рыбаков Даниил Тихонович\n" +
             "Матвеева Анна Вячеславовна")
         .split("\n")
+        .map { it.split(" ") }
 
     val studentDao by inject<StudentDao>()
 
@@ -688,37 +758,65 @@ private fun Application.createDummyStudents() {
                 println("Creating dummy students...")
 
                 val time = measureTimeMillis {
-                    names1.map { it.split(" ") }.forEach { (lastName, firstName, middleName) ->
+                    names1.forEach { (lastName, firstName, middleName) ->
                         addNewStudent(
                             firstName = firstName,
                             lastName = lastName,
                             middleName = middleName,
                             groupId = 1,
-                            statusId = when (lastName) {
-                                "Бекчентаева" -> 3
-                                "Лебедев" -> 2
-                                else -> 1
+                            status = when (lastName) {
+                                "Бекчентаева" -> Student.STATUS_SABBATICAL
+                                "Лебедев" -> Student.STATUS_EXPELLED
+                                else -> Student.STATUS_LEARNING
                             }
                         )
                     }
+                    names12.forEach { (lastName, firstName, middleName) ->
+                        addNewStudent(
+                            firstName = firstName,
+                            lastName = lastName,
+                            middleName = middleName,
+                            groupId = 2,
+                            status = Student.STATUS_LEARNING
+                        )
+                    }
+                    names13.forEach { (lastName, firstName, middleName) ->
+                        addNewStudent(
+                            firstName = firstName,
+                            lastName = lastName,
+                            middleName = middleName,
+                            groupId = 3,
+                            status = Student.STATUS_LEARNING
+                        )
+                    }
 
-                    names2.map { it.split(" ") }.forEach { (lastName, firstName, middleName) ->
+                    names2.forEach { (lastName, firstName, middleName) ->
                         addNewStudent(
                             firstName = firstName,
                             lastName = lastName,
                             middleName = middleName,
                             groupId = 4,
-                            statusId = 1
+                            status = Student.STATUS_LEARNING
+                        )
+                    }
+                    names22.forEach { (lastName, firstName, middleName) ->
+                        addNewStudent(
+                            firstName = firstName,
+                            lastName = lastName,
+                            middleName = middleName,
+                            groupId = 5,
+                            status = Student.STATUS_LEARNING
                         )
                     }
 
-                    names3.map { it.split(" ") }.forEach { (lastName, firstName, middleName) ->
+
+                    names3.forEach { (lastName, firstName, middleName) ->
                         addNewStudent(
                             firstName = firstName,
                             lastName = lastName,
                             middleName = middleName,
                             groupId = 7,
-                            statusId = 1
+                            status = Student.STATUS_LEARNING
                         )
                     }
                 }
@@ -751,7 +849,7 @@ private fun Application.createDummyWorkTypes() {
 }
 
 private fun Application.createDummyWorks() {
-    return
+    if (true) return
     val workDao by inject<WorkDao>()
     val workTypeDao by inject<WorkTypeDao>()
     val disciplineDao by inject<DisciplineDao>()
@@ -766,7 +864,7 @@ private fun Application.createDummyWorks() {
 
             val time = measureTimeMillis {
                 val workTypeIds = workTypeDao.allWorkTypes().map(WorkType::id)
-                val disciplines = disciplineDao.allDisciplines()
+                val disciplines = disciplineDao.allDisciplines(null)
                 val studentIds = studentDao.allStudents(null, null).map(Student::id)
                 val employeeIds = employeeDao.allTeachers(null, null, null).map(Employee::id)
 
@@ -825,311 +923,285 @@ private fun Application.createDummyProgramsDisciplines() {
                 println("Creating dummy programs-disciplines references...")
 
                 val time = measureTimeMillis {
-                    addNewReference(
-                        programId = 1,
-                        disciplineId = 13,
-                        workTypeId = 1
-                    )
-                    addNewReference(
-                        programId = 1,
-                        disciplineId = 13,
-                        workTypeId = 2
-                    )
-                    addNewReference(
-                        programId = 1,
-                        disciplineId = 13,
-                        workTypeId = 2
-                    )
-                    addNewReference(
-                        programId = 1,
-                        disciplineId = 24,
-                        workTypeId = 2
-                    )
-                    addNewReference(
-                        programId = 1,
-                        disciplineId = 13,
-                        workTypeId = 2
-                    )
-                    addNewReference(
-                        programId = 1,
-                        disciplineId = 6,
-                        workTypeId = 4
-                    )
-                    addNewReference(
-                        programId = 1,
-                        disciplineId = 4,
-                        workTypeId = 4
-                    )
-                    addNewReference(
-                        programId = 1,
-                        disciplineId = 11,
-                        workTypeId = 2
-                    )
-                    addNewReference(
-                        programId = 1,
-                        disciplineId = 7,
-                        workTypeId = 4
-                    )
-                    addNewReference(
-                        programId = 1,
-                        disciplineId = 10,
-                        workTypeId = 4
-                    )
-                    addNewReference(
-                        programId = 1,
-                        disciplineId = 22,
-                        workTypeId = 4
-                    )
-
-                    addNewReference(
-                        programId = 1,
-                        disciplineId = 10,
-                        workTypeId = 4
-                    )
+                    var num = 0
+                    repeat(3) {
+                        addNewReference(
+                            programId = 1 + num,
+                            disciplineId = 13,
+                            workTypeId = 1
+                        )
+                        addNewReference(
+                            programId = 1 + num,
+                            disciplineId = 13,
+                            workTypeId = 2
+                        )
+                        addNewReference(
+                            programId = 1 + num,
+                            disciplineId = 24,
+                            workTypeId = 2
+                        )
+                        addNewReference(
+                            programId = 1 + num,
+                            disciplineId = 6,
+                            workTypeId = 4
+                        )
+                        addNewReference(
+                            programId = 1 + num,
+                            disciplineId = 4,
+                            workTypeId = 4
+                        )
+                        addNewReference(
+                            programId = 1 + num,
+                            disciplineId = 11,
+                            workTypeId = 2
+                        )
+                        addNewReference(
+                            programId = 1 + num,
+                            disciplineId = 7,
+                            workTypeId = 4
+                        )
+                        addNewReference(
+                            programId = 1 + num,
+                            disciplineId = 10,
+                            workTypeId = 4
+                        )
+                        addNewReference(
+                            programId = 1 + num,
+                            disciplineId = 22,
+                            workTypeId = 4
+                        )
 
 
-                    addNewReference(
-                        programId = 2,
-                        disciplineId = 9,
-                        workTypeId = 4
-                    )
-                    addNewReference(
-                        programId = 2,
-                        disciplineId = 6,
-                        workTypeId = 4
-                    )
-                    addNewReference(
-                        programId = 2,
-                        disciplineId = 2,
-                        workTypeId = 2
-                    )
-                    addNewReference(
-                        programId = 2,
-                        disciplineId = 15,
-                        workTypeId = 2
-                    )
-                    addNewReference(
-                        programId = 2,
-                        disciplineId = 1,
-                        workTypeId = 4
-                    )
-                    addNewReference(
-                        programId = 2,
-                        disciplineId = 12,
-                        workTypeId = 2
-                    )
-                    addNewReference(
-                        programId = 2,
-                        disciplineId = 3,
-                        workTypeId = 3
-                    )
-                    addNewReference(
-                        programId = 2,
-                        disciplineId = 2,
-                        workTypeId = 4
-                    )
+                        addNewReference(
+                            programId = 2 + num,
+                            disciplineId = 9,
+                            workTypeId = 4
+                        )
+                        addNewReference(
+                            programId = 2 + num,
+                            disciplineId = 6,
+                            workTypeId = 4
+                        )
+                        addNewReference(
+                            programId = 2 + num,
+                            disciplineId = 2,
+                            workTypeId = 2
+                        )
+                        addNewReference(
+                            programId = 2 + num,
+                            disciplineId = 15,
+                            workTypeId = 2
+                        )
+                        addNewReference(
+                            programId = 2 + num,
+                            disciplineId = 1,
+                            workTypeId = 4
+                        )
+                        addNewReference(
+                            programId = 2 + num,
+                            disciplineId = 12,
+                            workTypeId = 2
+                        )
+                        addNewReference(
+                            programId = 2 + num,
+                            disciplineId = 3,
+                            workTypeId = 3
+                        )
+                        addNewReference(
+                            programId = 2 + num,
+                            disciplineId = 2,
+                            workTypeId = 4
+                        )
 
-                    addNewReference(
-                        programId = 3,
-                        disciplineId = 16,
-                        workTypeId = 2
-                    )
-                    addNewReference(
-                        programId = 3,
-                        disciplineId = 16,
-                        workTypeId = 1
-                    )
-                    addNewReference(
-                        programId = 3,
-                        disciplineId = 16,
-                        workTypeId = 2
-                    )
-                    addNewReference(
-                        programId = 3,
-                        disciplineId = 8,
-                        workTypeId = 1
-                    )
-                    addNewReference(
-                        programId = 3,
-                        disciplineId = 8,
-                        workTypeId = 2
-                    )
-                    addNewReference(
-                        programId = 3,
-                        disciplineId = 18,
-                        workTypeId = 2
-                    )
-                    addNewReference(
-                        programId = 3,
-                        disciplineId = 6,
-                        workTypeId = 4
-                    )
-                    addNewReference(
-                        programId = 3,
-                        disciplineId = 3,
-                        workTypeId = 2
-                    )
-                    addNewReference(
-                        programId = 3,
-                        disciplineId = 5,
-                        workTypeId = 4
-                    )
-                    addNewReference(
-                        programId = 3,
-                        disciplineId = 16,
-                        workTypeId = 4
-                    )
+                        addNewReference(
+                            programId = 3 + num,
+                            disciplineId = 16,
+                            workTypeId = 2
+                        )
+                        addNewReference(
+                            programId = 3 + num,
+                            disciplineId = 16,
+                            workTypeId = 1
+                        )
+                        addNewReference(
+                            programId = 3 + num,
+                            disciplineId = 8,
+                            workTypeId = 1
+                        )
+                        addNewReference(
+                            programId = 3 + num,
+                            disciplineId = 8,
+                            workTypeId = 2
+                        )
+                        addNewReference(
+                            programId = 3 + num,
+                            disciplineId = 18,
+                            workTypeId = 2
+                        )
+                        addNewReference(
+                            programId = 3 + num,
+                            disciplineId = 6,
+                            workTypeId = 4
+                        )
+                        addNewReference(
+                            programId = 3 + num,
+                            disciplineId = 3,
+                            workTypeId = 2
+                        )
+                        addNewReference(
+                            programId = 3 + num,
+                            disciplineId = 5,
+                            workTypeId = 4
+                        )
 
-                    addNewReference(
-                        programId = 4,
-                        disciplineId = 17,
-                        workTypeId = 1
-                    )
-                    addNewReference(
-                        programId = 4,
-                        disciplineId = 17,
-                        workTypeId = 4
-                    )
-                    addNewReference(
-                        programId = 4,
-                        disciplineId = 25,
-                        workTypeId = 1
-                    )
-                    addNewReference(
-                        programId = 4,
-                        disciplineId = 25,
-                        workTypeId = 2
-                    )
-                    addNewReference(
-                        programId = 4,
-                        disciplineId = 6,
-                        workTypeId = 4
-                    )
-                    addNewReference(
-                        programId = 4,
-                        disciplineId = 17,
-                        workTypeId = 2
-                    )
-                    addNewReference(
-                        programId = 4,
-                        disciplineId = 26,
-                        workTypeId = 2
-                    )
-                    addNewReference(
-                        programId = 4,
-                        disciplineId = 22,
-                        workTypeId = 4
-                    )
-                    addNewReference(
-                        programId = 4,
-                        disciplineId = 33,
-                        workTypeId = 2
-                    )
+                        addNewReference(
+                            programId = 4 + num,
+                            disciplineId = 17,
+                            workTypeId = 1
+                        )
+                        addNewReference(
+                            programId = 4 + num,
+                            disciplineId = 17,
+                            workTypeId = 4
+                        )
+                        addNewReference(
+                            programId = 4 + num,
+                            disciplineId = 25,
+                            workTypeId = 1
+                        )
+                        addNewReference(
+                            programId = 4 + num,
+                            disciplineId = 25,
+                            workTypeId = 2
+                        )
+                        addNewReference(
+                            programId = 4 + num,
+                            disciplineId = 6,
+                            workTypeId = 4
+                        )
+                        addNewReference(
+                            programId = 4 + num,
+                            disciplineId = 26,
+                            workTypeId = 2
+                        )
+                        addNewReference(
+                            programId = 4 + num,
+                            disciplineId = 22,
+                            workTypeId = 4
+                        )
+                        addNewReference(
+                            programId = 4 + num,
+                            disciplineId = 33,
+                            workTypeId = 2
+                        )
 
-                    addNewReference(
-                        programId = 5,
-                        disciplineId = 19,
-                        workTypeId = 1
-                    )
-                    addNewReference(
-                        programId = 5,
-                        disciplineId = 19,
-                        workTypeId = 2
-                    )
-                    addNewReference(
-                        programId = 5,
-                        disciplineId = 6,
-                        workTypeId = 4
-                    )
-                    addNewReference(
-                        programId = 5,
-                        disciplineId = 20,
-                        workTypeId = 2
-                    )
-                    addNewReference(
-                        programId = 5,
-                        disciplineId = 29,
-                        workTypeId = 2
-                    )
-                    addNewReference(
-                        programId = 5,
-                        disciplineId = 22,
-                        workTypeId = 4
-                    )
+                        addNewReference(
+                            programId = 5 + num,
+                            disciplineId = 19,
+                            workTypeId = 1
+                        )
+                        addNewReference(
+                            programId = 5 + num,
+                            disciplineId = 19,
+                            workTypeId = 2
+                        )
+                        addNewReference(
+                            programId = 5 + num,
+                            disciplineId = 6,
+                            workTypeId = 4
+                        )
+                        addNewReference(
+                            programId = 5 + num,
+                            disciplineId = 20,
+                            workTypeId = 2
+                        )
+                        addNewReference(
+                            programId = 5 + num,
+                            disciplineId = 29,
+                            workTypeId = 2
+                        )
+                        addNewReference(
+                            programId = 5 + num,
+                            disciplineId = 22,
+                            workTypeId = 4
+                        )
 
-                    addNewReference(
-                        programId = 6,
-                        disciplineId = 6,
-                        workTypeId = 4
-                    )
-                    addNewReference(
-                        programId = 6,
-                        disciplineId = 29,
-                        workTypeId = 2
-                    )
-                    addNewReference(
-                        programId = 6,
-                        disciplineId = 28,
-                        workTypeId = 2
-                    )
-                    addNewReference(
-                        programId = 6,
-                        disciplineId = 22,
-                        workTypeId = 4
-                    )
+                        addNewReference(
+                            programId = 6 + num,
+                            disciplineId = 6,
+                            workTypeId = 4
+                        )
+                        addNewReference(
+                            programId = 6 + num,
+                            disciplineId = 29,
+                            workTypeId = 2
+                        )
+                        addNewReference(
+                            programId = 6 + num,
+                            disciplineId = 28,
+                            workTypeId = 2
+                        )
+                        addNewReference(
+                            programId = 6 + num,
+                            disciplineId = 22,
+                            workTypeId = 4
+                        )
 
 
-                    addNewReference(
-                        programId = 7,
-                        disciplineId = 31,
-                        workTypeId = 1
-                    )
-                    addNewReference(
-                        programId = 7,
-                        disciplineId = 30,
-                        workTypeId = 1
-                    )
-                    addNewReference(
-                        programId = 7,
-                        disciplineId = 30,
-                        workTypeId = 2
-                    )
-                    addNewReference(
-                        programId = 7,
-                        disciplineId = 31,
-                        workTypeId = 2
-                    )
-                    addNewReference(
-                        programId = 7,
-                        disciplineId = 34,
-                        workTypeId = 2
-                    )
+                        addNewReference(
+                            programId = 7 + num,
+                            disciplineId = 31,
+                            workTypeId = 1
+                        )
+                        addNewReference(
+                            programId = 7 + num,
+                            disciplineId = 30,
+                            workTypeId = 1
+                        )
+                        addNewReference(
+                            programId = 7 + num,
+                            disciplineId = 30,
+                            workTypeId = 2
+                        )
+                        addNewReference(
+                            programId = 7 + num,
+                            disciplineId = 31,
+                            workTypeId = 2
+                        )
+                        addNewReference(
+                            programId = 7 + num,
+                            disciplineId = 34,
+                            workTypeId = 2
+                        )
 
-                    addNewReference(
-                        programId = 8,
-                        disciplineId = 32,
-                        workTypeId = 3
-                    )
-                    addNewReference(
-                        programId = 8,
-                        disciplineId = 21,
-                        workTypeId = 2
-                    )
-                    addNewReference(
-                        programId = 8,
-                        disciplineId = 17,
-                        workTypeId = 4
-                    )
-                    addNewReference(
-                        programId = 8,
-                        disciplineId = 35,
-                        workTypeId = 2
-                    )
-                    addNewReference(
-                        programId = 8,
-                        disciplineId = 36,
-                        workTypeId = 2
-                    )
+                        addNewReference(
+                            programId = 8 + num,
+                            disciplineId = 32,
+                            workTypeId = 3
+                        )
+                        addNewReference(
+                            programId = 8 + num,
+                            disciplineId = 21,
+                            workTypeId = 2
+                        )
+                        addNewReference(
+                            programId = 8 + num,
+                            disciplineId = 17,
+                            workTypeId = 4
+                        )
+                        addNewReference(
+                            programId = 8 + num,
+                            disciplineId = 35,
+                            workTypeId = 2
+                        )
+                        addNewReference(
+                            programId = 8 + num,
+                            disciplineId = 36,
+                            workTypeId = 2
+                        )
+
+                        num += 8
+                    }
                 }
 
                 println("Dummy programs-disciplines references created. Took ${time}ms")

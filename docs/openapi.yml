@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Документация API
   description: 'TODO: заполнить описание и дофиксить косяки'
-  version: 0.2.11
+  version: 0.2.12
 servers:
   - url: https://kubsau-testbackend.melod1n.dedyn.io
   - url: https://kubsau-backend.melod1n.dedyn.io
@@ -1246,7 +1246,7 @@ paths:
                 groupId:
                   type: integer
                   example: '1'
-                statusId:
+                status:
                   type: integer
                   example: '1'
       security:
@@ -1328,7 +1328,7 @@ paths:
                   type: integer
                   description: nullable
                   example: '1'
-                statusId:
+                status:
                   type: integer
                   description: nullable
                   example: '1'
