@@ -4,6 +4,7 @@ import com.meloda.kubsau.common.*
 import com.meloda.kubsau.config.ConfigController
 import com.meloda.kubsau.config.DatabaseController
 import com.meloda.kubsau.config.SecretsController
+import com.meloda.kubsau.database.departmentfaculty.DepartmentsFacultiesDao
 import com.meloda.kubsau.database.departments.DepartmentDao
 import com.meloda.kubsau.database.directivities.DirectivityDao
 import com.meloda.kubsau.database.disciplines.DisciplineDao
@@ -119,6 +120,8 @@ private fun Application.prepopulateDB() {
     createDummyFaculties()
     createDummyEmployeesFaculties()
 
+    createDummyDepartmentsFaculties()
+
     createDummyHeads()
 
     createDummyDirectivities()
@@ -168,7 +171,9 @@ private fun Application.createDummyEmployees() {
                 "Лукьяненко Татьяна Викторовна\n" +
                 "Мурлин Алексей Георгиевич\n" +
                 "Креймер Алексей Семёнович\n" +
-                "Ефанова Наталья Владимировна")
+                "Ефанова Наталья Владимировна\n" +
+                "Куемжиева Светлана Александровна"
+                )
             .split("\n")
 
 
@@ -217,6 +222,14 @@ private fun Application.createDummyEmployees() {
                             type = 2
                         )
                     }
+
+                    addNewEmployee(
+                        lastName = "Куемжиева",
+                        firstName = "Светлана",
+                        middleName = "Александровна",
+                        email = "kuemzhieva.s@kubsau.ru",
+                        type = 1
+                    )
                 }
 
                 println("Dummy employees created. Took ${time}ms")
@@ -257,6 +270,16 @@ private fun Application.createDummyUsers() {
                         login = "ivlev.e@kubsau.ru",
                         password = hashedPassword,
                         employeeId = 4
+                    )
+                    addNewUser(
+                        login = "kuemzhieva.s@kubsau.ru",
+                        password = hashedPassword,
+                        employeeId = 34
+                    )
+                    addNewUser(
+                        login = "kuemzhieva.s2@kubsau.ru",
+                        password = hashedPassword2,
+                        employeeId = 35
                     )
                 }
 
@@ -337,6 +360,9 @@ private fun Application.createDummyEmployeesDepartments() {
                     addNewReference(3, 2)
                     addNewReference(4, 1)
 
+                    addNewReference(34, 17)
+                    addNewReference(35, 17)
+
                     (5..30).forEachIndexed { index, employeeId ->
                         val departmentId = departments[index]
                         addNewReference(employeeId, departmentId)
@@ -368,7 +394,8 @@ private fun Application.createDummyDepartments() {
         "Статистики и прикладной математики",
         "Механизации животноводства и БЖД",
         "Русского языка и речевой коммуникации",
-        "Статистики и прикладной математики"
+        "Статистики и прикладной математики",
+        "Уголовного права"
     )
 
     departmentDao.apply {
@@ -425,7 +452,8 @@ private fun Application.createDummyDisciplines() {
         "Языки программирования" to 3,
         "Основы WEB-инжиниринга" to 1,
         "Кроссплатформенные приложения" to 3,
-        "Управление ИТ-проектами" to 3
+        "Управление ИТ-проектами" to 3,
+        "Уголовное право" to 17
     )
 
     val disciplineDao by inject<DisciplineDao>()
@@ -453,7 +481,10 @@ private fun Application.createDummyDisciplines() {
 private fun Application.createDummyFaculties() {
     val facultyDao by inject<FacultyDao>()
 
-    val titles = listOf("Прикладной информатики")
+    val titles = listOf(
+        "Прикладной информатики",
+        "Юридический"
+    )
 
     facultyDao.apply {
         runBlocking {
@@ -480,6 +511,7 @@ private fun Application.createDummyEmployeesFaculties() {
 
                 val time = measureTimeMillis {
                     addNewReference(1, 1)
+                    addNewReference(35, 2)
                 }
 
                 println("Dummy employees faculties references created. Took ${time}ms")
@@ -754,7 +786,7 @@ private fun Application.createDummyStudents() {
 
     studentDao.apply {
         runBlocking {
-            if (allStudents(null, null).isEmpty()) {
+            if (allStudents(null, null, null).isEmpty()) {
                 println("Creating dummy students...")
 
                 val time = measureTimeMillis {
@@ -865,7 +897,7 @@ private fun Application.createDummyWorks() {
             val time = measureTimeMillis {
                 val workTypeIds = workTypeDao.allWorkTypes().map(WorkType::id)
                 val disciplines = disciplineDao.allDisciplines(null)
-                val studentIds = studentDao.allStudents(null, null).map(Student::id)
+                val studentIds = studentDao.allStudents(null, null, null).map(Student::id)
                 val employeeIds = employeeDao.allTeachers(null, null, null).map(Employee::id)
 
                 repeat(100) { index ->
@@ -929,11 +961,6 @@ private fun Application.createDummyProgramsDisciplines() {
                             programId = 1 + num,
                             disciplineId = 13,
                             workTypeId = 1
-                        )
-                        addNewReference(
-                            programId = 1 + num,
-                            disciplineId = 13,
-                            workTypeId = 2
                         )
                         addNewReference(
                             programId = 1 + num,
@@ -1020,18 +1047,8 @@ private fun Application.createDummyProgramsDisciplines() {
                         )
                         addNewReference(
                             programId = 3 + num,
-                            disciplineId = 16,
-                            workTypeId = 1
-                        )
-                        addNewReference(
-                            programId = 3 + num,
                             disciplineId = 8,
                             workTypeId = 1
-                        )
-                        addNewReference(
-                            programId = 3 + num,
-                            disciplineId = 8,
-                            workTypeId = 2
                         )
                         addNewReference(
                             programId = 3 + num,
@@ -1057,22 +1074,12 @@ private fun Application.createDummyProgramsDisciplines() {
                         addNewReference(
                             programId = 4 + num,
                             disciplineId = 17,
-                            workTypeId = 1
-                        )
-                        addNewReference(
-                            programId = 4 + num,
-                            disciplineId = 17,
                             workTypeId = 4
                         )
                         addNewReference(
                             programId = 4 + num,
                             disciplineId = 25,
                             workTypeId = 1
-                        )
-                        addNewReference(
-                            programId = 4 + num,
-                            disciplineId = 25,
-                            workTypeId = 2
                         )
                         addNewReference(
                             programId = 4 + num,
@@ -1099,11 +1106,6 @@ private fun Application.createDummyProgramsDisciplines() {
                             programId = 5 + num,
                             disciplineId = 19,
                             workTypeId = 1
-                        )
-                        addNewReference(
-                            programId = 5 + num,
-                            disciplineId = 19,
-                            workTypeId = 2
                         )
                         addNewReference(
                             programId = 5 + num,
@@ -1151,11 +1153,6 @@ private fun Application.createDummyProgramsDisciplines() {
                         addNewReference(
                             programId = 7 + num,
                             disciplineId = 31,
-                            workTypeId = 1
-                        )
-                        addNewReference(
-                            programId = 7 + num,
-                            disciplineId = 30,
                             workTypeId = 1
                         )
                         addNewReference(
@@ -1215,4 +1212,20 @@ private fun getRandomUnixTime(): Long {
     val (startTime, endTime) = 1609459200L to 1708775961L
     require(startTime < endTime) { "Start time must be before end time" }
     return Random.nextLong(startTime, endTime) * 1000
+}
+
+private fun Application.createDummyDepartmentsFaculties() {
+    val dao by inject<DepartmentsFacultiesDao>()
+
+    dao.apply {
+        runBlocking {
+            if (getAll().isEmpty()) {
+                addReference(1, 1)
+                addReference(1, 2)
+                addReference(1, 3)
+                addReference(1, 4)
+                addReference(2, 17)
+            }
+        }
+    }
 }

@@ -5,7 +5,7 @@ import com.meloda.kubsau.model.Employee
 
 interface EmployeeRepository {
     suspend fun getAllEmployees(
-        facultyId: Int?,
+        departmentIds: List<Int>?,
         offset: Int?,
         limit: Int?
     ): List<Employee>
@@ -35,8 +35,8 @@ interface EmployeeRepository {
 }
 
 class EmployeeRepositoryImpl(private val dao: EmployeeDao) : EmployeeRepository {
-    override suspend fun getAllEmployees(facultyId: Int?, offset: Int?, limit: Int?): List<Employee> =
-        dao.allEmployees(facultyId, offset, limit)
+    override suspend fun getAllEmployees(departmentIds: List<Int>?, offset: Int?, limit: Int?): List<Employee> =
+        dao.allEmployees(departmentIds, offset, limit)
 
     override suspend fun getEmployeesByIds(employeeIds: List<Int>): List<Employee> =
         dao.allEmployeesByIds(employeeIds)

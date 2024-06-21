@@ -38,6 +38,10 @@ class HeadController(
         get {
             val principal = call.userPrincipal()
 
+            if (principal.type != Employee.TYPE_ADMIN) {
+                throw AccessDeniedException("Admin rights required")
+            }
+
             val parameters = call.request.queryParameters
 
             val headIds = parameters.getIntList(

@@ -43,5 +43,5 @@ class FacultyDaoImpl : FacultyDao {
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
 
-    override fun mapResultRow(row: ResultRow): Faculty = Faculty.mapResultRow(row)
+    override fun mapResultRow(row: ResultRow): Faculty = Faculty.mapFromDb(row)
 }

@@ -1,10 +1,11 @@
 package com.meloda.kubsau.database.programs
 
-import com.meloda.kubsau.model.IdTitle
 import com.meloda.kubsau.config.DatabaseController.dbQuery
 import com.meloda.kubsau.database.directivities.Directivities
+import com.meloda.kubsau.database.faculties.Faculties
 import com.meloda.kubsau.database.grades.Grades
-import com.meloda.kubsau.model.Directivity
+import com.meloda.kubsau.database.heads.Heads
+import com.meloda.kubsau.model.IdTitle
 import com.meloda.kubsau.model.Program
 import com.meloda.kubsau.route.programs.SearchEntry
 import com.meloda.kubsau.route.programs.SearchProgram
@@ -31,14 +32,8 @@ class ProgramDaoImpl : ProgramDao {
             .map(::mapResultRow)
     }
 
-    override suspend fun allProgramsBySemester(semester: Int): List<Program> = dbQuery {
-        Programs
-            .selectAll()
-            .where { Programs.semester eq semester }
-            .map(::mapResultRow)
-    }
-
     override suspend fun allProgramsBySearch(
+        facultyId: Int?,
         programIds: List<Int>?,
         offset: Int?,
         limit: Int?,
@@ -49,6 +44,8 @@ class ProgramDaoImpl : ProgramDao {
         val dbQuery = Programs
             .innerJoin(Directivities, { Programs.directivityId }, { Directivities.id })
             .innerJoin(Grades, { Directivities.gradeId }, { Grades.id })
+            .innerJoin(Heads, { Directivities.headId }, { Heads.id })
+            .innerJoin(Faculties, { Heads.facultyId }, { Faculties.id })
             .select(
                 Programs.id, Programs.semester,
                 Directivities.id, Directivities.title,
@@ -57,6 +54,7 @@ class ProgramDaoImpl : ProgramDao {
             .apply { if (limit != null) limit(limit, (offset ?: 0).toLong()) }
             .orderBy(Programs.id, order = SortOrder.DESC)
 
+        facultyId?.let { dbQuery.andWhere { Faculties.id eq facultyId } }
         programIds?.let { dbQuery.andWhere { Programs.id inList programIds } }
         semester?.let { dbQuery.andWhere { Programs.semester eq semester } }
         directivityId?.let { dbQuery.andWhere { Programs.directivityId eq directivityId } }
@@ -79,13 +77,6 @@ class ProgramDaoImpl : ProgramDao {
                 disciplines = emptyList()
             )
         }
-    }
-
-    override suspend fun allDirectivitiesByPrograms(programIds: List<Int>): List<Pair<Int, Directivity>> = dbQuery {
-        Programs.innerJoin(Directivities)
-            .select(Programs.id, *Directivities.columns.toTypedArray())
-            .where { Programs.id inList programIds }
-            .map { row -> row[Programs.id].value to Directivity.mapFromDb(row) }
     }
 
     override suspend fun singleProgram(programId: Int): Program? = dbQuery {

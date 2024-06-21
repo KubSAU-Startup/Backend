@@ -1,20 +1,13 @@
 package com.meloda.kubsau.route.programs
 
 import com.meloda.kubsau.DATA_FOLDER
-import com.meloda.kubsau.model.respondSuccess
 import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.departments.DepartmentDao
 import com.meloda.kubsau.database.groups.GroupDao
 import com.meloda.kubsau.database.programs.ProgramDao
 import com.meloda.kubsau.database.programsdisciplines.ProgramDisciplineDao
 import com.meloda.kubsau.database.students.StudentDao
-import com.meloda.kubsau.model.ContentNotFoundException
-import com.meloda.kubsau.model.UnknownException
-import com.meloda.kubsau.model.ValidationException
-import com.meloda.kubsau.model.Department
-import com.meloda.kubsau.model.Discipline
-import com.meloda.kubsau.model.IdTitle
-import com.meloda.kubsau.model.Program
+import com.meloda.kubsau.model.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -58,6 +51,7 @@ private fun Route.getPrograms() {
     val programDisciplineDao by inject<ProgramDisciplineDao>()
 
     get {
+        val principal = call.userPrincipal()
         val parameters = call.request.queryParameters
 
         val programIds = parameters.getIntList(
@@ -69,6 +63,7 @@ private fun Route.getPrograms() {
         val limit = parameters.getInt(key = "limit", range = ProgramRange)
 
         val entries = programDao.allProgramsBySearch(
+            facultyId = principal.facultyId,
             programIds = programIds,
             offset = offset,
             limit = limit ?: MAX_PROGRAMS,
@@ -192,13 +187,13 @@ private fun Route.generateQRCodes() {
             requiredNotEmpty = true
         )
 
+        // TODO: 21/06/2024, Danil Nikolaev: check groupIds  ^
         val groups = groupDao.allGroupsByIds(groupIds)
         if (groups.isEmpty()) {
             throw ContentNotFoundException
         }
 
         val students = studentDao.allStudentsByGroupIdsAsMap(groupIds, true)
-        // TODO: 20/06/2024, Danil Nikolaev: только обучающиеся
         val disciplines = programDisciplineDao.allDisciplineIdsByProgramIdAsMap(programId)
 
         val jobList = mutableListOf<Job>()
@@ -336,6 +331,7 @@ private fun Route.searchPrograms() {
     val programDisciplineDao by inject<ProgramDisciplineDao>()
 
     get("/search") {
+        val principal = call.userPrincipal()
         val parameters = call.request.queryParameters
 
         val offset = parameters.getInt("offset")
@@ -345,6 +341,7 @@ private fun Route.searchPrograms() {
         val query = parameters.getString(key = "query", trim = true)?.lowercase()
 
         val entries = programDao.allProgramsBySearch(
+            facultyId = principal.facultyId,
             programIds = null,
             offset = offset,
             limit = limit ?: MAX_PROGRAMS,

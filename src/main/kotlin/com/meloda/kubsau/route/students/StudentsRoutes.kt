@@ -36,6 +36,7 @@ private fun Route.getStudents() {
     val studentDao by inject<StudentDao>()
 
     get {
+        val principal = call.userPrincipal()
         val parameters = call.request.queryParameters
 
         val studentIds = parameters.getIntList(
@@ -47,10 +48,8 @@ private fun Route.getStudents() {
         val offset = parameters.getInt("offset")
         val limit = parameters.getInt("limit", range = LimitRange)
 
-        // TODO: 20/06/2024, Danil Nikolaev: filter by facultyId
-
         val students = if (studentIds.isEmpty()) {
-            studentDao.allStudents(offset, limit ?: MAX_ITEMS_SIZE)
+            studentDao.allStudents(principal.facultyId, offset, limit ?: MAX_ITEMS_SIZE)
         } else {
             studentDao.allStudentsByIds(studentIds)
         }
@@ -80,6 +79,7 @@ private fun Route.searchStudents() {
     val studentDao by inject<StudentDao>()
 
     get("/search") {
+        val principal = call.userPrincipal()
         val parameters = call.request.queryParameters
 
         val offset = parameters.getInt("offset")
@@ -92,6 +92,7 @@ private fun Route.searchStudents() {
         // TODO: 20/06/2024, Danil Nikolaev: filter by facultyId
 
         val students = studentDao.allStudentsBySearch(
+            facultyId = principal.facultyId,
             offset = offset,
             limit = limit,
             groupId = groupId,
@@ -123,7 +124,6 @@ private fun Route.addStudent() {
         val status = parameters.getIntOrThrow("status")
 
         // TODO: 20/06/2024, Danil Nikolaev: check groupId
-
         val created = studentDao.addNewStudent(
             firstName = firstName,
             lastName = lastName,

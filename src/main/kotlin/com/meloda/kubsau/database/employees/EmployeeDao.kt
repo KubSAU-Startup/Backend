@@ -5,7 +5,7 @@ import com.meloda.kubsau.model.Employee
 
 interface EmployeeDao : Dao<Employee> {
 
-    suspend fun allEmployees(facultyId: Int?, offset: Int?, limit: Int?): List<Employee>
+    suspend fun allEmployees(departmentIds: List<Int>?, offset: Int?, limit: Int?): List<Employee>
     suspend fun allTeachers(offset: Int?, limit: Int?, departmentIds: List<Int>?): List<Employee>
     suspend fun allEmployeesByIds(employeeIds: List<Int>): List<Employee>
     suspend fun singleEmployee(employeeId: Int): Employee?

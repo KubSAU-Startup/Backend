@@ -22,8 +22,8 @@ interface WorkDao : Dao<Work> {
         query: String?
     ): List<Entry>
 
-    suspend fun allWorksByIds(departmentIds: List<Int>?, workIds: List<Int>): List<Work>
-    suspend fun singleWork(departmentIds: List<Int>?, workId: Int): Work?
+    suspend fun allWorksByIds(workIds: List<Int>): List<Work>
+    suspend fun singleWork(workId: Int): Work?
 
     suspend fun addNewWork(
         disciplineId: Int,

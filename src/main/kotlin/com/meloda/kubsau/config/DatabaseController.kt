@@ -1,6 +1,7 @@
 package com.meloda.kubsau.config
 
 import com.meloda.kubsau.CONFIG_FOLDER
+import com.meloda.kubsau.database.departmentfaculty.DepartmentsFaculties
 import com.meloda.kubsau.database.departments.Departments
 import com.meloda.kubsau.database.directivities.Directivities
 import com.meloda.kubsau.database.disciplines.Disciplines
@@ -54,10 +55,10 @@ object DatabaseController {
                 Departments, Directivities, Disciplines, Employees,
                 Faculties, Grades, Groups, Heads,
                 Programs, Students, Users, Works,
-                WorkTypes
+                WorkTypes,
             )
             SchemaUtils.create(
-                EmployeesDepartments, EmployeesFaculties, ProgramsDisciplines
+                EmployeesDepartments, EmployeesFaculties, ProgramsDisciplines, DepartmentsFaculties
             )
         }
     }

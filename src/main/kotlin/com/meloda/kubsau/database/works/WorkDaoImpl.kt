@@ -60,7 +60,7 @@ class WorkDaoImpl : WorkDao {
                 discipline = Discipline.mapResultRow(row),
                 employee = Employee.mapResultRow(row),
                 work = mapResultRow(row).mapToEntryWork(WorkType.mapResultRow(row)),
-                department = Department.mapResultRow(row)
+                department = Department.mapFromDb(row)
             )
         }
     }
@@ -109,7 +109,7 @@ class WorkDaoImpl : WorkDao {
                 discipline = Discipline.mapResultRow(row),
                 employee = Employee.mapResultRow(row),
                 work = mapResultRow(row).mapToEntryWork(WorkType.mapResultRow(row)),
-                department = Department.mapResultRow(row)
+                department = Department.mapFromDb(row)
             )
         }
     }
@@ -174,31 +174,23 @@ class WorkDaoImpl : WorkDao {
                 discipline = Discipline.mapResultRow(row),
                 employee = Employee.mapResultRow(row),
                 work = mapResultRow(row).mapToEntryWork(WorkType.mapResultRow(row)),
-                department = Department.mapResultRow(row)
+                department = Department.mapFromDb(row)
             )
         }
     }
 
-    override suspend fun allWorksByIds(departmentIds: List<Int>?, workIds: List<Int>): List<Work> = dbQuery {
-        val dbQuery = Works
-            .apply { departmentIds?.let { innerJoin(Disciplines) } }
+    override suspend fun allWorksByIds(workIds: List<Int>): List<Work> = dbQuery {
+        Works
             .selectAll()
             .where { Works.id inList workIds }
-
-        departmentIds?.let { dbQuery.andWhere { Disciplines.departmentId inList departmentIds } }
-
-        dbQuery.map(::mapResultRow)
+            .map(::mapResultRow)
     }
 
-    override suspend fun singleWork(departmentIds: List<Int>?, workId: Int): Work? = dbQuery {
-        val dbQuery = Works
-            .apply { departmentIds?.let { innerJoin(Disciplines) } }
+    override suspend fun singleWork(workId: Int): Work? = dbQuery {
+        Works
             .selectAll()
             .where { Works.id eq workId }
-
-        departmentIds?.let { dbQuery.andWhere { Disciplines.departmentId inList departmentIds } }
-
-        dbQuery.map(::mapResultRow)
+            .map(::mapResultRow)
             .singleOrNull()
     }
 

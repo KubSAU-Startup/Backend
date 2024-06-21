@@ -10,12 +10,9 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 
 class EmployeeDaoImpl : EmployeeDao {
 
-    override suspend fun allEmployees(facultyId: Int?, offset: Int?, limit: Int?): List<Employee> = dbQuery {
+    override suspend fun allEmployees(departmentIds: List<Int>?, offset: Int?, limit: Int?): List<Employee> = dbQuery {
         val dbQuery = Employees
-            .run {
-                facultyId?.run { innerJoin(EmployeesFaculties, { Employees.id }, { EmployeesFaculties.employeeId }) }
-                    ?: this
-            }
+            .innerJoin(EmployeesDepartments, { Employees.id }, { EmployeesDepartments.employeeId })
             .select(Employees.columns)
             .orderBy(Employees.id, order = SortOrder.DESC)
             .apply {
@@ -24,7 +21,7 @@ class EmployeeDaoImpl : EmployeeDao {
                 }
             }
 
-        facultyId?.let { EmployeesFaculties.facultyId eq facultyId }
+        departmentIds?.let { dbQuery.andWhere { EmployeesDepartments.departmentId inList departmentIds } }
 
         dbQuery.map(::mapResultRow)
     }

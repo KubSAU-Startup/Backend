@@ -1,5 +1,7 @@
 package com.meloda.kubsau.di
 
+import com.meloda.kubsau.database.departmentfaculty.DepartmentsFacultiesDao
+import com.meloda.kubsau.database.departmentfaculty.DepartmentsFacultiesDaoImpl
 import com.meloda.kubsau.database.departments.DepartmentDao
 import com.meloda.kubsau.database.departments.DepartmentDaoImpl
 import com.meloda.kubsau.database.directivities.DirectivityDao
@@ -53,4 +55,5 @@ val databaseModule = module {
     singleOf(::UserDaoImpl) bind UserDao::class
     singleOf(::WorkDaoImpl) bind WorkDao::class
     singleOf(::WorkTypeDaoImpl) bind WorkTypeDao::class
+    singleOf(::DepartmentsFacultiesDaoImpl) bind DepartmentsFacultiesDao::class
 }

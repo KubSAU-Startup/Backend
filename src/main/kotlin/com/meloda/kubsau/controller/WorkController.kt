@@ -1,6 +1,7 @@
 package com.meloda.kubsau.controller
 
 import com.meloda.kubsau.common.*
+import com.meloda.kubsau.database.departmentfaculty.DepartmentsFacultiesDao
 import com.meloda.kubsau.database.departments.DepartmentDao
 import com.meloda.kubsau.database.disciplines.DisciplineDao
 import com.meloda.kubsau.database.employees.EmployeeDao
@@ -52,6 +53,7 @@ class WorkController {
         val workTypeDao by inject<WorkTypeDao>()
         val departmentDao by inject<DepartmentDao>()
         val employeeDao by inject<EmployeeDao>()
+        val departmentsFacultiesDao by inject<DepartmentsFacultiesDao>()
 
         get {
             val principal = call.userPrincipal()
@@ -67,10 +69,15 @@ class WorkController {
             val limit = parameters.getInt(key = "limit", range = LimitRange)
             val extended = parameters.getBoolean("extended", false)
 
+            val departmentIds = if (principal.type == Employee.TYPE_ADMIN) {
+                val facultyId = principal.facultyId ?: throw UnknownTokenException
+                departmentsFacultiesDao.getDepartmentIdsByFacultyId(facultyId)
+            } else principal.departmentIds
+
             val works = if (workIds.isEmpty()) {
-                workDao.allWorks(principal.departmentIds, offset, limit ?: MAX_ITEMS_SIZE)
+                workDao.allWorks(departmentIds, offset, limit ?: MAX_ITEMS_SIZE)
             } else {
-                workDao.allWorksByIds(principal.departmentIds, workIds)
+                workDao.allWorksByIds(workIds)
             }
 
             if (!extended) {
@@ -85,7 +92,7 @@ class WorkController {
                 val workTypeIds = works.map(Work::workTypeId)
                 val workTypes = workTypeDao.allWorkTypesByIds(workTypeIds)
 
-                val departments = departmentDao.allDepartmentsByIds(principal.departmentIds)
+                val departments = departmentDao.allDepartmentsByIds(departmentIds)
 
                 val employeeIds = works.map(Work::employeeId)
                 val employees = employeeDao.allEmployeesByIds(employeeIds)
@@ -128,9 +135,12 @@ class WorkController {
         get("{id}") {
             val principal = call.userPrincipal()
             val workId = call.parameters.getIntOrThrow("id")
+
+            // TODO: 21/06/2024, Danil Nikolaev: check access ^
+
             val extended = call.request.queryParameters.getBoolean("extended", false)
 
-            val work = workDao.singleWork(principal.departmentIds, workId) ?: throw ContentNotFoundException
+            val work = workDao.singleWork(workId) ?: throw ContentNotFoundException
 
             if (!extended) {
                 respondSuccess { WorkResponse(work = work) }
@@ -198,7 +208,7 @@ class WorkController {
         patch("{id}") {
             val principal = call.userPrincipal()
             val workId = call.parameters.getIntOrThrow("id")
-            val currentWork = workDao.singleWork(principal.departmentIds, workId) ?: throw ContentNotFoundException
+            val currentWork = workDao.singleWork(workId) ?: throw ContentNotFoundException
 
             val parameters = call.receiveParameters()
 
@@ -234,7 +244,7 @@ class WorkController {
         delete("{id}") {
             val principal = call.userPrincipal()
             val workId = call.parameters.getIntOrThrow("id")
-            workDao.singleWork(principal.departmentIds, workId) ?: throw ContentNotFoundException
+            workDao.singleWork(workId) ?: throw ContentNotFoundException
 
             if (workDao.deleteWork(workId)) {
                 respondSuccess { 1 }
@@ -255,7 +265,7 @@ class WorkController {
                 requiredNotEmpty = true
             )
 
-            val currentWorks = workDao.allWorksByIds(principal.departmentIds, workIds)
+            val currentWorks = workDao.allWorksByIds(workIds)
             if (currentWorks.isEmpty()) {
                 throw ContentNotFoundException
             }
@@ -290,17 +300,23 @@ class WorkController {
 
         get("/worktypes") {
             val workTypesFilters = workTypeDao.allWorkTypesAsFilters()
-
             respondSuccess { workTypesFilters }
         }
     }
 
     private fun Route.getDisciplinesFilters() {
         val disciplineDao by inject<DisciplineDao>()
+        val departmentsFacultiesDao by inject<DepartmentsFacultiesDao>()
 
         get("/disciplines") {
             val principal = call.userPrincipal()
-            val disciplinesFilters = disciplineDao.allDisciplinesAsFilters(principal.departmentIds)
+
+            val departmentIds = if (principal.type == Employee.TYPE_ADMIN) {
+                val facultyId = principal.facultyId ?: throw UnknownTokenException
+                departmentsFacultiesDao.getDepartmentIdsByFacultyId(facultyId)
+            } else principal.departmentIds
+
+            val disciplinesFilters = disciplineDao.allDisciplinesAsFilters(departmentIds)
 
             respondSuccess { disciplinesFilters }
         }
@@ -308,10 +324,17 @@ class WorkController {
 
     private fun Route.getEmployeesFilters() {
         val employeeDao by inject<EmployeeDao>()
+        val departmentsFacultiesDao by inject<DepartmentsFacultiesDao>()
 
         get("/employees") {
             val principal = call.userPrincipal()
-            val employeeFilters = employeeDao.allTeachers(null, null, principal.departmentIds).map { employee ->
+
+            val departmentIds = if (principal.type == Employee.TYPE_ADMIN) {
+                val facultyId = principal.facultyId ?: throw UnknownTokenException
+                departmentsFacultiesDao.getDepartmentIdsByFacultyId(facultyId)
+            } else principal.departmentIds
+
+            val employeeFilters = employeeDao.allTeachers(null, null, departmentIds).map { employee ->
                 EntryFilter(
                     id = employee.id,
                     title = employee.fullName
@@ -335,10 +358,17 @@ class WorkController {
 
     private fun Route.getDepartmentsFilters() {
         val departmentDao by inject<DepartmentDao>()
+        val departmentsFacultiesDao by inject<DepartmentsFacultiesDao>()
 
         get("/departments") {
             val principal = call.userPrincipal()
-            val departmentsFilters = departmentDao.allDepartmentsAsFilters(principal.departmentIds)
+
+            val departmentIds = if (principal.type == Employee.TYPE_ADMIN) {
+                val facultyId = principal.facultyId ?: throw UnknownTokenException
+                departmentsFacultiesDao.getDepartmentIdsByFacultyId(facultyId)
+            } else principal.departmentIds
+
+            val departmentsFilters = departmentDao.allDepartmentsAsFilters(departmentIds)
 
             respondSuccess { departmentsFilters }
         }
@@ -346,6 +376,7 @@ class WorkController {
 
     private fun Route.getLatestWorks() {
         val workDao by inject<WorkDao>()
+        val departmentsFacultiesDao by inject<DepartmentsFacultiesDao>()
 
         get {
             val principal = call.userPrincipal()
@@ -365,8 +396,13 @@ class WorkController {
                 trim = true,
             )?.lowercase()
 
+            val departmentIds = if (principal.type == Employee.TYPE_ADMIN) {
+                val facultyId = principal.facultyId ?: throw UnknownTokenException
+                departmentsFacultiesDao.getDepartmentIdsByFacultyId(facultyId)
+            } else principal.departmentIds
+
             val entries = workDao.allWorksBySearch(
-                departmentIds = principal.departmentIds,
+                departmentIds = departmentIds,
                 offset = offset,
                 limit = limit ?: MAX_LATEST_WORKS,
                 disciplineId = disciplineId,

@@ -6,7 +6,6 @@ import org.jetbrains.exposed.sql.ResultRow
 data class User(
     val id: Int,
     val login: String,
-    // TODO: 24/02/2024, Danil Nikolaev: SECURITY, FOR FUCK's SAKE
     val password: String,
     val employeeId: Int
 ) {

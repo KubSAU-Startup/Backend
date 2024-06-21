@@ -66,6 +66,8 @@ private fun Route.addSession() {
         } else null
         val departmentIds: List<Int> = employeeDepartmentDao.allDepartmentIdsByEmployeeId(employee.id)
 
+        val selectedDepartmentId = departmentIds.singleOrNull()
+
         val accessToken = JWT.create()
             .withAudience(AUDIENCE)
             .withIssuer(ISSUER)
@@ -73,6 +75,7 @@ private fun Route.addSession() {
             .withClaim("type", employee.type)
             .withClaim("facultyId", facultyId)
             .withClaim("departmentIds", departmentIds.joinToString())
+            .withClaim("selectedDepartmentId", selectedDepartmentId)
             .sign(Algorithm.HMAC256(SecretsController.jwtSecret))
 
         respondSuccess {
@@ -80,7 +83,8 @@ private fun Route.addSession() {
                 userId = user.id,
                 accessToken = accessToken,
                 facultyId = facultyId,
-                departmentIds = departmentIds
+                departmentIds = departmentIds,
+                selectedDepartmentId = selectedDepartmentId
             )
         }
     }
@@ -109,8 +113,8 @@ private fun Route.modifySession() {
             .withClaim("id", user.id)
             .withClaim("type", principal.type)
             .withClaim("facultyId", principal.facultyId)
-            .withClaim("selectedDepartmentId", departmentId)
             .withClaim("departmentIds", principal.departmentIds.joinToString())
+            .withClaim("selectedDepartmentId", departmentId)
             .sign(Algorithm.HMAC256(SecretsController.jwtSecret))
 
         respondSuccess {
@@ -126,7 +130,8 @@ private data class AuthResponse(
     val userId: Int,
     val accessToken: String,
     val facultyId: Int?,
-    val departmentIds: List<Int>
+    val departmentIds: List<Int>,
+    val selectedDepartmentId: Int?
 )
 
 private data class ModifyTokenResponse(

@@ -2,7 +2,9 @@ package com.meloda.kubsau.database.students
 
 import com.meloda.kubsau.config.DatabaseController.dbQuery
 import com.meloda.kubsau.database.directivities.Directivities
+import com.meloda.kubsau.database.faculties.Faculties
 import com.meloda.kubsau.database.groups.Groups
+import com.meloda.kubsau.database.heads.Heads
 import com.meloda.kubsau.model.Student
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -11,10 +13,15 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 class StudentDaoImpl : StudentDao {
 
     override suspend fun allStudents(
+        facultyId: Int?,
         offset: Int?,
         limit: Int?
     ): List<Student> = dbQuery {
-        Students
+        val dbQuery = Students
+            .innerJoin(Groups, { Students.groupId }, { Groups.id })
+            .innerJoin(Directivities, { Groups.directivityId }, { Directivities.id })
+            .innerJoin(Heads, { Directivities.headId }, { Heads.id })
+            .innerJoin(Faculties, { Heads.facultyId }, { Faculties.id })
             .selectAll()
             .apply {
                 if (limit != null) {
@@ -25,7 +32,10 @@ class StudentDaoImpl : StudentDao {
                 column = Students.id,
                 order = SortOrder.DESC
             )
-            .map(::mapResultRow)
+
+        facultyId?.let { dbQuery.andWhere { Faculties.id eq facultyId } }
+
+        dbQuery.map(::mapResultRow)
     }
 
     override suspend fun allStudentsByIds(studentIds: List<Int>): List<Student> = dbQuery {
@@ -89,6 +99,7 @@ class StudentDaoImpl : StudentDao {
     }
 
     override suspend fun allStudentsBySearch(
+        facultyId: Int?,
         offset: Int?,
         limit: Int?,
         groupId: Int?,
@@ -99,6 +110,8 @@ class StudentDaoImpl : StudentDao {
         val dbQuery = Students
             .innerJoin(Groups, { Students.groupId }, { Groups.id })
             .innerJoin(Directivities, { Groups.directivityId }, { Directivities.id })
+            .innerJoin(Heads, { Directivities.headId }, { Heads.id })
+            .innerJoin(Faculties, { Heads.facultyId }, { Faculties.id })
             .select(Students.columns)
             .apply {
                 if (limit != null) {
@@ -110,6 +123,7 @@ class StudentDaoImpl : StudentDao {
                 order = SortOrder.DESC
             )
 
+        facultyId?.let { dbQuery.andWhere { Faculties.id eq facultyId } }
         groupId?.let { dbQuery.andWhere { Students.groupId eq groupId } }
         gradeId?.let { dbQuery.andWhere { Directivities.gradeId eq gradeId } }
         status?.let { dbQuery.andWhere { Students.status eq status } }

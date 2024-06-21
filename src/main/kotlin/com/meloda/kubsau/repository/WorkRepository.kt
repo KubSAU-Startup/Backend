@@ -19,10 +19,10 @@ class WorkRepositoryImpl(private val workDao: WorkDao) : WorkRepository {
     override suspend fun getWorksByIds(
         departmentIds: List<Int>?,
         workIds: List<Int>
-    ): List<Work> = workDao.allWorksByIds(departmentIds, workIds)
+    ): List<Work> = workDao.allWorksByIds(workIds)
 
     override suspend fun getWorkById(
         departmentIds: List<Int>?,
         workId: Int
-    ): Work? = workDao.singleWork(departmentIds, workId)
+    ): Work? = workDao.singleWork(workId)
 }

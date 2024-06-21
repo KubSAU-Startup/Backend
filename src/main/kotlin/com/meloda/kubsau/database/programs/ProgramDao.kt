@@ -9,9 +9,9 @@ interface ProgramDao : Dao<Program> {
 
     suspend fun allPrograms(offset: Int?, limit: Int?): List<Program>
     suspend fun allProgramsByIds(programIds: List<Int>): List<Program>
-    suspend fun allProgramsBySemester(semester: Int): List<Program>
 
     suspend fun allProgramsBySearch(
+        facultyId: Int?,
         programIds: List<Int>?,
         offset: Int?,
         limit: Int?,
@@ -19,8 +19,6 @@ interface ProgramDao : Dao<Program> {
         directivityId: Int?,
         query: String?
     ): List<SearchEntry>
-
-    suspend fun allDirectivitiesByPrograms(programIds: List<Int>): List<Pair<Int, Directivity>>
 
     suspend fun singleProgram(programId: Int): Program?
 

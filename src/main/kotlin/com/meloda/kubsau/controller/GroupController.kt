@@ -1,7 +1,9 @@
 package com.meloda.kubsau.controller
 
 import com.meloda.kubsau.common.*
+import com.meloda.kubsau.model.AccessDeniedException
 import com.meloda.kubsau.model.ContentNotFoundException
+import com.meloda.kubsau.model.Employee
 import com.meloda.kubsau.model.UnknownException
 import com.meloda.kubsau.model.respondSuccess
 import com.meloda.kubsau.repository.GroupRepository
@@ -49,6 +51,8 @@ class GroupController(private val repository: GroupRepository) {
     private fun Route.getGroupById() {
         get("{id}") {
             val groupId = call.parameters.getIntOrThrow("id")
+
+            // TODO: 21/06/2024, Danil Nikolaev: check access
             val group = repository.getGroupById(groupId) ?: throw ContentNotFoundException
 
             respondSuccess { group }
@@ -57,6 +61,12 @@ class GroupController(private val repository: GroupRepository) {
 
     private fun Route.addGroup() {
         post {
+            val principal = call.userPrincipal()
+
+            if (principal.type != Employee.TYPE_ADMIN) {
+                throw AccessDeniedException("Admin rights required")
+            }
+
             val parameters = call.receiveParameters()
 
             val title = parameters.getStringOrThrow("title")
@@ -79,6 +89,12 @@ class GroupController(private val repository: GroupRepository) {
 
     private fun Route.editGroup() {
         patch("{id}") {
+            val principal = call.userPrincipal()
+
+            if (principal.type != Employee.TYPE_ADMIN) {
+                throw AccessDeniedException("Admin rights required")
+            }
+
             val groupId = call.parameters.getIntOrThrow("id")
             val currentGroup = repository.getGroupById(groupId) ?: throw ContentNotFoundException
 
@@ -104,6 +120,12 @@ class GroupController(private val repository: GroupRepository) {
 
     private fun Route.deleteGroupById() {
         delete("{id}") {
+            val principal = call.userPrincipal()
+
+            if (principal.type != Employee.TYPE_ADMIN) {
+                throw AccessDeniedException("Admin rights required")
+            }
+
             val groupId = call.parameters.getIntOrThrow("id")
             // TODO: 17/06/2024, Danil Nikolaev: check access  ^
             if (!repository.isGroupExist(groupId)) {
@@ -120,6 +142,12 @@ class GroupController(private val repository: GroupRepository) {
 
     private fun Route.deleteGroupsByIds() {
         delete {
+            val principal = call.userPrincipal()
+
+            if (principal.type != Employee.TYPE_ADMIN) {
+                throw AccessDeniedException("Admin rights required")
+            }
+
             val groupIds = call.request.queryParameters.getIntListOrThrow(
                 key = "groupIds",
                 requiredNotEmpty = true

@@ -70,7 +70,7 @@ class DepartmentDaoImpl : DepartmentDao {
         Departments.deleteWhere { Departments.id inList departmentIds } > 0
     }
 
-    override fun mapResultRow(row: ResultRow): Department = Department.mapResultRow(row)
+    override fun mapResultRow(row: ResultRow): Department = Department.mapFromDb(row)
 
     override fun mapFilterResultRow(row: ResultRow): EntryFilter = EntryFilter(
         id = row[Departments.id].value,

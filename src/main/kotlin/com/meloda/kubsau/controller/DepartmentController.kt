@@ -1,9 +1,7 @@
 package com.meloda.kubsau.controller
 
 import com.meloda.kubsau.common.*
-import com.meloda.kubsau.model.ContentNotFoundException
-import com.meloda.kubsau.model.UnknownException
-import com.meloda.kubsau.model.respondSuccess
+import com.meloda.kubsau.model.*
 import com.meloda.kubsau.service.DepartmentService
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -35,9 +33,8 @@ class DepartmentController(private val service: DepartmentService) {
                 key = "departmentIds"
             )
 
-            // TODO: 20/06/2024, Danil Nikolaev: use facultyId
             val departments = if (departmentIds == null) {
-                service.getAllDepartments(principal.departmentIds)
+                service.getAllDepartments(principal)
             } else {
                 // TODO: 17/06/2024, Danil Nikolaev: check access
                 service.getDepartmentByIds(departmentIds)
@@ -73,6 +70,11 @@ class DepartmentController(private val service: DepartmentService) {
         post {
             val principal = call.userPrincipal()
             // TODO: 17/06/2024, Danil Nikolaev: check if admin
+
+            if (principal.type != Employee.TYPE_ADMIN) {
+                throw AccessDeniedException("Admin rights required")
+            }
+
             val parameters = call.receiveParameters()
             val title = parameters.getStringOrThrow("title")
             val phone = parameters.getStringOrThrow("phone")
@@ -91,6 +93,11 @@ class DepartmentController(private val service: DepartmentService) {
         patch("{id}") {
             val principal = call.userPrincipal()
             val departmentId = call.parameters.getIntOrThrow("id")
+
+            if (principal.type != Employee.TYPE_ADMIN) {
+                throw AccessDeniedException("Admin rights required")
+            }
+
             // TODO: 17/06/2024, Danil Nikolaev: check access to departmentId
             val currentDepartment = service.getDepartmentById(departmentId) ?: throw ContentNotFoundException
 
@@ -116,6 +123,11 @@ class DepartmentController(private val service: DepartmentService) {
     private fun Route.deleteDepartmentById() {
         delete("{id}") {
             val principal = call.userPrincipal()
+
+            if (principal.type != Employee.TYPE_ADMIN) {
+                throw AccessDeniedException("Admin rights required")
+            }
+
             val departmentId = call.parameters.getIntOrThrow("id")
             // TODO: 17/06/2024, Danil Nikolaev: check access to departmentId
 
@@ -134,6 +146,11 @@ class DepartmentController(private val service: DepartmentService) {
     private fun Route.deleteDepartments() {
         delete {
             val principal = call.userPrincipal()
+
+            if (principal.type != Employee.TYPE_ADMIN) {
+                throw AccessDeniedException("Admin rights required")
+            }
+
             val departmentIds = call.request.queryParameters.getIntListOrThrow(
                 key = "departmentIds",
                 requiredNotEmpty = true
