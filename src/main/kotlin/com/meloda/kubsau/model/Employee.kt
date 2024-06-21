@@ -18,6 +18,13 @@ data class Employee(
             "$lastName $firstName $middleName"
         }
 
+    val shrunkFullName: String
+        get() = if (middleName == null) {
+            "$firstName ${lastName.first()}."
+        } else {
+            "$lastName ${firstName.first()}. ${middleName.first()}."
+        }
+
     fun isAdmin(): Boolean = type == TYPE_ADMIN
     fun isLaborant(): Boolean = type == TYPE_LABORANT
     fun isTeacher(): Boolean = type == TYPE_TEACHER

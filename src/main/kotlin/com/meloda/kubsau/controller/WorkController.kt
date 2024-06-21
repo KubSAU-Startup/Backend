@@ -329,6 +329,8 @@ class WorkController {
         get("/employees") {
             val principal = call.userPrincipal()
 
+            val shrinkNames = call.request.queryParameters.getBoolean("shrinkNames", false)
+
             val departmentIds = if (principal.type == Employee.TYPE_ADMIN) {
                 val facultyId = principal.facultyId ?: throw UnknownTokenException
                 departmentsFacultiesDao.getDepartmentIdsByFacultyId(facultyId)
@@ -337,7 +339,11 @@ class WorkController {
             val employeeFilters = employeeDao.allTeachers(null, null, departmentIds).map { employee ->
                 EntryFilter(
                     id = employee.id,
-                    title = employee.fullName
+                    title = if (shrinkNames) {
+                        employee.shrunkFullName
+                    } else {
+                        employee.fullName
+                    }
                 )
             }
 
