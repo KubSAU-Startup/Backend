@@ -69,7 +69,6 @@ class DepartmentController(private val service: DepartmentService) {
     private fun Route.addDepartment() {
         post {
             val principal = call.userPrincipal()
-            // TODO: 17/06/2024, Danil Nikolaev: check if admin
 
             if (principal.type != Employee.TYPE_ADMIN) {
                 throw AccessDeniedException("Admin rights required")
