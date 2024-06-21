@@ -5,15 +5,15 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.meloda.kubsau.common.checkPassword
 import com.meloda.kubsau.common.getIntOrThrow
 import com.meloda.kubsau.common.getStringOrThrow
+import com.meloda.kubsau.common.userPrincipal
 import com.meloda.kubsau.config.SecretsController
 import com.meloda.kubsau.database.employees.EmployeeDao
-import com.meloda.kubsau.database.employeesdepartments.EmployeesDepartmentsDao
-import com.meloda.kubsau.database.employeesfaculties.EmployeesFacultiesDao
+import com.meloda.kubsau.database.employeesdepartments.EmployeeDepartmentDao
+import com.meloda.kubsau.database.employeesfaculties.EmployeeFacultyDao
 import com.meloda.kubsau.database.users.UserDao
 import com.meloda.kubsau.model.*
 import com.meloda.kubsau.plugins.AUDIENCE
 import com.meloda.kubsau.plugins.ISSUER
-import com.meloda.kubsau.plugins.UserPrincipal
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -34,8 +34,8 @@ fun Route.authRoutes() {
 private fun Route.addSession() {
     val userDao by inject<UserDao>()
     val employeeDao by inject<EmployeeDao>()
-    val employeesFacultiesDao by inject<EmployeesFacultiesDao>()
-    val employeesDepartmentsDao by inject<EmployeesDepartmentsDao>()
+    val employeeFacultyDao by inject<EmployeeFacultyDao>()
+    val employeeDepartmentDao by inject<EmployeeDepartmentDao>()
 
     post {
         val parameters = call.receiveParameters()
@@ -62,9 +62,11 @@ private fun Route.addSession() {
 
         val employee = employeeDao.singleEmployee(user.employeeId) ?: throw ContentNotFoundException
         val facultyId: Int? = if (employee.isAdmin()) {
-            employeesFacultiesDao.singleFacultyIdByEmployeeId(employee.id)
+            employeeFacultyDao.singleFacultyIdByEmployeeId(employee.id)
         } else null
-        val departmentIds: List<Int> = employeesDepartmentsDao.allDepartmentIdsByEmployeeId(employee.id)
+        val departmentIds: List<Int> = employeeDepartmentDao.allDepartmentIdsByEmployeeId(employee.id)
+
+        val selectedDepartmentId = departmentIds.singleOrNull()
 
         val accessToken = JWT.create()
             .withAudience(AUDIENCE)
@@ -73,6 +75,7 @@ private fun Route.addSession() {
             .withClaim("type", employee.type)
             .withClaim("facultyId", facultyId)
             .withClaim("departmentIds", departmentIds.joinToString())
+            .withClaim("selectedDepartmentId", selectedDepartmentId)
             .sign(Algorithm.HMAC256(SecretsController.jwtSecret))
 
         respondSuccess {
@@ -80,7 +83,8 @@ private fun Route.addSession() {
                 userId = user.id,
                 accessToken = accessToken,
                 facultyId = facultyId,
-                departmentIds = departmentIds
+                departmentIds = departmentIds,
+                selectedDepartmentId = selectedDepartmentId
             )
         }
     }
@@ -88,14 +92,14 @@ private fun Route.addSession() {
 
 private fun Route.modifySession() {
     val userDao by inject<UserDao>()
-    val employeesDepartmentsDao by inject<EmployeesDepartmentsDao>()
+    val employeeDepartmentDao by inject<EmployeeDepartmentDao>()
 
     patch {
-        val principal = call.principal<UserPrincipal>() ?: throw UnknownTokenException
+        val principal = call.userPrincipal()
         val user = principal.user
         userDao.singleUser(user.id) ?: throw ContentNotFoundException
 
-        val availableDepartmentIds = employeesDepartmentsDao.allDepartmentsByEmployeeId(user.employeeId)
+        val availableDepartmentIds = employeeDepartmentDao.allDepartmentsByEmployeeId(user.employeeId)
             .map(Department::id)
 
         val departmentId = call.request.queryParameters.getIntOrThrow("departmentId")
@@ -109,8 +113,8 @@ private fun Route.modifySession() {
             .withClaim("id", user.id)
             .withClaim("type", principal.type)
             .withClaim("facultyId", principal.facultyId)
-            .withClaim("selectedDepartmentId", departmentId)
             .withClaim("departmentIds", principal.departmentIds.joinToString())
+            .withClaim("selectedDepartmentId", departmentId)
             .sign(Algorithm.HMAC256(SecretsController.jwtSecret))
 
         respondSuccess {
@@ -126,7 +130,8 @@ private data class AuthResponse(
     val userId: Int,
     val accessToken: String,
     val facultyId: Int?,
-    val departmentIds: List<Int>
+    val departmentIds: List<Int>,
+    val selectedDepartmentId: Int?
 )
 
 private data class ModifyTokenResponse(

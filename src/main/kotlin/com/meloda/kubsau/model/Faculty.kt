@@ -10,7 +10,7 @@ data class Faculty(
 
     companion object {
 
-        fun mapResultRow(row: ResultRow): Faculty = Faculty(
+        fun mapFromDb(row: ResultRow): Faculty = Faculty(
             id = row[Faculties.id].value,
             title = row[Faculties.title]
         )

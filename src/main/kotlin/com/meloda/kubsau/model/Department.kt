@@ -12,7 +12,7 @@ data class Department(
 
     companion object {
 
-        fun mapResultRow(row: ResultRow): Department = Department(
+        fun mapFromDb(row: ResultRow): Department = Department(
             id = row[Departments.id].value,
             title = row[Departments.title],
             phone = row[Departments.phone]

@@ -3,20 +3,13 @@ package com.meloda.kubsau.plugins
 import com.meloda.kubsau.CONFIG_FOLDER
 import com.meloda.kubsau.common.Constants
 import com.meloda.kubsau.common.IS_IN_DOCKER
-import com.meloda.kubsau.controller.UserController
+import com.meloda.kubsau.controller.*
 import com.meloda.kubsau.model.ServerInfo
 import com.meloda.kubsau.route.auth.authRoutes
-import com.meloda.kubsau.route.department.departmentsRoutes
-import com.meloda.kubsau.route.directivities.directivitiesRoutes
 import com.meloda.kubsau.route.disciplines.disciplinesRoutes
 import com.meloda.kubsau.route.employees.employeesRoutes
-import com.meloda.kubsau.route.grades.gradesRoutes
-import com.meloda.kubsau.route.groups.groupsRoutes
-import com.meloda.kubsau.route.heads.majorsRoutes
 import com.meloda.kubsau.route.programs.programsRoutes
-import com.meloda.kubsau.route.qr.qrRoutes
 import com.meloda.kubsau.route.students.studentsRoutes
-import com.meloda.kubsau.route.works.worksRoutes
 import com.meloda.kubsau.route.worktypes.workTypesRoutes
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -47,17 +40,15 @@ fun Application.routing() {
 context(Route)
 private fun routes() {
     authRoutes()
-    departmentsRoutes()
-    qrRoutes()
+    DepartmentController.routes()
     disciplinesRoutes()
     studentsRoutes()
     workTypesRoutes()
     programsRoutes()
-    groupsRoutes()
-    worksRoutes()
+    GroupController.routes()
+    WorkController.routes()
     UserController.routes()
     employeesRoutes()
-    directivitiesRoutes()
-    majorsRoutes()
-    gradesRoutes()
+    DirectivityController.routes()
+    HeadController.routes()
 }

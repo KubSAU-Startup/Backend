@@ -38,7 +38,6 @@ class UserDaoImpl : UserDao {
     override suspend fun addNewUser(
         login: String,
         password: String,
-        type: Int,
         employeeId: Int
     ): User? = dbQuery {
         Users.insert {

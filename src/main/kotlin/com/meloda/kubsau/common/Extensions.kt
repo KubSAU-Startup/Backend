@@ -1,10 +1,16 @@
 package com.meloda.kubsau.common
 
+import com.meloda.kubsau.model.UnknownTokenException
 import com.meloda.kubsau.model.ValidationException
+import com.meloda.kubsau.plugins.UserPrincipal
 import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import org.mindrot.jbcrypt.BCrypt
+
+fun ApplicationCall.userPrincipal(): UserPrincipal = this.principal() ?: throw UnknownTokenException
 
 fun ApplicationRequest.toLogString(): String {
     val headers = headers.entries().joinToString(", ") { (key, values) -> "$key: ${values.joinToString()}" }

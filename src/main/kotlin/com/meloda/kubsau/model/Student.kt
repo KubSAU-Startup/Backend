@@ -9,7 +9,7 @@ data class Student(
     val lastName: String,
     val middleName: String?,
     val groupId: Int,
-    val statusId: Int
+    val status: Int
 ) {
     val fullName: String
         get() = if (middleName == null) {
@@ -19,6 +19,9 @@ data class Student(
         }
 
     companion object {
+        const val STATUS_LEARNING = 1
+        const val STATUS_SABBATICAL = 2
+        const val STATUS_EXPELLED = 3
 
         fun mapFromDb(row: ResultRow): Student = Student(
             id = row[Students.id].value,
@@ -26,7 +29,7 @@ data class Student(
             lastName = row[Students.lastName],
             middleName = row[Students.middleName],
             groupId = row[Students.groupId],
-            statusId = row[Students.statusId]
+            status = row[Students.status]
         )
     }
 }

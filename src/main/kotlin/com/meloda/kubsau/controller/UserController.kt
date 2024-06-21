@@ -1,10 +1,9 @@
 package com.meloda.kubsau.controller
 
-import com.meloda.kubsau.common.getIntList
-import com.meloda.kubsau.common.getIntOrThrow
 import com.meloda.kubsau.common.getStringOrThrow
-import com.meloda.kubsau.model.*
-import com.meloda.kubsau.plugins.UserPrincipal
+import com.meloda.kubsau.common.userPrincipal
+import com.meloda.kubsau.model.UnknownException
+import com.meloda.kubsau.model.respondSuccess
 import com.meloda.kubsau.service.UserService
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -17,11 +16,6 @@ class UserController(private val userService: UserService) {
     context(Route)
     private fun routes() {
         authenticate {
-            route("/users") {
-                getUsers()
-                getUserById()
-            }
-
             route("/account") {
                 getAccountInfo()
                 editAccountInfo()
@@ -29,35 +23,9 @@ class UserController(private val userService: UserService) {
         }
     }
 
-    private fun Route.getUsers() {
-        get {
-            val userIds = call.request.queryParameters.getIntList(
-                key = "userIds",
-                defaultValue = emptyList()
-            )
-
-            val users = if (userIds.isEmpty()) {
-                userService.getAllUsers()
-            } else {
-                userService.getUsersByIds(userIds)
-            }
-
-            respondSuccess { users }
-        }
-    }
-
-    private fun Route.getUserById() {
-        get("{id}") {
-            val userId = call.parameters.getIntOrThrow("id")
-            val user = userService.getUserById(userId) ?: throw ContentNotFoundException
-
-            respondSuccess { user }
-        }
-    }
-
     private fun Route.getAccountInfo() {
         get {
-            val principal = call.principal<UserPrincipal>() ?: throw UnknownTokenException
+            val principal = call.userPrincipal()
             val info = userService.getAccountInfo(principal)
             respondSuccess { info }
         }
@@ -65,7 +33,7 @@ class UserController(private val userService: UserService) {
 
     private fun Route.editAccountInfo() {
         patch {
-            val principal = call.principal<UserPrincipal>() ?: throw UnknownTokenException
+            val principal = call.userPrincipal()
 
             val parameters = call.receiveParameters()
             val currentPassword = parameters.getStringOrThrow("currentPassword")
