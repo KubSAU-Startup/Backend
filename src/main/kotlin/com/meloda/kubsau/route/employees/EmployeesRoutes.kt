@@ -1,9 +1,11 @@
 package com.meloda.kubsau.route.employees
 
-import com.meloda.kubsau.common.*
+import com.meloda.kubsau.common.getIntList
+import com.meloda.kubsau.common.getIntOrThrow
+import com.meloda.kubsau.common.getString
+import com.meloda.kubsau.common.userPrincipal
 import com.meloda.kubsau.database.departmentfaculty.DepartmentsFacultiesDao
 import com.meloda.kubsau.database.employees.EmployeeDao
-import com.meloda.kubsau.database.employeesdepartments.EmployeeDepartmentDao
 import com.meloda.kubsau.model.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -16,10 +18,7 @@ fun Route.employeesRoutes() {
         route("/employees") {
             getEmployees()
             getEmployee()
-            addEmployee()
             editEmployee()
-            deleteEmployeeById()
-            deleteEmployeesByIds()
         }
     }
 }
@@ -62,45 +61,11 @@ private fun Route.getEmployee() {
     }
 }
 
-private fun Route.addEmployee() {
-    val employeeDao by inject<EmployeeDao>()
-    val employeeDepartmentDao by inject<EmployeeDepartmentDao>()
-
-    post {
-        val principal = call.userPrincipal()
-
-        val parameters = call.receiveParameters()
-
-        val lastName = parameters.getStringOrThrow("lastName")
-        val firstName = parameters.getStringOrThrow("firstName")
-        val middleName = parameters.getStringOrThrow("middleName")
-        val email = parameters.getStringOrThrow("email")
-        val type = parameters.getIntOrThrow("type")
-
-        val departmentId = principal.selectedDepartmentId
-            ?: principal.departmentIds.singleOrNull()
-            ?: throw AccessDeniedException("There are multiple departmentIds. Pick one")
-
-        val created = employeeDao.addNewEmployee(
-            firstName = firstName,
-            lastName = lastName,
-            middleName = middleName,
-            email = email,
-            type = type
-        )
-
-        if (created != null && employeeDepartmentDao.addNewReference(created.id, departmentId)) {
-            respondSuccess { created }
-        } else {
-            throw UnknownException
-        }
-    }
-}
-
 private fun Route.editEmployee() {
     val employeeDao by inject<EmployeeDao>()
 
     patch("{id}") {
+        val principal = call.userPrincipal()
         val employeeId = call.parameters.getIntOrThrow("id")
         val currentEmployee =
             employeeDao.singleEmployee(employeeId) ?: throw ContentNotFoundException
@@ -111,68 +76,23 @@ private fun Route.editEmployee() {
         val firstName = parameters.getString("firstName")
         val middleName = parameters.getString("middleName")
         val email = parameters.getString("email")
-        val type = parameters.getInt("type")
+
+        if (principal.user.employeeId != employeeId) {
+            throw AccessDeniedException("You cannot edit info of another user")
+        }
 
         employeeDao.updateEmployee(
             employeeId = employeeId,
             firstName = firstName ?: currentEmployee.firstName,
             lastName = lastName ?: currentEmployee.lastName,
             middleName = middleName ?: currentEmployee.middleName,
-            email = email ?: currentEmployee.email,
-            type = type ?: currentEmployee.type
+            email = email ?: currentEmployee.email
         ).let { success ->
             if (success) {
                 respondSuccess { 1 }
             } else {
                 throw UnknownException
             }
-        }
-    }
-}
-
-private fun Route.deleteEmployeeById() {
-    val employeeDao by inject<EmployeeDao>()
-    val employeeDepartmentDao by inject<EmployeeDepartmentDao>()
-
-    delete("{id}") {
-        val employeeId = call.parameters.getIntOrThrow("id")
-        employeeDao.singleEmployee(employeeId) ?: throw ContentNotFoundException
-
-        val successDelete = employeeDao.deleteEmployee(employeeId)
-
-        if (successDelete) {
-            val departmentIds = employeeDepartmentDao.allDepartmentIdsByEmployeeId(employeeId)
-            if (departmentIds.isNotEmpty()) {
-                employeeDepartmentDao.deleteReferences(employeeId)
-            }
-
-            respondSuccess { 1 }
-        } else {
-            throw UnknownException
-        }
-    }
-}
-
-private fun Route.deleteEmployeesByIds() {
-    val employeeDao by inject<EmployeeDao>()
-    val employeeDepartmentDao by inject<EmployeeDepartmentDao>()
-
-    delete {
-        val employeeIds = call.request.queryParameters.getIntListOrThrow(
-            key = "employeeIds",
-            requiredNotEmpty = true
-        )
-
-        val currentEmployees = employeeDao.allEmployeesByIds(employeeIds)
-        if (currentEmployees.isEmpty()) {
-            throw ContentNotFoundException
-        }
-
-        if (employeeDao.deleteEmployees(employeeIds)) {
-            employeeDepartmentDao.deleteReferences(employeeIds)
-            respondSuccess { 1 }
-        } else {
-            throw UnknownException
         }
     }
 }
