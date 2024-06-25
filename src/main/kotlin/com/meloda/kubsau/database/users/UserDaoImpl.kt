@@ -42,7 +42,7 @@ class UserDaoImpl : UserDao {
     ): User? = dbQuery {
         Users.insert {
             it[Users.login] = login
-            it[Users.password] = password
+            it[Users.passwordHash] = password
             it[Users.employeeId] = employeeId
         }.resultedValues?.singleOrNull()?.let(::mapResultRow)
     }
@@ -50,7 +50,7 @@ class UserDaoImpl : UserDao {
     override suspend fun updateUser(userId: Int, login: String, password: String): Boolean = dbQuery {
         Users.update({ Users.id eq userId }) {
             it[Users.login] = login
-            it[Users.password] = password
+            it[Users.passwordHash] = password
         } > 0
     }
 

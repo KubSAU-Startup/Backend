@@ -5,6 +5,6 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 
 object Users : IntIdTable() {
     val login = text("login").uniqueIndex()
-    val password = text("password")
+    val passwordHash = text("password")
     val employeeId = integer("employeeId").references(Employees.id)
 }

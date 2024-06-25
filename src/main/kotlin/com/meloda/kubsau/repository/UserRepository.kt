@@ -66,7 +66,7 @@ class UserRepositoryImpl(
     ): Boolean {
         val currentUser = userDao.singleUser(principal.user.id) ?: throw ContentNotFoundException
 
-        if (!checkPassword(currentPassword, currentUser.password)) {
+        if (!checkPassword(currentPassword, currentUser.passwordHash)) {
             throw WrongCurrentPasswordException
         }
 

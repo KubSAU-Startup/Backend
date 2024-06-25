@@ -6,7 +6,7 @@ import org.jetbrains.exposed.sql.ResultRow
 data class User(
     val id: Int,
     val login: String,
-    val password: String,
+    val passwordHash: String,
     val employeeId: Int
 ) {
 
@@ -15,7 +15,7 @@ data class User(
         fun mapResultRow(row: ResultRow): User = User(
             id = row[Users.id].value,
             login = row[Users.login],
-            password = row[Users.password],
+            passwordHash = row[Users.passwordHash],
             employeeId = row[Users.employeeId]
         )
     }

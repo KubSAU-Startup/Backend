@@ -11,7 +11,10 @@ import com.meloda.kubsau.database.employees.EmployeeDao
 import com.meloda.kubsau.database.employeesdepartments.EmployeeDepartmentDao
 import com.meloda.kubsau.database.employeesfaculties.EmployeeFacultyDao
 import com.meloda.kubsau.database.users.UserDao
-import com.meloda.kubsau.model.*
+import com.meloda.kubsau.model.AccessDeniedException
+import com.meloda.kubsau.model.ContentNotFoundException
+import com.meloda.kubsau.model.Department
+import com.meloda.kubsau.model.respondSuccess
 import com.meloda.kubsau.plugins.AUDIENCE
 import com.meloda.kubsau.plugins.ISSUER
 import io.ktor.server.application.*
@@ -43,22 +46,10 @@ private fun Route.addSession() {
         val login = parameters.getStringOrThrow("login")
         val password = parameters.getStringOrThrow("password")
 
-        val users = userDao.allUsers()
-
-        val logins = users.map(User::login)
-        val passwords = users.map(User::password)
-
-        if (login !in logins) {
+        val user = userDao.singleUser(login) ?: throw WrongCredentialsException
+        if (!checkPassword(password, user.passwordHash)) {
             throw WrongCredentialsException
         }
-
-        val loginIndex = logins.indexOf(login)
-
-        if (!checkPassword(password, passwords[loginIndex])) {
-            throw WrongCredentialsException
-        }
-
-        val user = users[loginIndex]
 
         val employee = employeeDao.singleEmployee(user.employeeId) ?: throw ContentNotFoundException
         val facultyId: Int? = if (employee.isAdmin()) {
