@@ -50,6 +50,7 @@ class UserRepositoryImpl(
 
         return AccountInfo(
             id = user.id,
+            employeeId = employee.id,
             type = employee.type,
             login = user.login,
             faculty = faculty,

@@ -22,7 +22,7 @@ repositories {
 }
 
 dependencies {
-    val ktorVersion = "2.3.11"
+    val ktorVersion = "2.3.12"
 
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
@@ -36,7 +36,7 @@ dependencies {
     implementation("io.ktor:ktor-server-call-logging:$ktorVersion")
     implementation("io.ktor:ktor-server-swagger:$ktorVersion")
 
-    val exposedVersion = "0.50.1"
+    val exposedVersion = "0.51.1"
 
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
@@ -63,11 +63,6 @@ dependencies {
     val logBackVersion = "1.5.6"
 
     implementation("ch.qos.logback:logback-classic:$logBackVersion")
-
-    val kotlinxHtmlVersion = "0.11.0"
-
-    implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:$kotlinxHtmlVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-html:$kotlinxHtmlVersion")
 
     val qrCodeVersion = "4.2.0"
 

@@ -149,6 +149,7 @@ class WorkDaoImpl : WorkDao {
         departmentId?.let { dbQuery.andWhere { Disciplines.departmentId eq departmentId } }
         workTypeId?.let { dbQuery.andWhere { Works.workTypeId eq workTypeId } }
         employeeId?.let { dbQuery.andWhere { Works.employeeId eq employeeId } }
+
         query?.let { "%$it%" }?.let { q ->
             dbQuery.andWhere {
                 (Students.lastName.lowerCase() like q) or

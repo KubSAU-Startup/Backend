@@ -209,7 +209,7 @@ private fun Application.createDummyEmployees() {
                         lastName = "Ивлев",
                         firstName = "Евгений",
                         middleName = "Владимирович",
-                        email = "ivlev.e@kubsau.ru",
+                        email = "ivlev.e",
                         type = 3
                     )
 
@@ -257,7 +257,7 @@ private fun Application.createDummyUsers() {
                         employeeId = 1
                     )
                     addNewUser(
-                        login = "vasilenko.i@kubsau.ru",
+                        login = "vasilenko.i",
                         password = hashedPassword,
                         employeeId = 2
                     )

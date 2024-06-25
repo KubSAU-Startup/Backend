@@ -172,6 +172,7 @@ private fun Route.getDisciplines() {
     }
 }
 
+@OptIn(ExperimentalCoroutinesApi::class)
 private fun Route.generateQRCodes() {
     val programDao by inject<ProgramDao>()
     val groupDao by inject<GroupDao>()

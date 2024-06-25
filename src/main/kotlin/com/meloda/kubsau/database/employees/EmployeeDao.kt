@@ -23,8 +23,7 @@ interface EmployeeDao : Dao<Employee> {
         lastName: String,
         firstName: String,
         middleName: String?,
-        email: String,
-        type: Int
+        email: String
     ): Boolean
 
     suspend fun deleteEmployee(employeeId: Int): Boolean
