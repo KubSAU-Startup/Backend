@@ -81,15 +81,13 @@ class EmployeeDaoImpl : EmployeeDao {
         lastName: String,
         firstName: String,
         middleName: String?,
-        email: String,
-        type: Int
+        email: String
     ): Boolean = dbQuery {
         Employees.update(where = { Employees.id eq employeeId }) {
             it[Employees.lastName] = lastName
             it[Employees.firstName] = firstName
             it[Employees.middleName] = middleName
             it[Employees.email] = email
-            it[Employees.type] = type
         } > 0
     }
 

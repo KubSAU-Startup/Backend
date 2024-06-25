@@ -26,8 +26,7 @@ interface EmployeeRepository {
         lastName: String,
         firstName: String,
         middleName: String,
-        email: String,
-        type: Int
+        email: String
     ): Boolean
 
     suspend fun deleteEmployee(employeeId: Int): Boolean
@@ -57,9 +56,8 @@ class EmployeeRepositoryImpl(private val dao: EmployeeDao) : EmployeeRepository 
         lastName: String,
         firstName: String,
         middleName: String,
-        email: String,
-        type: Int
-    ): Boolean = dao.updateEmployee(employeeId, lastName, firstName, middleName, email, type)
+        email: String
+    ): Boolean = dao.updateEmployee(employeeId, lastName, firstName, middleName, email)
 
     override suspend fun deleteEmployee(employeeId: Int): Boolean = dao.deleteEmployee(employeeId)
 
