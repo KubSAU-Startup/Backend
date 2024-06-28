@@ -14,10 +14,10 @@ interface DepartmentService {
     suspend fun getDepartmentByIds(departmentIds: List<Int>): List<Department>
     suspend fun getDepartmentById(departmentId: Int): Department?
     suspend fun getTeachersInDepartment(departmentId: Int): List<Employee>
-    suspend fun addDepartment(title: String, phone: String): Department?
+    suspend fun addDepartment(facultyId: Int, title: String, phone: String): Department?
     suspend fun editDepartment(departmentId: Int, title: String, phone: String): Boolean
-    suspend fun deleteDepartment(departmentId: Int): Boolean
-    suspend fun deleteDepartments(departmentIds: List<Int>): Boolean
+    suspend fun deleteDepartment(facultyId: Int, departmentId: Int): Boolean
+    suspend fun deleteDepartments(facultyId: Int, departmentIds: List<Int>): Boolean
 }
 
 class DepartmentServiceImpl(
@@ -43,15 +43,31 @@ class DepartmentServiceImpl(
     override suspend fun getTeachersInDepartment(departmentId: Int): List<Employee> =
         employeeDepartmentRepository.getTeachersByDepartmentId(departmentId)
 
-    override suspend fun addDepartment(title: String, phone: String): Department? =
-        repository.addDepartment(title, phone)
+    override suspend fun addDepartment(facultyId: Int, title: String, phone: String): Department? {
+        val department = repository.addDepartment(title, phone) ?: return null
+
+        departmentsFacultiesDao.addReference(facultyId, department.id)
+        return department
+    }
 
     override suspend fun editDepartment(departmentId: Int, title: String, phone: String): Boolean =
         repository.editDepartment(departmentId, title, phone)
 
-    override suspend fun deleteDepartment(departmentId: Int): Boolean =
-        repository.deleteDepartmentById(departmentId)
+    override suspend fun deleteDepartment(facultyId: Int, departmentId: Int): Boolean {
+        val deleted = departmentsFacultiesDao.deleteReference(facultyId, departmentId)
+        if (deleted) {
+            return repository.deleteDepartmentById(departmentId)
+        }
 
-    override suspend fun deleteDepartments(departmentIds: List<Int>): Boolean =
-        repository.deleteDepartmentsByIds(departmentIds)
+        return false
+    }
+
+    override suspend fun deleteDepartments(facultyId: Int, departmentIds: List<Int>): Boolean {
+        val deleted = departmentsFacultiesDao.deleteReferences(facultyId, departmentIds)
+        if (deleted) {
+            return repository.deleteDepartmentsByIds(departmentIds)
+        }
+
+        return false
+    }
 }

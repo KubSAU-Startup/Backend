@@ -11,4 +11,5 @@ interface DepartmentsFacultiesDao : RefDao<Department, Faculty> {
     suspend fun getDepartmentIdsByFacultyId(facultyId: Int): List<Int>
     suspend fun addReference(facultyId: Int, departmentId: Int): Boolean
     suspend fun deleteReference(facultyId: Int, departmentId: Int): Boolean
+    suspend fun deleteReferences(facultyId: Int, departmentIds: List<Int>): Boolean
 }

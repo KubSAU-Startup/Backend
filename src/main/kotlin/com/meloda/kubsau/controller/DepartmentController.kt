@@ -70,7 +70,7 @@ class DepartmentController(private val service: DepartmentService) {
         post {
             val principal = call.userPrincipal()
 
-            if (principal.type != Employee.TYPE_ADMIN) {
+            if (principal.type != Employee.TYPE_ADMIN || principal.facultyId == null) {
                 throw AccessDeniedException("Admin rights required")
             }
 
@@ -78,7 +78,7 @@ class DepartmentController(private val service: DepartmentService) {
             val title = parameters.getStringOrThrow("title")
             val phone = parameters.getStringOrThrow("phone")
 
-            val created = service.addDepartment(title, phone)
+            val created = service.addDepartment(principal.facultyId, title, phone)
 
             if (created != null) {
                 respondSuccess { created }
@@ -123,7 +123,7 @@ class DepartmentController(private val service: DepartmentService) {
         delete("{id}") {
             val principal = call.userPrincipal()
 
-            if (principal.type != Employee.TYPE_ADMIN) {
+            if (principal.type != Employee.TYPE_ADMIN || principal.facultyId == null) {
                 throw AccessDeniedException("Admin rights required")
             }
 
@@ -134,7 +134,7 @@ class DepartmentController(private val service: DepartmentService) {
                 throw ContentNotFoundException
             }
 
-            if (service.deleteDepartment(departmentId)) {
+            if (service.deleteDepartment(principal.facultyId, departmentId)) {
                 respondSuccess { 1 }
             } else {
                 throw UnknownException
@@ -146,7 +146,7 @@ class DepartmentController(private val service: DepartmentService) {
         delete {
             val principal = call.userPrincipal()
 
-            if (principal.type != Employee.TYPE_ADMIN) {
+            if (principal.type != Employee.TYPE_ADMIN || principal.facultyId == null) {
                 throw AccessDeniedException("Admin rights required")
             }
 
@@ -162,7 +162,7 @@ class DepartmentController(private val service: DepartmentService) {
                 throw ContentNotFoundException
             }
 
-            if (service.deleteDepartments(departmentIds)) {
+            if (service.deleteDepartments(principal.facultyId, departmentIds)) {
                 respondSuccess { 1 }
             } else {
                 throw UnknownException

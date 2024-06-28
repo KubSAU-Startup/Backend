@@ -6,6 +6,7 @@ import com.meloda.kubsau.model.Department
 import com.meloda.kubsau.model.Faculty
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
@@ -40,6 +41,12 @@ class DepartmentsFacultiesDaoImpl : DepartmentsFacultiesDao {
     override suspend fun deleteReference(facultyId: Int, departmentId: Int): Boolean = dbQuery {
         DepartmentsFaculties.deleteWhere {
             (DepartmentsFaculties.facultyId eq facultyId) and (DepartmentsFaculties.departmentId eq departmentId)
+        } > 0
+    }
+
+    override suspend fun deleteReferences(facultyId: Int, departmentIds: List<Int>): Boolean = dbQuery {
+        DepartmentsFaculties.deleteWhere {
+            (DepartmentsFaculties.facultyId eq facultyId) and (DepartmentsFaculties.departmentId inList departmentIds)
         } > 0
     }
 
