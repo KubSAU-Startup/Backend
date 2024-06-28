@@ -1,5 +1,6 @@
 package com.meloda.kubsau.controller
 
+import com.meloda.kubsau.base.BaseController
 import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.students.StudentDao
 import com.meloda.kubsau.model.ContentNotFoundException
@@ -12,10 +13,9 @@ import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
-class StudentController {
+class StudentController : BaseController {
 
-    context(Route)
-    fun routes() {
+    override fun Route.routes() {
         authenticate {
             route("/students") {
                 getStudents()
@@ -186,16 +186,6 @@ class StudentController {
             } else {
                 throw UnknownException
             }
-        }
-    }
-
-
-    companion object {
-
-        context(Route)
-        fun routes() {
-            val controller by inject<StudentController>()
-            controller.routes()
         }
     }
 }

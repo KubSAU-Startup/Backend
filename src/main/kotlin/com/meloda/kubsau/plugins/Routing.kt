@@ -5,16 +5,12 @@ import com.meloda.kubsau.common.Constants
 import com.meloda.kubsau.common.IS_IN_DOCKER
 import com.meloda.kubsau.controller.*
 import com.meloda.kubsau.model.ServerInfo
-import com.meloda.kubsau.route.auth.authRoutes
-import com.meloda.kubsau.route.disciplines.disciplinesRoutes
-import com.meloda.kubsau.route.employees.employeesRoutes
-import com.meloda.kubsau.route.programs.programsRoutes
-import com.meloda.kubsau.route.worktypes.workTypesRoutes
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.swagger.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.koin.ktor.ext.get
 
 fun Application.routing() {
     routing {
@@ -36,18 +32,23 @@ fun Application.routing() {
     }
 }
 
-context(Route)
-private fun routes() {
-    authRoutes()
-    DepartmentController.routes()
-    disciplinesRoutes()
-    StudentController.routes()
-    workTypesRoutes()
-    programsRoutes()
-    GroupController.routes()
-    WorkController.routes()
-    UserController.routes()
-    employeesRoutes()
-    DirectivityController.routes()
-    HeadController.routes()
+private fun Route.routes() {
+    val controllers = listOf(
+        get<AuthController>(),
+        get<DepartmentController>(),
+        get<DirectivityController>(),
+        get<DisciplineController>(),
+        get<EmployeeController>(),
+        get<GroupController>(),
+        get<HeadController>(),
+        get<ProgramController>(),
+        get<StudentController>(),
+        get<UserController>(),
+        get<WorkController>(),
+        get<WorkTypeController>()
+    )
+
+    controllers.forEach { controller ->
+        controller.createRoutes()
+    }
 }

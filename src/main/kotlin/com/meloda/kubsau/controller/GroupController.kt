@@ -1,22 +1,17 @@
 package com.meloda.kubsau.controller
 
+import com.meloda.kubsau.base.BaseController
 import com.meloda.kubsau.common.*
-import com.meloda.kubsau.model.AccessDeniedException
-import com.meloda.kubsau.model.ContentNotFoundException
-import com.meloda.kubsau.model.Employee
-import com.meloda.kubsau.model.UnknownException
-import com.meloda.kubsau.model.respondSuccess
+import com.meloda.kubsau.model.*
 import com.meloda.kubsau.repository.GroupRepository
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
-import org.koin.ktor.ext.inject
 
-class GroupController(private val repository: GroupRepository) {
+class GroupController(private val repository: GroupRepository) : BaseController {
 
-    context(Route)
-    private fun routes() {
+    override fun Route.routes() {
         authenticate {
             route("/groups") {
                 getGroups()
@@ -164,14 +159,6 @@ class GroupController(private val repository: GroupRepository) {
             } else {
                 throw UnknownException
             }
-        }
-    }
-
-    companion object {
-        context(Route)
-        fun routes() {
-            val controller by inject<GroupController>()
-            controller.routes()
         }
     }
 }

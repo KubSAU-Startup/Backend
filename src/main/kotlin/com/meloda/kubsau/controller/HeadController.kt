@@ -1,5 +1,6 @@
 package com.meloda.kubsau.controller
 
+import com.meloda.kubsau.base.BaseController
 import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.faculties.FacultyDao
 import com.meloda.kubsau.database.heads.HeadDao
@@ -13,10 +14,9 @@ import org.koin.ktor.ext.inject
 class HeadController(
     // TODO: 17/06/2024, Danil Nikolaev: use
     private val repository: HeadRepository
-) {
+) : BaseController {
 
-    context(Route)
-    private fun routes() {
+    override fun Route.routes() {
         authenticate {
             route("/heads") {
                 getHeads()
@@ -67,7 +67,8 @@ class HeadController(
             if (principal.facultyId != null && headIds.isNotEmpty() &&
                 heads.map(Head::facultyId).distinct().singleOrNull() != principal.facultyId
             ) {
-                val unavailableHeadIds = heads.filter { head -> head.facultyId != principal.facultyId }.map(Head::id)
+                val unavailableHeadIds =
+                    heads.filter { head -> head.facultyId != principal.facultyId }.map(Head::id)
                 throw AccessDeniedException("Unavailable headIds: ${unavailableHeadIds.joinToString()}")
             }
 
@@ -84,14 +85,6 @@ class HeadController(
                     )
                 }
             }
-        }
-    }
-
-    companion object {
-        context(Route)
-        fun routes() {
-            val controller by inject<HeadController>()
-            controller.routes()
         }
     }
 }

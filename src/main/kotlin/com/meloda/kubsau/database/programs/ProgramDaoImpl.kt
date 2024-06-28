@@ -1,14 +1,14 @@
 package com.meloda.kubsau.database.programs
 
 import com.meloda.kubsau.config.DatabaseController.dbQuery
+import com.meloda.kubsau.controller.SearchEntry
+import com.meloda.kubsau.controller.SearchProgram
 import com.meloda.kubsau.database.directivities.Directivities
 import com.meloda.kubsau.database.faculties.Faculties
 import com.meloda.kubsau.database.grades.Grades
 import com.meloda.kubsau.database.heads.Heads
 import com.meloda.kubsau.model.IdTitle
 import com.meloda.kubsau.model.Program
-import com.meloda.kubsau.route.programs.SearchEntry
-import com.meloda.kubsau.route.programs.SearchProgram
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList

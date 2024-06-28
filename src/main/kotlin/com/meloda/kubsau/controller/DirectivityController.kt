@@ -1,20 +1,22 @@
 package com.meloda.kubsau.controller
 
+import com.meloda.kubsau.base.BaseController
 import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.grades.GradeDao
 import com.meloda.kubsau.database.heads.HeadDao
-import com.meloda.kubsau.model.*
+import com.meloda.kubsau.model.Directivity
+import com.meloda.kubsau.model.Grade
+import com.meloda.kubsau.model.Head
+import com.meloda.kubsau.model.respondSuccess
 import com.meloda.kubsau.service.DirectivityService
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
-class DirectivityController(private val service: DirectivityService) {
+class DirectivityController(private val service: DirectivityService) : BaseController {
 
-    context(Route)
-    private fun routes() {
+    override fun Route.routes() {
         authenticate {
             route("/directivities") {
                 getDirectivities()
@@ -74,14 +76,6 @@ class DirectivityController(private val service: DirectivityService) {
                     )
                 }
             }
-        }
-    }
-
-    companion object {
-        context(Route)
-        fun routes() {
-            val controller by inject<DirectivityController>()
-            controller.routes()
         }
     }
 }

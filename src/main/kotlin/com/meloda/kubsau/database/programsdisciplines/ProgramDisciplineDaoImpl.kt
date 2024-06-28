@@ -1,16 +1,16 @@
 package com.meloda.kubsau.database.programsdisciplines
 
-import com.meloda.kubsau.model.IdTitle
 import com.meloda.kubsau.config.DatabaseController.dbQuery
+import com.meloda.kubsau.controller.FullDisciplineIds
+import com.meloda.kubsau.controller.SearchDiscipline
+import com.meloda.kubsau.controller.SearchDisciplineWithProgramId
 import com.meloda.kubsau.database.disciplines.Disciplines
 import com.meloda.kubsau.database.programs.Programs
 import com.meloda.kubsau.database.worktypes.WorkTypes
 import com.meloda.kubsau.model.Discipline
+import com.meloda.kubsau.model.IdTitle
 import com.meloda.kubsau.model.Program
 import com.meloda.kubsau.model.WorkType
-import com.meloda.kubsau.route.programs.FullDisciplineIds
-import com.meloda.kubsau.route.programs.SearchDiscipline
-import com.meloda.kubsau.route.programs.SearchDisciplineWithProgramId
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 

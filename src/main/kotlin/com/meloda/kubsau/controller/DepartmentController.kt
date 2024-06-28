@@ -1,5 +1,6 @@
 package com.meloda.kubsau.controller
 
+import com.meloda.kubsau.base.BaseController
 import com.meloda.kubsau.common.*
 import com.meloda.kubsau.model.*
 import com.meloda.kubsau.service.DepartmentService
@@ -7,12 +8,10 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
-import org.koin.ktor.ext.inject
 
-class DepartmentController(private val service: DepartmentService) {
+class DepartmentController(private val service: DepartmentService) : BaseController {
 
-    context(Route)
-    private fun routes() {
+    override fun Route.routes() {
         authenticate {
             route("/departments") {
                 getDepartments()
@@ -167,14 +166,6 @@ class DepartmentController(private val service: DepartmentService) {
             } else {
                 throw UnknownException
             }
-        }
-    }
-
-    companion object {
-        context(Route)
-        fun routes() {
-            val controller by inject<DepartmentController>()
-            controller.routes()
         }
     }
 }

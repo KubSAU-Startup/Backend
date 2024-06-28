@@ -1,5 +1,6 @@
 package com.meloda.kubsau.controller
 
+import com.meloda.kubsau.base.BaseController
 import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.departmentfaculty.DepartmentsFacultiesDao
 import com.meloda.kubsau.database.departments.DepartmentDao
@@ -16,9 +17,9 @@ import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
-class WorkController {
-    context(Route)
-    private fun routes() {
+class WorkController : BaseController {
+
+    override fun Route.routes() {
         authenticate {
             route("/works") {
                 getWorks()
@@ -435,14 +436,6 @@ class WorkController {
         val offset: Int,
         val entries: List<Entry>
     )
-
-    companion object {
-        context(Route)
-        fun routes() {
-            val controller by inject<WorkController>()
-            controller.routes()
-        }
-    }
 }
 
 data class EntryFilter(

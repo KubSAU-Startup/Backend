@@ -12,4 +12,9 @@ val controllerModule = module {
     singleOf(::DirectivityController)
     singleOf(::HeadController)
     singleOf(::StudentController)
+    singleOf(::DisciplineController)
+    singleOf(::AuthController)
+    singleOf(::EmployeeController)
+    singleOf(::ProgramController)
+    singleOf(::WorkTypeController)
 }

@@ -1,12 +1,12 @@
 package com.meloda.kubsau.database.programsdisciplines
 
-import com.meloda.kubsau.model.IdTitle
 import com.meloda.kubsau.base.RefDao
+import com.meloda.kubsau.controller.FullDisciplineIds
+import com.meloda.kubsau.controller.SearchDisciplineWithProgramId
 import com.meloda.kubsau.model.Discipline
+import com.meloda.kubsau.model.IdTitle
 import com.meloda.kubsau.model.Program
 import com.meloda.kubsau.model.WorkType
-import com.meloda.kubsau.route.programs.FullDisciplineIds
-import com.meloda.kubsau.route.programs.SearchDisciplineWithProgramId
 
 interface ProgramDisciplineDao : RefDao<Program, Discipline> {
 

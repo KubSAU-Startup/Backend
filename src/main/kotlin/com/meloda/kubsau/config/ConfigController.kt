@@ -30,6 +30,13 @@ object ConfigController {
         }
     }
 
+    val dbLogging: Boolean by lazy {
+        val defaultValue = "false"
+        getEnvOrElse("DB_LOGGING") {
+            properties?.getProperty("DB_LOGGING", defaultValue) ?: defaultValue
+        }.toBoolean()
+    }
+
     fun init() {
         println("USE_POSTGRES: $usePostgreSQL")
 

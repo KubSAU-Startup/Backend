@@ -1,5 +1,6 @@
 package com.meloda.kubsau.controller
 
+import com.meloda.kubsau.base.BaseController
 import com.meloda.kubsau.common.getStringOrThrow
 import com.meloda.kubsau.common.userPrincipal
 import com.meloda.kubsau.model.UnknownException
@@ -9,12 +10,10 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
-import org.koin.ktor.ext.inject
 
-class UserController(private val userService: UserService) {
+class UserController(private val userService: UserService) : BaseController {
 
-    context(Route)
-    private fun routes() {
+    override fun Route.routes() {
         authenticate {
             route("/account") {
                 getAccountInfo()
@@ -44,14 +43,6 @@ class UserController(private val userService: UserService) {
             } else {
                 throw UnknownException
             }
-        }
-    }
-
-    companion object {
-        context(Route)
-        fun routes() {
-            val controller by inject<UserController>()
-            controller.routes()
         }
     }
 }

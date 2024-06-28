@@ -25,6 +25,7 @@ import com.meloda.kubsau.model.Employee
 import com.meloda.kubsau.model.Student
 import com.meloda.kubsau.model.WorkType
 import com.meloda.kubsau.plugins.*
+import com.meloda.kubsau.util.PasswordUtil
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -248,8 +249,8 @@ private fun Application.createDummyUsers() {
                 println("Creating dummy users...")
 
                 val time = measureTimeMillis {
-                    val hashedPassword = hashPassword("123456")
-                    val hashedPassword2 = hashPassword("789012")
+                    val hashedPassword = PasswordUtil.hashPassword("123456")
+                    val hashedPassword2 = PasswordUtil.hashPassword("789012")
 
                     addNewUser(
                         login = "vasilenko.i2@kubsau.ru",

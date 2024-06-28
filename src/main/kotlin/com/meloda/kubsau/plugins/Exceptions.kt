@@ -1,7 +1,7 @@
 package com.meloda.kubsau.plugins
 
+import com.meloda.kubsau.controller.WrongCredentialsException
 import com.meloda.kubsau.model.*
-import com.meloda.kubsau.route.auth.WrongCredentialsException
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.statuspages.*
