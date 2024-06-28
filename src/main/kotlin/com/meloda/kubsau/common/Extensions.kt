@@ -8,7 +8,16 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
-import org.mindrot.jbcrypt.BCrypt
+
+fun getEnvOrNull(name: String): String? = runCatching {
+    System.getenv(name)
+}.fold(
+    onSuccess = { env -> env },
+    onFailure = { null }
+)
+
+fun getEnvOrElse(name: String, defaultValue: () -> String): String = getEnvOrNull(name) ?: defaultValue()
+
 
 fun getEnvOrNull(name: String): String? = runCatching {
     System.getenv(name)
@@ -213,18 +222,3 @@ fun <T> Parameters.getOrThrow(key: String, mapper: (String) -> T): T = getOrThro
 
 fun <T> Parameters.getOrThrow(key: String, mapper: (String) -> T, message: () -> String): T =
     mapper(this[key] ?: throw ValidationException.InvalidException(message()))
-
-
-// TODO: 11/06/2024, Danil Nikolaev: когда-нибудь реализовать регистрацию и закинуть туда
-fun hashPassword(password: String): String {
-    return BCrypt.hashpw(password, BCrypt.gensalt())
-}
-
-fun checkPassword(plaintext: String, hashed: String): Boolean {
-    return runCatching {
-        BCrypt.checkpw(plaintext, hashed)
-    }.fold(
-        onSuccess = { it },
-        onFailure = { false }
-    )
-}
