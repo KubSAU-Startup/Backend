@@ -9,7 +9,6 @@ import com.meloda.kubsau.route.auth.authRoutes
 import com.meloda.kubsau.route.disciplines.disciplinesRoutes
 import com.meloda.kubsau.route.employees.employeesRoutes
 import com.meloda.kubsau.route.programs.programsRoutes
-import com.meloda.kubsau.route.students.studentsRoutes
 import com.meloda.kubsau.route.worktypes.workTypesRoutes
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -42,7 +41,7 @@ private fun routes() {
     authRoutes()
     DepartmentController.routes()
     disciplinesRoutes()
-    studentsRoutes()
+    StudentController.routes()
     workTypesRoutes()
     programsRoutes()
     GroupController.routes()

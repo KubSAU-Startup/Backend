@@ -18,7 +18,8 @@ interface StudentDao : Dao<Student> {
         groupId: Int?,
         gradeId: Int?,
         status: Int?,
-        query: String?
+        query: String?,
+        studentIds: List<Int>?
     ): List<Student>
 
     suspend fun singleStudent(studentId: Int): Student?

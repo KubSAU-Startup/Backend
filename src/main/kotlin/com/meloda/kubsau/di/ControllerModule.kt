@@ -11,4 +11,5 @@ val controllerModule = module {
     singleOf(::DepartmentController)
     singleOf(::DirectivityController)
     singleOf(::HeadController)
+    singleOf(::StudentController)
 }

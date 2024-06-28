@@ -105,7 +105,8 @@ class StudentDaoImpl : StudentDao {
         groupId: Int?,
         gradeId: Int?,
         status: Int?,
-        query: String?
+        query: String?,
+        studentIds: List<Int>?
     ): List<Student> = dbQuery {
         val dbQuery = Students
             .innerJoin(Groups, { Students.groupId }, { Groups.id })
@@ -127,6 +128,7 @@ class StudentDaoImpl : StudentDao {
         groupId?.let { dbQuery.andWhere { Students.groupId eq groupId } }
         gradeId?.let { dbQuery.andWhere { Directivities.gradeId eq gradeId } }
         status?.let { dbQuery.andWhere { Students.status eq status } }
+        studentIds?.let { dbQuery.andWhere { Students.id inList studentIds } }
 
         query?.let { q -> "%$q%" }?.let { q ->
             dbQuery.andWhere {
