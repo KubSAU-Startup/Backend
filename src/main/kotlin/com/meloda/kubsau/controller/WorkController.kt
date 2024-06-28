@@ -134,10 +134,7 @@ class WorkController : BaseController {
         val employeeDao by inject<EmployeeDao>()
 
         get("{id}") {
-            val principal = call.userPrincipal()
             val workId = call.parameters.getIntOrThrow("id")
-
-            // TODO: 21/06/2024, Danil Nikolaev: check access ^
 
             val extended = call.request.queryParameters.getBoolean("extended", false)
 
@@ -170,7 +167,6 @@ class WorkController : BaseController {
         }
     }
 
-    // TODO: 12/06/2024, Danil Nikolaev: validate every field
     private fun Route.addWork() {
         val workDao by inject<WorkDao>()
 
@@ -184,7 +180,6 @@ class WorkController : BaseController {
             val workTypeId = parameters.getIntOrThrow("workTypeId")
             val employeeId = parameters.getIntOrThrow("employeeId")
 
-            // TODO: 20/06/2024, Danil Nikolaev: get student and validate that student is learning
             val created = workDao.addNewWork(
                 disciplineId = disciplineId,
                 studentId = studentId,
@@ -202,32 +197,26 @@ class WorkController : BaseController {
         }
     }
 
-    // TODO: 12/06/2024, Danil Nikolaev: validate every field
     private fun Route.editWork() {
         val workDao by inject<WorkDao>()
 
         patch("{id}") {
-            val principal = call.userPrincipal()
             val workId = call.parameters.getIntOrThrow("id")
             val currentWork = workDao.singleWork(workId) ?: throw ContentNotFoundException
 
             val parameters = call.receiveParameters()
 
-            val disciplineId = parameters.getInt("disciplineId")
-            val studentId = parameters.getInt("studentId")
             val registrationDate = parameters.getLong("registrationDate")
             val title = parameters.getString("title")
-            val workTypeId = parameters.getInt("workTypeId")
-            val employeeId = parameters.getInt("employeeId")
 
             workDao.updateWork(
                 workId = workId,
-                disciplineId = disciplineId ?: currentWork.disciplineId,
-                studentId = studentId ?: currentWork.studentId,
+                disciplineId = currentWork.disciplineId,
+                studentId = currentWork.studentId,
                 registrationDate = registrationDate ?: currentWork.registrationDate,
                 title = if ("title" in parameters) title else currentWork.title,
-                workTypeId = workTypeId ?: currentWork.workTypeId,
-                employeeId = employeeId ?: currentWork.employeeId
+                workTypeId = currentWork.workTypeId,
+                employeeId = currentWork.employeeId
             ).let { success ->
                 if (success) {
                     respondSuccess { 1 }
@@ -238,12 +227,10 @@ class WorkController : BaseController {
         }
     }
 
-    // TODO: 12/06/2024, Danil Nikolaev: validate every field
     private fun Route.deleteWorkById() {
         val workDao by inject<WorkDao>()
 
         delete("{id}") {
-            val principal = call.userPrincipal()
             val workId = call.parameters.getIntOrThrow("id")
             workDao.singleWork(workId) ?: throw ContentNotFoundException
 
@@ -255,12 +242,10 @@ class WorkController : BaseController {
         }
     }
 
-    // TODO: 12/06/2024, Danil Nikolaev: validate every field
     private fun Route.deleteWorksByIds() {
         val workDao by inject<WorkDao>()
 
         delete {
-            val principal = call.userPrincipal()
             val workIds = call.request.queryParameters.getIntListOrThrow(
                 key = "workIds",
                 requiredNotEmpty = true

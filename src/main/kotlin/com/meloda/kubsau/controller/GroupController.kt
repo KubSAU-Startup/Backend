@@ -35,7 +35,6 @@ class GroupController(private val repository: GroupRepository) : BaseController 
             val groups = if (groupIds.isEmpty()) {
                 repository.getAllGroups(principal.facultyId)
             } else {
-                // TODO: 17/06/2024, Danil Nikolaev: check access
                 repository.getGroupsByIds(groupIds)
             }
 
@@ -46,8 +45,6 @@ class GroupController(private val repository: GroupRepository) : BaseController 
     private fun Route.getGroupById() {
         get("{id}") {
             val groupId = call.parameters.getIntOrThrow("id")
-
-            // TODO: 21/06/2024, Danil Nikolaev: check access
             val group = repository.getGroupById(groupId) ?: throw ContentNotFoundException
 
             respondSuccess { group }
@@ -66,8 +63,6 @@ class GroupController(private val repository: GroupRepository) : BaseController 
 
             val title = parameters.getStringOrThrow("title")
             val directivityId = parameters.getIntOrThrow("directivityId")
-
-            // TODO: 17/06/2024, Danil Nikolaev: check access ^
 
             val created = repository.addGroup(
                 title = title,
@@ -97,7 +92,6 @@ class GroupController(private val repository: GroupRepository) : BaseController 
 
             val title = parameters["title"]?.trim()
             val directivityId = parameters["directivityId"]?.toIntOrNull()
-            // TODO: 17/06/2024, Danil Nikolaev: check access ^
 
             repository.editGroup(
                 groupId = groupId,
@@ -122,7 +116,6 @@ class GroupController(private val repository: GroupRepository) : BaseController 
             }
 
             val groupId = call.parameters.getIntOrThrow("id")
-            // TODO: 17/06/2024, Danil Nikolaev: check access  ^
             if (!repository.isGroupExist(groupId)) {
                 throw ContentNotFoundException
             }
@@ -147,7 +140,6 @@ class GroupController(private val repository: GroupRepository) : BaseController 
                 key = "groupIds",
                 requiredNotEmpty = true
             )
-            // TODO: 17/06/2024, Danil Nikolaev: check access ^
 
             val currentGroups = repository.getGroupsByIds(groupIds)
             if (currentGroups.isEmpty()) {

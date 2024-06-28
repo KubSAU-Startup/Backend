@@ -97,7 +97,6 @@ class StudentController : BaseController {
             val groupId = parameters.getIntOrThrow("groupId")
             val status = parameters.getIntOrThrow("status")
 
-            // TODO: 20/06/2024, Danil Nikolaev: check groupId
             val created = studentDao.addNewStudent(
                 firstName = firstName,
                 lastName = lastName,
@@ -129,8 +128,6 @@ class StudentController : BaseController {
             val groupId = parameters.getInt("groupId")
             val status = parameters.getInt("status")
 
-            // TODO: 20/06/2024, Danil Nikolaev: check groupId
-
             studentDao.updateStudent(
                 studentId = studentId,
                 firstName = firstName ?: currentStudent.firstName,
@@ -155,8 +152,6 @@ class StudentController : BaseController {
             val studentId = call.parameters.getIntOrThrow("id")
             studentDao.singleStudent(studentId) ?: throw ContentNotFoundException
 
-            // TODO: 20/06/2024, Danil Nikolaev: check access
-
             if (studentDao.deleteStudent(studentId)) {
                 respondSuccess { 1 }
             } else {
@@ -173,8 +168,6 @@ class StudentController : BaseController {
                 key = "studentIds",
                 requiredNotEmpty = true
             )
-
-            // TODO: 20/06/2024, Danil Nikolaev: check access
 
             val currentStudents = studentDao.allStudentsByIds(studentIds)
             if (currentStudents.isEmpty()) {

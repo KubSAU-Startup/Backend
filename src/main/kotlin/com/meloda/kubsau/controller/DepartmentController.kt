@@ -35,7 +35,6 @@ class DepartmentController(private val service: DepartmentService) : BaseControl
             val departments = if (departmentIds == null) {
                 service.getAllDepartments(principal)
             } else {
-                // TODO: 17/06/2024, Danil Nikolaev: check access
                 service.getDepartmentByIds(departmentIds)
             }
             respondSuccess { departments }
@@ -46,7 +45,6 @@ class DepartmentController(private val service: DepartmentService) : BaseControl
         get("{id}") {
             val principal = call.userPrincipal()
             val departmentId = call.parameters.getIntOrThrow("id")
-            // TODO: 17/06/2024, Danil Nikolaev: check access to departmentId
             val department = service.getDepartmentById(departmentId) ?: throw ContentNotFoundException
 
             respondSuccess { department }
@@ -57,7 +55,6 @@ class DepartmentController(private val service: DepartmentService) : BaseControl
         get("{id}/teachers") {
             val principal = call.userPrincipal()
             val departmentId = call.parameters.getIntOrThrow("id")
-            // TODO: 17/06/2024, Danil Nikolaev: check access to departmentId
             if (!service.isExist(departmentId)) throw ContentNotFoundException
 
             val teachers = service.getTeachersInDepartment(departmentId)
@@ -96,7 +93,6 @@ class DepartmentController(private val service: DepartmentService) : BaseControl
                 throw AccessDeniedException("Admin rights required")
             }
 
-            // TODO: 17/06/2024, Danil Nikolaev: check access to departmentId
             val currentDepartment = service.getDepartmentById(departmentId) ?: throw ContentNotFoundException
 
             val parameters = call.receiveParameters()
@@ -127,7 +123,6 @@ class DepartmentController(private val service: DepartmentService) : BaseControl
             }
 
             val departmentId = call.parameters.getIntOrThrow("id")
-            // TODO: 17/06/2024, Danil Nikolaev: check access to departmentId
 
             if (!service.isExist(departmentId)) {
                 throw ContentNotFoundException
@@ -153,8 +148,6 @@ class DepartmentController(private val service: DepartmentService) : BaseControl
                 key = "departmentIds",
                 requiredNotEmpty = true
             )
-
-            // TODO: 17/06/2024, Danil Nikolaev: check access to departmentIds
 
             val currentDepartments = service.getDepartmentByIds(departmentIds)
             if (currentDepartments.isEmpty()) {

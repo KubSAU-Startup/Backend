@@ -69,7 +69,6 @@ class UserRepositoryImpl(
             throw WrongCurrentPasswordException
         }
 
-        // TODO: 07/06/2024, Danil Nikolaev: validate password for security
         return userDao.updateUser(currentUser.id, currentUser.login, PasswordUtil.hashPassword(newPassword))
     }
 }

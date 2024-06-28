@@ -3,7 +3,6 @@ package com.meloda.kubsau.controller
 import com.meloda.kubsau.base.BaseController
 import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.faculties.FacultyDao
-import com.meloda.kubsau.database.heads.HeadDao
 import com.meloda.kubsau.model.*
 import com.meloda.kubsau.repository.HeadRepository
 import io.ktor.server.application.*
@@ -11,10 +10,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
-class HeadController(
-    // TODO: 17/06/2024, Danil Nikolaev: use
-    private val repository: HeadRepository
-) : BaseController {
+class HeadController(private val repository: HeadRepository) : BaseController {
 
     override fun Route.routes() {
         authenticate {
@@ -32,13 +28,12 @@ class HeadController(
     )
 
     private fun Route.getHeads() {
-        val headDao by inject<HeadDao>()
         val facultyDao by inject<FacultyDao>()
 
         get {
             val principal = call.userPrincipal()
 
-            if (principal.type != Employee.TYPE_ADMIN) {
+            if (principal.type != Employee.TYPE_ADMIN || principal.facultyId == null) {
                 throw AccessDeniedException("Admin rights required")
             }
 
@@ -55,18 +50,16 @@ class HeadController(
             val extended = parameters.getBoolean("extended", false)
 
             val heads = if (headIds.isEmpty()) {
-                headDao.allHeads(
+                repository.getAllHeads(
                     facultyId = principal.facultyId,
                     offset = offset,
                     limit = limit ?: MAX_ITEMS_SIZE
                 )
             } else {
-                headDao.allHeadsByIds(headIds)
+                repository.getHeadsByIds(headIds)
             }
 
-            if (principal.facultyId != null && headIds.isNotEmpty() &&
-                heads.map(Head::facultyId).distinct().singleOrNull() != principal.facultyId
-            ) {
+            if (headIds.isNotEmpty() && heads.map(Head::facultyId).distinct().singleOrNull() != principal.facultyId) {
                 val unavailableHeadIds =
                     heads.filter { head -> head.facultyId != principal.facultyId }.map(Head::id)
                 throw AccessDeniedException("Unavailable headIds: ${unavailableHeadIds.joinToString()}")

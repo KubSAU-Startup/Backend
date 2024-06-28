@@ -46,7 +46,6 @@ class DisciplineController : BaseController {
                 disciplineDao.allDisciplines(departmentIds)
             } else {
                 disciplineDao.allDisciplinesByIds(disciplineIds)
-                // TODO: 20/06/2024, Danil Nikolaev: check access ^
             }
 
             respondSuccess { disciplines }
@@ -58,7 +57,6 @@ class DisciplineController : BaseController {
 
         get("{id}") {
             val disciplineId = call.parameters.getIntOrThrow("id")
-            // TODO: 21/06/2024, Danil Nikolaev: check access ^
             val discipline = disciplineDao.singleDiscipline(disciplineId) ?: throw ContentNotFoundException
 
             respondSuccess { discipline }

@@ -35,7 +35,6 @@ class DirectivityController(private val service: DirectivityService) : BaseContr
     )
 
     private fun Route.getDirectivities() {
-        // TODO: 17/06/2024, Danil Nikolaev: stop using
         val headDao by inject<HeadDao>()
         val gradeDao by inject<GradeDao>()
 
