@@ -871,7 +871,7 @@ private fun Application.createDummyWorkTypes() {
                 val time = measureTimeMillis {
                     addNewWorkType("Курсовая", true)
                     addNewWorkType("Лабораторная", false)
-                    addNewWorkType("Рассчётно-графическая", true)
+                    addNewWorkType("Расчётно-графическая", true)
                     addNewWorkType("Практика", false)
                 }
 
