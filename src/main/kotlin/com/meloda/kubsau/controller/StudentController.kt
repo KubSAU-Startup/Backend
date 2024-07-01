@@ -3,10 +3,7 @@ package com.meloda.kubsau.controller
 import com.meloda.kubsau.base.BaseController
 import com.meloda.kubsau.common.*
 import com.meloda.kubsau.database.students.StudentDao
-import com.meloda.kubsau.model.ContentNotFoundException
-import com.meloda.kubsau.model.Student
-import com.meloda.kubsau.model.UnknownException
-import com.meloda.kubsau.model.respondSuccess
+import com.meloda.kubsau.model.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -85,28 +82,87 @@ class StudentController : BaseController {
         }
     }
 
+    private data class FullName(
+        val lastName: String,
+        val firstName: String,
+        val middleName: String?
+    )
+
     private fun Route.addStudent() {
         val studentDao by inject<StudentDao>()
 
         post {
             val parameters = call.receiveParameters()
 
-            val lastName = parameters.getStringOrThrow("lastName")
-            val firstName = parameters.getStringOrThrow("firstName")
+            val lastName = parameters.getString("lastName")
+            val firstName = parameters.getString("firstName")
             val middleName = parameters.getString("middleName")
+            val names = parameters.getString("names")
             val groupId = parameters.getIntOrThrow("groupId")
             val status = parameters.getIntOrThrow("status")
 
-            val created = studentDao.addNewStudent(
-                firstName = firstName,
-                lastName = lastName,
-                middleName = middleName,
-                groupId = groupId,
-                status = status
-            )
+            val response: Any? = when {
+                names != null -> {
+                    names
+                        .split("\n")
+                        .map { line ->
+                            val fullName = line.split(" ").mapNotNull { it.trim().ifEmpty { null } }
+                            when (fullName.size) {
+                                !in 2..3 -> {
+                                    throw ValidationException.InvalidValueException("names")
+                                }
 
-            if (created != null) {
-                respondSuccess { created }
+                                2 -> {
+                                    val (last, first) = fullName
+                                    FullName(
+                                        lastName = last,
+                                        firstName = first,
+                                        middleName = null
+                                    )
+                                }
+
+                                else -> {
+                                    val (last, first, middle) = fullName
+                                    FullName(
+                                        lastName = last,
+                                        firstName = first,
+                                        middleName = middle
+                                    )
+                                }
+                            }
+                        }
+                        .map { fullName ->
+                            studentDao.addNewStudent(
+                                firstName = fullName.firstName,
+                                lastName = fullName.lastName,
+                                middleName = fullName.middleName,
+                                groupId = groupId,
+                                status = status
+                            )
+                        }
+                }
+
+                firstName != null && lastName != null -> {
+                    studentDao.addNewStudent(
+                        firstName = firstName,
+                        lastName = lastName,
+                        middleName = middleName,
+                        groupId = groupId,
+                        status = status
+                    )
+                }
+
+                else -> {
+                    val keys = mutableListOf<String>()
+                    if (firstName == null) keys += "firstName"
+                    if (lastName == null) keys += "lastName"
+
+                    throw ValidationException.InvalidException("Either names or ${keys.joinToString(" & ")} must not be empty")
+                }
+            }
+
+            if (response != null) {
+                respondSuccess { response }
             } else {
                 throw UnknownException
             }
