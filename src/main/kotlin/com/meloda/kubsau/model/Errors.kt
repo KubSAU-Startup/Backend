@@ -2,7 +2,6 @@ package com.meloda.kubsau.model
 
 object Errors {
     const val UNKNOWN_ERROR = 1
-    const val UNKNOWN_METHOD = 2
     const val BAD_REQUEST = 3
     const val ACCESS_DENIED = 4
     const val WRONG_TOKEN_FORMAT = 5
@@ -10,7 +9,6 @@ object Errors {
 
     const val WRONG_CREDENTIALS = 101
     const val WRONG_PASSWORD = 104
-    const val UNAVAILABLE_DEPARTMENT_ID = 105
 
     const val CONTENT_NOT_FOUND = 1001
 }

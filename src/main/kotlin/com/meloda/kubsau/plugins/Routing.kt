@@ -17,9 +17,7 @@ fun Application.routing() {
         get("/") {
             call.respond(
                 status = HttpStatusCode.OK,
-                message = ServerInfo(
-                    version = Constants.BACKEND_VERSION,
-                )
+                message = ServerInfo(version = Constants.BACKEND_VERSION)
             )
         }
 
