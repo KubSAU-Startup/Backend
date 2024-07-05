@@ -183,13 +183,6 @@ class ProgramController : BaseController {
                 throw ContentNotFoundException
             }
 
-            // TODO: 02/07/2024, Danil Nikolaev: remove after presentation
-            if (groupIds.singleOrNull() == 1) {
-                delay(1500)
-                call.respondFile(File("$DATA_FOLDER/IT2001.zip"))
-                return@get
-            }
-
             val students = studentDao.allStudentsByGroupIdsAsMap(groupIds, true)
             val disciplines = programDisciplineDao.allDisciplineIdsByProgramIdAsMap(programId)
 
