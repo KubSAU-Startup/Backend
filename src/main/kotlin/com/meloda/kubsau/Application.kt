@@ -251,19 +251,20 @@ private fun Application.createDummyUsers() {
                 val time = measureTimeMillis {
                     val hashedPassword = PasswordUtil.hashPassword("123456")
                     val hashedPassword2 = PasswordUtil.hashPassword("789012")
+                    val hashedPassword3 = PasswordUtil.hashPassword("1234567")
 
                     addNewUser(
-                        login = "vasilenko.i2@kubsau.ru",
+                        login = "vasilenko.i2",
                         password = hashedPassword2,
                         employeeId = 1
                     )
                     addNewUser(
                         login = "vasilenko.i",
-                        password = hashedPassword,
+                        password = hashedPassword3,
                         employeeId = 2
                     )
                     addNewUser(
-                        login = "paraskevov.a@kubsau.ru",
+                        login = "paraskevov.a",
                         password = hashedPassword,
                         employeeId = 3
                     )
@@ -273,12 +274,12 @@ private fun Application.createDummyUsers() {
                         employeeId = 4
                     )
                     addNewUser(
-                        login = "kuemzhieva.s@kubsau.ru",
+                        login = "kuemzhieva.s",
                         password = hashedPassword,
                         employeeId = 34
                     )
                     addNewUser(
-                        login = "kuemzhieva.s2@kubsau.ru",
+                        login = "kuemzhieva.s2",
                         password = hashedPassword2,
                         employeeId = 35
                     )
