@@ -1,47 +1,52 @@
 package com.meloda.kubsau.plugins
 
+import com.meloda.kubsau.CONFIG_FOLDER
 import com.meloda.kubsau.common.Constants
-import com.meloda.kubsau.route.account.accountRoutes
-import com.meloda.kubsau.route.auth.authRoutes
-import com.meloda.kubsau.route.department.departmentsRoutes
-import com.meloda.kubsau.route.disciplines.disciplinesRoutes
-import com.meloda.kubsau.route.groups.groupsRoutes
-import com.meloda.kubsau.route.journal.journalsRoutes
-import com.meloda.kubsau.route.majors.majorsRoutes
-import com.meloda.kubsau.route.programs.programsRoutes
-import com.meloda.kubsau.route.qr.qrRoutes
-import com.meloda.kubsau.route.specializations.specializationsRoutes
-import com.meloda.kubsau.route.students.studentsRoutes
-import com.meloda.kubsau.route.teachers.teachersRoutes
-import com.meloda.kubsau.route.users.usersRoutes
-import com.meloda.kubsau.route.works.worksRoutes
-import com.meloda.kubsau.route.worktypes.workTypesRoutes
+import com.meloda.kubsau.common.IS_IN_DOCKER
+import com.meloda.kubsau.controller.*
+import com.meloda.kubsau.model.ServerInfo
+import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.plugins.swagger.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.koin.ktor.ext.get
 
 fun Application.routing() {
     routing {
         get("/") {
-            call.respondText {
-                "Server is working.\nVersion: ${Constants.BACKEND_VERSION}"
-            }
+            call.respond(
+                status = HttpStatusCode.OK,
+                message = ServerInfo(version = Constants.BACKEND_VERSION)
+            )
         }
 
-        authRoutes()
-        accountRoutes()
-        journalsRoutes()
-        departmentsRoutes()
-        qrRoutes()
-        disciplinesRoutes()
-        studentsRoutes()
-        workTypesRoutes()
-        programsRoutes()
-        groupsRoutes()
-        worksRoutes()
-        usersRoutes()
-        teachersRoutes()
-        specializationsRoutes()
-        majorsRoutes()
+        swaggerUI(
+            path = "/api/docs",
+            swaggerFile = if (IS_IN_DOCKER) "$CONFIG_FOLDER/docs/openapi.yml" else "docs/openapi.yml"
+        )
+
+        routes()
+    }
+}
+
+private fun Route.routes() {
+    val controllers = listOf(
+        get<AuthController>(),
+        get<DepartmentController>(),
+        get<DirectivityController>(),
+        get<DisciplineController>(),
+        get<EmployeeController>(),
+        get<GroupController>(),
+        get<HeadController>(),
+        get<ProgramController>(),
+        get<StudentController>(),
+        get<UserController>(),
+        get<WorkController>(),
+        get<WorkTypeController>()
+    )
+
+    controllers.forEach { controller ->
+        controller.createRoutes()
     }
 }

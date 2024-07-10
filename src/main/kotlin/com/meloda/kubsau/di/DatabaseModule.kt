@@ -1,56 +1,59 @@
 package com.meloda.kubsau.di
 
-import com.meloda.kubsau.database.departments.DepartmentsDao
-import com.meloda.kubsau.database.departments.DepartmentsDaoImpl
-import com.meloda.kubsau.database.disciplines.DisciplinesDao
-import com.meloda.kubsau.database.disciplines.DisciplinesDaoImpl
-import com.meloda.kubsau.database.groups.GroupsDao
-import com.meloda.kubsau.database.groups.GroupsDaoImpl
-import com.meloda.kubsau.database.journals.JournalsDao
-import com.meloda.kubsau.database.journals.JournalsDaoImpl
-import com.meloda.kubsau.database.majors.MajorsDao
-import com.meloda.kubsau.database.majors.MajorsDaoImpl
-import com.meloda.kubsau.database.programs.ProgramsDao
-import com.meloda.kubsau.database.programs.ProgramsDaoImpl
-import com.meloda.kubsau.database.programsdisciplines.ProgramsDisciplinesDao
-import com.meloda.kubsau.database.programsdisciplines.ProgramsDisciplinesDaoImpl
-import com.meloda.kubsau.database.sessions.SessionsDao
-import com.meloda.kubsau.database.sessions.SessionsDaoImpl
-import com.meloda.kubsau.database.specializations.SpecializationsDao
-import com.meloda.kubsau.database.specializations.SpecializationsDaoImpl
-import com.meloda.kubsau.database.specializationsdisciplines.SpecializationsDisciplinesDao
-import com.meloda.kubsau.database.specializationsdisciplines.SpecializationsDisciplinesDaoImpl
-import com.meloda.kubsau.database.students.StudentsDao
-import com.meloda.kubsau.database.students.StudentsDaoImpl
-import com.meloda.kubsau.database.teachers.TeachersDao
-import com.meloda.kubsau.database.teachers.TeachersDaoImpl
-import com.meloda.kubsau.database.teachersdisciplines.TeachersDisciplinesDao
-import com.meloda.kubsau.database.teachersdisciplines.TeachersDisciplinesDaoImpl
-import com.meloda.kubsau.database.users.UsersDao
-import com.meloda.kubsau.database.users.UsersDaoImpl
-import com.meloda.kubsau.database.works.WorksDao
-import com.meloda.kubsau.database.works.WorksDaoImpl
-import com.meloda.kubsau.database.worktypes.WorkTypesDao
-import com.meloda.kubsau.database.worktypes.WorkTypesDaoImpl
+import com.meloda.kubsau.database.departmentfaculty.DepartmentsFacultiesDao
+import com.meloda.kubsau.database.departmentfaculty.DepartmentsFacultiesDaoImpl
+import com.meloda.kubsau.database.departments.DepartmentDao
+import com.meloda.kubsau.database.departments.DepartmentDaoImpl
+import com.meloda.kubsau.database.directivities.DirectivityDao
+import com.meloda.kubsau.database.directivities.DirectivityDaoImpl
+import com.meloda.kubsau.database.disciplines.DisciplineDao
+import com.meloda.kubsau.database.disciplines.DisciplineDaoImpl
+import com.meloda.kubsau.database.employees.EmployeeDao
+import com.meloda.kubsau.database.employees.EmployeeDaoImpl
+import com.meloda.kubsau.database.employeesdepartments.EmployeeDepartmentDao
+import com.meloda.kubsau.database.employeesdepartments.EmployeeDepartmentDaoImpl
+import com.meloda.kubsau.database.employeesfaculties.EmployeeFacultyDao
+import com.meloda.kubsau.database.employeesfaculties.EmployeeFacultyDaoImpl
+import com.meloda.kubsau.database.faculties.FacultyDao
+import com.meloda.kubsau.database.faculties.FacultyDaoImpl
+import com.meloda.kubsau.database.grades.GradeDao
+import com.meloda.kubsau.database.grades.GradeDaoImpl
+import com.meloda.kubsau.database.groups.GroupDao
+import com.meloda.kubsau.database.groups.GroupDaoImpl
+import com.meloda.kubsau.database.heads.HeadDao
+import com.meloda.kubsau.database.heads.HeadDaoImpl
+import com.meloda.kubsau.database.programs.ProgramDao
+import com.meloda.kubsau.database.programs.ProgramDaoImpl
+import com.meloda.kubsau.database.programsdisciplines.ProgramDisciplineDao
+import com.meloda.kubsau.database.programsdisciplines.ProgramDisciplineDaoImpl
+import com.meloda.kubsau.database.students.StudentDao
+import com.meloda.kubsau.database.students.StudentDaoImpl
+import com.meloda.kubsau.database.users.UserDao
+import com.meloda.kubsau.database.users.UserDaoImpl
+import com.meloda.kubsau.database.works.WorkDao
+import com.meloda.kubsau.database.works.WorkDaoImpl
+import com.meloda.kubsau.database.worktypes.WorkTypeDao
+import com.meloda.kubsau.database.worktypes.WorkTypeDaoImpl
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val databaseModule = module {
-    singleOf(::DepartmentsDaoImpl) bind DepartmentsDao::class
-    singleOf(::DisciplinesDaoImpl) bind DisciplinesDao::class
-    singleOf(::GroupsDaoImpl) bind GroupsDao::class
-    singleOf(::JournalsDaoImpl) bind JournalsDao::class
-    singleOf(::MajorsDaoImpl) bind MajorsDao::class
-    singleOf(::ProgramsDaoImpl) bind ProgramsDao::class
-    singleOf(::ProgramsDisciplinesDaoImpl) bind ProgramsDisciplinesDao::class
-    singleOf(::SessionsDaoImpl) bind SessionsDao::class
-    singleOf(::SpecializationsDaoImpl) bind SpecializationsDao::class
-    singleOf(::SpecializationsDisciplinesDaoImpl) bind SpecializationsDisciplinesDao::class
-    singleOf(::StudentsDaoImpl) bind StudentsDao::class
-    singleOf(::TeachersDaoImpl) bind TeachersDao::class
-    singleOf(::TeachersDisciplinesDaoImpl) bind TeachersDisciplinesDao::class
-    singleOf(::UsersDaoImpl) bind UsersDao::class
-    singleOf(::WorksDaoImpl) bind WorksDao::class
-    singleOf(::WorkTypesDaoImpl) bind WorkTypesDao::class
+    singleOf(::DepartmentDaoImpl) bind DepartmentDao::class
+    singleOf(::DirectivityDaoImpl) bind DirectivityDao::class
+    singleOf(::DisciplineDaoImpl) bind DisciplineDao::class
+    singleOf(::EmployeeDaoImpl) bind EmployeeDao::class
+    singleOf(::EmployeeDepartmentDaoImpl) bind EmployeeDepartmentDao::class
+    singleOf(::EmployeeFacultyDaoImpl) bind EmployeeFacultyDao::class
+    singleOf(::FacultyDaoImpl) bind FacultyDao::class
+    singleOf(::GradeDaoImpl) bind GradeDao::class
+    singleOf(::GroupDaoImpl) bind GroupDao::class
+    singleOf(::HeadDaoImpl) bind HeadDao::class
+    singleOf(::ProgramDaoImpl) bind ProgramDao::class
+    singleOf(::ProgramDisciplineDaoImpl) bind ProgramDisciplineDao::class
+    singleOf(::StudentDaoImpl) bind StudentDao::class
+    singleOf(::UserDaoImpl) bind UserDao::class
+    singleOf(::WorkDaoImpl) bind WorkDao::class
+    singleOf(::WorkTypeDaoImpl) bind WorkTypeDao::class
+    singleOf(::DepartmentsFacultiesDaoImpl) bind DepartmentsFacultiesDao::class
 }

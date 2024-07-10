@@ -1,9 +1,7 @@
 package com.meloda.kubsau.plugins
 
-import com.meloda.kubsau.api.model.ApiError
-import com.meloda.kubsau.api.respondError
-import com.meloda.kubsau.errors.*
-import com.meloda.kubsau.route.auth.WrongCredentialsException
+import com.meloda.kubsau.controller.WrongCredentialsException
+import com.meloda.kubsau.model.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.statuspages.*
@@ -18,15 +16,9 @@ fun Application.configureExceptions() {
                     }
                 }
 
-                is NoAccessTokenException -> {
-                    respondError(call = call, status = HttpStatusCode.Unauthorized) {
-                        ApiError(Errors.ACCESS_TOKEN_REQUIRED, "Access token required")
-                    }
-                }
-
-                is SessionExpiredException -> {
+                is AccessDeniedException -> {
                     respondError(call) {
-                        ApiError(Errors.SESSION_EXPIRED, "Session expired")
+                        ApiError(Errors.ACCESS_DENIED, throwable.message)
                     }
                 }
 
@@ -44,7 +36,25 @@ fun Application.configureExceptions() {
 
                 is ContentNotFoundException -> {
                     respondError(call) {
-                        ApiError(Errors.CONTENT_NOT_FOUND, "Content not found")
+                        ApiError(Errors.CONTENT_NOT_FOUND, throwable.message ?: "Content not found")
+                    }
+                }
+
+                is WrongCurrentPasswordException -> {
+                    respondError(call) {
+                        ApiError(Errors.WRONG_PASSWORD, throwable.message ?: "Wrong current password")
+                    }
+                }
+
+                is WrongTokenFormatException -> {
+                    respondError(call) {
+                        ApiError(Errors.WRONG_TOKEN_FORMAT, throwable.message ?: "Wrong token format")
+                    }
+                }
+
+                is UnknownTokenException -> {
+                    respondError(call) {
+                        ApiError(Errors.UNKNOWN_TOKEN_ERROR, throwable.message ?: "Unknown token error")
                     }
                 }
             }

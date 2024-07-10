@@ -7,15 +7,23 @@ data class Student(
     val id: Int,
     val firstName: String,
     val lastName: String,
-    val middleName: String,
+    val middleName: String?,
     val groupId: Int,
     val status: Int
 ) {
     val fullName: String
-        get() = "$lastName $firstName $middleName"
+        get() = if (middleName == null) {
+            "$firstName $lastName"
+        } else {
+            "$lastName $firstName $middleName"
+        }
 
     companion object {
-        fun mapResultRow(row: ResultRow): Student = Student(
+        const val STATUS_LEARNING = 1
+        const val STATUS_SABBATICAL = 2
+        const val STATUS_EXPELLED = 3
+
+        fun mapFromDb(row: ResultRow): Student = Student(
             id = row[Students.id].value,
             firstName = row[Students.firstName],
             lastName = row[Students.lastName],

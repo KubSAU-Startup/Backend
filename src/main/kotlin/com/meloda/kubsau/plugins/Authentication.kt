@@ -3,47 +3,65 @@ package com.meloda.kubsau.plugins
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.meloda.kubsau.PORT
-import com.meloda.kubsau.errors.SessionExpiredException
-import com.meloda.kubsau.startTime
+import com.meloda.kubsau.config.SecretsController
+import com.meloda.kubsau.database.users.UserDao
+import com.meloda.kubsau.model.User
+import com.meloda.kubsau.model.WrongTokenFormatException
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
+import org.koin.ktor.ext.inject
 
-// TODO: 14/03/2024, Danil Nikolaev: extract to environment variables
-const val SECRET = "bdb979c8ff03d1e206b33c81206b72d54edd627f26dfe98d93aab1b202b92817"
 val ISSUER = "http://0.0.0.0:$PORT/"
 val AUDIENCE = "http://0.0.0.0:$PORT/auth"
 const val REALM = "Access to data"
 
 fun Application.configureAuthentication() {
-    println("SECRET: $SECRET")
+    val userDao by inject<UserDao>()
+
     install(Authentication) {
         jwt {
             realm = REALM
 
             verifier(
                 JWT
-                    .require(Algorithm.HMAC256(SECRET))
+                    .require(Algorithm.HMAC256(SecretsController.jwtSecret))
                     .withAudience(AUDIENCE)
                     .withIssuer(ISSUER)
                     .build()
             )
 
             validate { credential ->
-                if (credential.payload.getClaim("login").asString() != "") {
-                    JWTPrincipal(credential.payload)
-                } else {
-                    null
+                credential.payload.run {
+                    getClaim("id")?.asInt()?.let { userId ->
+                        userDao.singleUser(userId)?.let { id ->
+                            try {
+                                UserPrincipal(
+                                    user = id,
+                                    type = getClaim("type").asInt(),
+                                    facultyId = getClaim("facultyId")?.asInt(),
+                                    selectedDepartmentId = getClaim("selectedDepartmentId")?.asInt(),
+                                    departmentIds = getClaim("departmentIds").asString().split(", ")
+                                        .mapNotNull { it.trim().toIntOrNull() }
+                                )
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                null
+                            }
+                        }
+                    }
                 }
             }
 
-            challenge { _, _ -> throw SessionExpiredException }
+            challenge { _, _ -> throw WrongTokenFormatException }
         }
     }
-
-    val endTime = System.currentTimeMillis()
-    val difference = endTime - startTime
-
-
-    println("Server is ready in ${difference}ms")
 }
+
+data class UserPrincipal(
+    val user: User,
+    val type: Int,
+    val facultyId: Int?,
+    val selectedDepartmentId: Int?,
+    val departmentIds: List<Int>
+) : Principal
