@@ -18,17 +18,6 @@ fun getEnvOrNull(name: String): String? = runCatching {
 
 fun getEnvOrElse(name: String, defaultValue: () -> String): String = getEnvOrNull(name) ?: defaultValue()
 
-
-fun getEnvOrNull(name: String): String? = runCatching {
-    System.getenv(name)
-}.fold(
-    onSuccess = { env -> env },
-    onFailure = { null }
-)
-
-fun getEnvOrElse(name: String, defaultValue: () -> String): String = getEnvOrNull(name) ?: defaultValue()
-
-
 fun ApplicationCall.userPrincipal(): UserPrincipal = this.principal() ?: throw UnknownTokenException
 
 fun ApplicationRequest.toLogString(): String {
